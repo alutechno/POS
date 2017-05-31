@@ -1,0 +1,164 @@
+<?php
+
+if (!defined('BASEPATH'))
+    exit('No direct script access allowed');
+
+class Ref_cuisine_region extends CI_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('Ref_cuisine_region_model');
+        $this->load->library('form_validation');        
+	$this->load->library('datatables');
+             is_logged_in();
+    }
+
+    public function index()
+    {
+        $data['title']="Cuisine Category";
+        datatables('referensi/ref_cuisine_region/ref_cuisine_region_list',$data);
+    } 
+    
+    public function json() {
+        header('Content-Type: application/json');
+        echo $this->Ref_cuisine_region_model->json();
+    }
+
+    public function read($id) 
+    {
+        $row = $this->Ref_cuisine_region_model->get_by_id($id);
+        if ($row) {
+            $data = array(
+		'id' => $row->id,
+		'code' => $row->code,
+		'name' => $row->name,
+		'description' => $row->description,
+		'status' => $row->status,
+		'created_date' => $row->created_date,
+		'modified_date' => $row->modified_date,
+		'created_by' => $row->created_by,
+		'modified_by' => $row->modified_by,
+	    );
+            $this->load->view('ref_cuisine_region/ref_cuisine_region_read', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(base_url('ref_cuisine_region'));
+        }
+    }
+
+    public function create() 
+    {
+        $data = array(
+            'button' => 'Create',
+            'title'=>'Cuisine Region',
+            'action' => base_url('referensi/ref_cuisine_region/create_action'),
+	    'id' => set_value('id'),
+	    'code' => set_value('code'),
+	    'name' => set_value('name'),
+	    'description' => set_value('description'),
+	    'status' => set_value('status'),
+
+	);
+        form('referensi/ref_cuisine_region/ref_cuisine_region_form', $data);
+    }
+    
+    public function create_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->create();
+        } else {
+            $data = array(
+		'code' => $this->input->post('code',TRUE),
+		'name' => $this->input->post('name',TRUE),
+		'description' => $this->input->post('description',TRUE),
+		'status' => $this->input->post('status',TRUE),
+		
+	    );
+
+            $this->Ref_cuisine_region_model->insert($data);
+            $this->session->set_flashdata('message', 'Create Record Success');
+            redirect(base_url('referensi/ref_cuisine_region'));
+        }
+    }
+    
+    public function update($id) 
+    {
+       // echo "sss";exit;
+        $row = $this->Ref_cuisine_region_model->get_by_id($id);
+
+        if ($row) {
+            $data = array(
+                'button' => 'Update',
+                'title'=>'',
+                'action' => base_url('referensi/ref_cuisine_region/update_action'),
+		'id' => set_value('id', $row->id),
+		'code' => set_value('code', $row->code),
+		'name' => set_value('name', $row->name),
+		'description' => set_value('description', $row->description),
+		'status' => set_value('status', $row->status),
+                'created_date'=>'',
+		
+	    );
+           form('referensi/ref_cuisine_region/ref_cuisine_region_form', $data);
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(base_url('referensi/ref_cuisine_region'));
+        }
+    }
+    
+    public function update_action() 
+    {
+        $this->_rules();
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->update($this->input->post('id', TRUE));
+        } else {
+            $data = array(
+		'code' => $this->input->post('code',TRUE),
+		'name' => $this->input->post('name',TRUE),
+		'description' => $this->input->post('description',TRUE),
+		'status' => $this->input->post('status',TRUE),
+	    );
+
+            $this->Ref_cuisine_region_model->update($this->input->post('id', TRUE), $data);
+            $this->session->set_flashdata('message', 'Update Record Success');
+            redirect(base_url('referensi/ref_cuisine_region'));
+        }
+    }
+    
+    public function delete($id) 
+    {
+        $row = $this->Ref_cuisine_region_model->get_by_id($id);
+
+        if ($row) {
+            $this->Ref_cuisine_region_model->delete($id);
+            $this->session->set_flashdata('message', 'Delete Record Success');
+            redirect(base_url('referensi/ref_cuisine_region'));
+        } else {
+            $this->session->set_flashdata('message', 'Record Not Found');
+            redirect(base_url('referensi/ref_cuisine_region'));
+        }
+    }
+
+    public function _rules() 
+    {
+	$this->form_validation->set_rules('code', 'code', 'trim|required');
+	$this->form_validation->set_rules('name', 'name', 'trim|required');
+	//$this->form_validation->set_rules('description', 'description', 'trim|required');
+	//$this->form_validation->set_rules('status', 'status', 'trim|required');
+	
+
+	$this->form_validation->set_rules('id', 'id', 'trim');
+	$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+    }
+
+}
+
+/* End of file Ref_cuisine_region.php */
+/* Location: ./application/controllers/Ref_cuisine_region.php */
+/* Please DO NOT modify this information : */
+/* Generated by Harviacode Codeigniter CRUD Generator 2017-04-20 22:08:24 */
+/* http://harviacode.com */
