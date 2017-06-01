@@ -78,8 +78,8 @@ $query_builder = TRUE;
 $db['default'] = array(
 	'dsn'	=> '',
 	//10.108.220.3
-    'hostname' => "localhost",
-    //'hostname' => "103.43.47.115",
+    //'hostname' => "localhost",
+    'hostname' => "103.43.47.115",
 	//'hostname' => "103.43.47.115",
 	'username' => "media",
 	'password' => "media",

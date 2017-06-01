@@ -37,25 +37,25 @@
                                             <th>Amount</th>
                                             <th>#</th>
                                         </tr>
-                                        
+
                                         <?php
                                         $tax = 0;
                                         $amount=0;
                                         $service=0;
-                                        $query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil 
+                                        $query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil
                                         where is_void=0 and table_id=".$this->uri->segment(3)." and outlet_id=".$this->session->userdata('outlet')." group by menu_id ");
                                             $i=1;
                                             foreach ($query->result() as $row)
                                             {
                                         ?>
-                                        <tr> 
+                                        <tr>
                                             <td> <?php echo $i?></td>
                                             <td> <?php echo $this->global_model->get_menu_name($row->menu_id)?></td>
                                             <td> <?php echo $row->qty?></td>
                                             <td align="right">
                                                <?php echo  number_format($row->amount)?>
                                             </td>
-                                            
+
                                             <td align="center"><a href="<?php echo base_url()?>main/void_item/<?php echo $this->session->userdata('table')?>/<?php echo $this->session->userdata('outlet')?>/<?php echo $row->menu_id?>"><button type="button" class="btn btn-danger">Delete</button></a></td>
                                         </tr>
                                        <?php
@@ -69,10 +69,10 @@
                                         <td colspan="4" align="left">&nbsp;</td>
                                         <td  align="right">&nbsp;</td>
                                        </tr>
-                                       
-                                   
+
+
  </table>
-         
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -86,21 +86,21 @@
 <!-- START CUSTOM TABS -->
                    <br/>
                      <div class="row">
-                    
-                  
+
+
                           <div class="col-md-8">
                             <!-- Custom Tabs -->
                             <div class="nav-tabs-custom">
                                <!-- <ul class="nav nav-tabs">
-                       
+
                                  <li class="active"><a href="#tab_1" data-toggle="tab"><?//=$row->name?></a></li>
                                 <li><a href="#tab_2" data-toggle="tab">Tab 2</a></li>
-                         
+
                                     <li class="pull-right"><a href="#" class="text-muted"><i class="fa fa-gear"></i></a></li>
                                 </ul>-->
                                 <div class="tab-content">
                                     <div class="tab-pane active" id="tab_1">
-                                        
+
 
  <!-- Main content -->
  <form action=" <?php echo base_url()?>main/reload_pesan" method="post">
@@ -114,7 +114,7 @@
   </section>
  </form>
                 <section class="content">
-                     
+
                     <!-- Small boxes (Stat box) -->
                     <div class="row">
                         <?php
@@ -127,29 +127,29 @@
                         }
                             foreach ($query->result() as $row)
                             {
-    
+
                         ?>
                         <div class="col-lg-3 col-xs-6">
                             <!-- small box -->
                           <div class="small-box bg-aqua">
                                 <a href="<?php echo base_url()?>main/inputpesan/<?php echo $row->id?>/<?php echo $row->menu_price?>/<?php echo $row->menu_class_id?>/<?php echo $this->uri->segment(3)?>" class="small-box-footer">&nbsp;<center><img src="<?php echo base_url()?>menu/<?php echo $row->image<>''?$row->image:'no_image.svg';?>" width="130" height="80"> </center><center>  <?php echo $row->short_name?></center>
-                                    <?php echo  number_format($row->menu_price)?> 
+                                    <?php echo  number_format($row->menu_price)?>
                                 </a>
                             </div>
-                            
+
                         </div><!-- ./col -->
                         <?php
                           }
                         ?>
-                        
 
-   
+
+
                     </div><!-- /.row -->
 
                     <!-- top row -->
                     <div class="row">
                         <div class="col-xs-12 connectedSortable">
-                            
+
                         </div><!-- /.col -->
                     </div>
                     <!-- /.row -->
@@ -157,28 +157,28 @@
                     <!-- Main row -->
                     <div class="row">
                         <!-- Left col -->
-                        <section class="col-lg-6 connectedSortable"> 
+                        <section class="col-lg-6 connectedSortable">
                             <!-- Box (with bar chart) -->
 
                         </section><!-- /.Left col -->
                         <!-- right col (We are only adding the ID to make the widgets sortable)-->
-                 
+
                     </div><!-- /.row (main row) -->
 
                 </section>
                                     </div><!-- /.tab-pane -->
-                                  
+
                                 </div><!-- /.tab-content -->
                             </div><!-- nav-tabs-custom -->
                         </div><!-- /.col -->
 
-                        
+
                             <div class="col-md-4">
                             <div class="box box-solid">
                                 <div class="box-header">
                                 <table>
                                   <tr>
-                                  <th>Order Number 
+                                  <th>Order Number
                                   </th>
                                   <th>:</th>
                                   <th>
@@ -186,58 +186,58 @@
                                   </th>
                                   </tr>
                                 <tr>
-                                  <th>Table 
+                                  <th>Table
                                   </th>
                                   <th>:</th>
                                   <th><?php echo $this->uri->segment(3)?></th>
                                   </tr>
                                   <tr><th colspan="3">&nbsp;</th></tr>
                                 </table>
-                                
+
                                    <a class="btn btn-app" href=' <?php echo base_url('main')?>'>
                                         <i class="fa fa-home"></i> Home
                                     </a>
-                                    
+
                                     <a class="btn btn-app" href=' <?php echo base_url('main')?>'>
                                         <i class="fa fa-edit"></i> Open Menu
                                     </a>
 
                                 </div><!-- /.box-header -->
                                 <div class="box-body text-center">
-                                   
+
                                     <iframe width="360" scrolling="yes" frameBorder="0" height="415" src="<?php echo base_url()?>main/get_total/<?php echo $this->uri->segment(3)?>" allowfullscreen ></iframe>
                                     <!-- end -->
-                                    
+
                                    <!-- <a class="btn btn-app bg-red" href='<?//=base_url()?>main/cancel_order' onclick="javasciprt: return confirm('Are you Sure Cancel This Order ?')">
                                         <i class="fa fa-times"></i>Cancel Order</a>
                                     </a>-->
-                               
+
                                     <a class="btn btn-app bg-red" data-toggle="modal" href="#myModal">
                                         <i class="fa fa-times"></i>Cancel Order</a>
                                     </a>
-                                     
+
                                     <a class="btn btn-app bg-yellow" onclick="print( <?php echo $this->session->order_no;?>)">
                                         <i class="fa fa-print"></i>Print Order</a>
                                     </a>
-                             
-                                    
+
+
                                     <a class="btn btn-app bg-green">
                                         <i class="fa fa-money" onclick="print_payment( <?php echo $this->session->order_no;?>)"></i> Payment
                                     </a>
                                       <a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalnote">
                                         <i class="fa fa-edit"></i> Note
                                     </a>
-                                 
+
                                 </div><!-- /.box-body -->
                             </div><!-- /.box -->
                         </div><!-- /.col (left) -->
-                        
+
                     </div><!-- /.row -->
-                    
-               
-                        
+
+
+
  <script type="text/javascript">
-  
+
    function print(order)
   {
       //__action=print
@@ -245,27 +245,27 @@
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();
   }
-  
+
   function print_test()
   {
         PopupCenter('<?php echo base_url()?>main/print_kitchen','xtf','600','600');
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();
   }
-  
+
      function print_payment(order)
   {
         PopupCenter(' <?php echo REPORT_BIRT?>struk_order.rptdesign&__format=pdf&no_bill=<?php echo $this->session->userdata('no_bill')?>&table=<?php echo $this->session->userdata('table')?>&date= <?php echo date('Y-M-d')?>&outlet= <?php echo $this->session->userdata('outlet')?>&waitress= <?php echo $this->session->userdata('name')?>','xtf','600','600');
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();
   }
-  
+
   function PopupCenter(url, title, w, h) {
     var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
     var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
@@ -289,4 +289,3 @@ function cancel()
     alert('Cancel This Order?');
 }
 </script>
-                        

@@ -15,7 +15,7 @@ define('APP_CORP'   , 'THE MEDIA HOTEL AND TOWERS');
 define('APP_VERSION', '0.1');
 define('APP_YEAR'   , '2017');
 define('LICENSE_TO' , 'THE MEDIA HOTEL AND TOWERS');
-define('REPORT_BIRT','http://localhost:8080/birt/frameset?__report=aset/');
+define('REPORT_BIRT','http://103.43.47.115:8888/report/frameset?__report=pos/');
 // -- Module
 define('DEF_MODULE'     , 1); // 1. perencanaan 2.etc  ref => apps table
 define('SELECT_MODULE'  , TRUE);
@@ -37,7 +37,7 @@ define('DB_NAME', 'media');
 // -- Url
 $PROTOCOL = "http" . ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "s" : "") . "://";
 $SERVER   = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
-$SERVER   = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $SERVER; 
+$SERVER   = isset($_SERVER['HTTP_X_FORWARDED_HOST']) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $SERVER;
 $BASE_URL = $PROTOCOL . $SERVER . str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
 define('MY_BASE_URL', $BASE_URL);
 define('MY_ASSETS', $BASE_URL.'themes/');

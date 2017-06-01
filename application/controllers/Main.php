@@ -29,22 +29,22 @@ class Main extends CI_Controller {
         function payment()
         {
 
-        $query = $this->db->query("select order_no from pos_outlet_order_header where table_no=".$this->uri->segment(3)." and status_closed=0");
+        /*$query = $this->db->query("select order_no from pos_outlet_order_header where table_no=".$this->uri->segment(3)." and status_closed=0");
                     if ($query->num_rows() > 0)
                     {
                    foreach ($query->result() as $row)
                         {
                            $order_no= $row->order_no;  
                         }
-                    }
+                    }*/
                 
             $data = array(
                 'table_no'=>$this->uri->segment(3),
-                'order_no'=>$order_no
+                'order_no'=>$this->global_model->get_no_bill($this->uri->segment(3))
             );
             
             $_SESSION['table']= $this->uri->segment(3);
-            $_SESSION['order_no']= $order_no;
+            $_SESSION['order_no']= $this->global_model->get_no_bill($this->uri->segment(3));
 
             //order_no
             $data['keyword']=$this->input->post('cari');

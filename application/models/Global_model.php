@@ -142,8 +142,8 @@ class Global_model extends CI_Model
     {
         date_default_timezone_set('Asia/Jakarta');
 
-       $query = $this->db->query(" select name from ref_meal_time where '".date('H:i')."' BETWEEN start_time and end_time limit 1 ");
-
+       $query = $this->db->query("select name from ref_meal_time where '".date('H:i')."' BETWEEN start_time and end_time limit 1 ");
+//echo $this->db->last_query();
             foreach ($query->result() as $row)
             {
                     $strname= $row->name;

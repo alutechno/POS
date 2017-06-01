@@ -9,7 +9,7 @@
       <div class="modal-body">
 <form id="subscribe-email-form" action="#" method="post">
 <div class="form-group">
- 
+
                                         <div class="form-group">
                                             <label>Payment Method</label>
                                             <select class="form-control">
@@ -20,7 +20,7 @@
                                                     {
                                                 ?>
                                                 <option value="<?=$row->code?>"><?=$row->name?>-<?=$row->description?></option>
-                                                <?
+                                                <?php
                                                     }
                                                 ?>
                                             </select>
@@ -51,7 +51,7 @@
         <h4 class="modal-title" id="myModalLabel">Open Menu</h4>
       </div>
       <div class="modal-body">
-<form id="subscribe-email-form" action="<?php echo base_url()?>main/openmenu" method="post"> 
+<form id="subscribe-email-form" action="<?php echo base_url()?>main/openmenu" method="post">
                 <input type="hidden" name="bill" value="<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>">
                 <input type="hidden" name="outlet" value="<?php echo $this->session->userdata('outlet')?>">
                 <input type="hidden" name="table" value="<?php echo $this->uri->segment(3)?>">
@@ -98,7 +98,7 @@
         <h4 class="modal-title" id="myModalLabel">Menu Note</h4>
       </div>
       <div class="modal-body">
-<form id="subscribe-email-form" action="/notifications/subscribe/" method="post"> 
+<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -119,8 +119,8 @@
       </div>
       <div class="modal-body">
 <form id="subscribe-email-form" action="<?php echo base_url()?>main/include_room" method="post">
-   
-                
+
+
             <div class="col-xs-8">
                 <input type="hidden" name="bill" value="<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>">
                 <input type="hidden" name="outlet" value="<?php echo $this->session->userdata('outlet')?>">
@@ -136,12 +136,12 @@ foreach ($this->global_model->guest()->result() as $row)
                       ?>
                         </select>
             </div>
-           
 
-      
+
+
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-primary">Save changes</button>
-     
+
     </form>
        </div>
     </div>
@@ -167,25 +167,25 @@ foreach ($this->global_model->guest()->result() as $row)
                                             <th>Amount</th>
                                             <th>#</th>
                                         </tr>
-                                        
+
                                         <?php
                                         $tax = 0;
                                         $amount=0;
                                         $service=0;
-                                        $query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil 
+                                        $query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil
                                         where is_void=0 and table_id=".$this->uri->segment(3)." and outlet_id=".$this->session->userdata('outlet')." group by menu_id ");
                                             $i=1;
                                             foreach ($query->result() as $row)
                                             {
                                         ?>
-                                        <tr> 
+                                        <tr>
                                             <td> <?php echo $i?></td>
                                             <td> <?php echo $this->global_model->get_menu_name($row->menu_id)?></td>
                                             <td> <?php echo $row->qty?></td>
                                             <td align="right">
                                                <?php echo  number_format($row->amount)?>
                                             </td>
-                                            
+
                                             <td align="center"><a href="<?php echo base_url()?>main/void_item/<?php echo $this->session->userdata('table')?>/<?php echo $this->session->userdata('outlet')?>/<?php echo $row->menu_id?>"><button type="button" class="btn btn-danger">Delete</button></a></td>
                                         </tr>
                                        <?php
@@ -199,10 +199,10 @@ foreach ($this->global_model->guest()->result() as $row)
                                         <td colspan="4" align="left">&nbsp;</td>
                                         <td  align="right">&nbsp;</td>
                                        </tr>
-                                       
-                                   
+
+
  </table>
-         
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -216,11 +216,11 @@ foreach ($this->global_model->guest()->result() as $row)
 <!-- START CUSTOM TABS -->
                    <br/>
                      <div class="row">
-                    
+
                           <div class="col-md-8">
                             <!-- Custom Tabs -->
                             <div class="nav-tabs-custom">
-                      
+
                                 <?php
                                   date_default_timezone_set('Asia/Jakarta');
 
@@ -275,7 +275,7 @@ foreach ($this->global_model->guest()->result() as $row)
   </section>
  </form>
                 <section class="content">
-                     
+
                     <!-- Small boxes (Stat box) -->
                     <div class="row">
                         <?php
@@ -288,37 +288,37 @@ foreach ($this->global_model->guest()->result() as $row)
           //$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=".$this->session->userdata('outlet')." and meal_time_id=".$this->global_model->get_meal_time()." ");
 
                         }else{
-             
+
                             $query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=".$this->session->userdata('outlet')." and a.menu_class_id ='".$this->uri->segment(4)."'");
                         }
-                     
+
 
                       //  echo $this->db->last_query();
-                    
+
                             foreach ($query->result() as $row)
                             {
-    
+
                         ?>
                         <div class="col-lg-3 col-xs-6">
                           <div class="small-box bg-aqua">
                                 <a href="<?php echo base_url()?>main/inputpesan/<?php echo $row->id?>/<?php echo $row->menu_price?>/<?php echo $row->menu_class_id?>/<?php echo $this->uri->segment(3)?>" class="small-box-footer">&nbsp;<center><img src="<?php echo base_url()?>menu/<?php echo $row->image<>''?$row->image:'no_image.svg';?>" width="130" height="80"> </center><center>  <?php echo $row->short_name?></center>
-                                    <?php echo  number_format($row->menu_price)?> 
+                                    <?php echo  number_format($row->menu_price)?>
                                 </a>
                             </div>
-                            
+
                         </div>
                         <?php
                           }
                         ?>
-                        
 
-   
+
+
                     </div><!-- /.row -->
 
                     <!-- top row -->
                     <div class="row">
                         <div class="col-xs-12 connectedSortable">
-                            
+
                         </div><!-- /.col -->
                     </div>
                     <!-- /.row -->
@@ -326,31 +326,31 @@ foreach ($this->global_model->guest()->result() as $row)
                     <!-- Main row -->
                     <div class="row">
                         <!-- Left col -->
-                        <section class="col-lg-6 connectedSortable"> 
+                        <section class="col-lg-6 connectedSortable">
                             <!-- Box (with bar chart) -->
 
                         </section><!-- /.Left col -->
                         <!-- right col (We are only adding the ID to make the widgets sortable)-->
-                 
+
                     </div><!-- /.row (main row) -->
 
                 </section>
                                     </div><!-- /.tab-pane -->
-                                  
+
                                 </div><!-- /.tab-content -->
                             </div><!-- nav-tabs-custom -->
                         </div><!-- /.col -->
 
-                        
+
                             <div class="col-md-4">
                             <div class="box box-solid">
                                 <div class="box-header">
-                                
-                                
+
+
                                   <!-- <a class="btn btn-app" href=' <?php echo base_url('main')?>'>
                                         <i class="fa fa-home"></i> Home
                                     </a>-->
-                                    
+
                                      <a class="btn btn-app" data-toggle="modal" href="<?php echo base_url()?>main">
                                         <i class="fa fa-home"></i> Home
                                     </a>
@@ -371,22 +371,22 @@ foreach ($this->global_model->guest()->result() as $row)
 
                                 </div><!-- /.box-header -->
                                 <div class="box-body text-center">
-                                   
+
                                     <iframe width="360" scrolling="yes" frameBorder="0" height="415" src="<?php echo base_url()?>main/get_total/<?php echo $this->uri->segment(3)?>" allowfullscreen ></iframe>
                                     <!-- end -->
-                                    
+
                                    <!-- <a class="btn btn-app bg-red" href='<?//=base_url()?>main/cancel_order' onclick="javasciprt: return confirm('Are you Sure Cancel This Order ?')">
                                         <i class="fa fa-times"></i>Cancel Order</a>
                                     </a>-->
-                               
+
                                     <a class="btn btn-app bg-red" data-toggle="modal" href="#myModal">
                                         <i class="fa fa-times"></i>Cancel Order</a>
                                     </a>
-                                     
-                                    <a class="btn btn-app bg-yellow" onclick="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>')">
+
+                                    <a class="btn btn-app bg-yellow" data-toggle="modal" href="<?php echo base_url()?>print">
                                         <i class="fa fa-print"></i>Print Order</a>
                                     </a>
-                             
+
                                        <a class="btn btn-app bg-green">
                                         <i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i> Open Menu
                                       </a>
@@ -394,37 +394,49 @@ foreach ($this->global_model->guest()->result() as $row)
                                       <a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalnote">
                                         <i class="fa fa-edit"></i> Note
                                     </a>
-                                 
+
                                 </div><!-- /.box-body -->
                             </div><!-- /.box -->
                         </div><!-- /.col (left) -->
-                        
+
                     </div><!-- /.row -->
-                    
-               
-                        
- <script type="text/javascript">
-  
-   function print(order)
+
+
+<script type="text/javascript">
+function hello(order) {
+console.log(order)
+ <?php
+ 	$query = $this->db->query("select sum(a.qty) qty,sum(a.amount)amount,b.name,a.menu_class_id,is_void from pos_outlet_order_detil a left join inv_outlet_menus b on a.menu_id=b.id where order_no=".$this->global_model->get_no_bill($this->uri->segment(3))." and is_void=0");
+ 	foreach ($query->result() as $row) {echo $row;}
+ ?>
+}
+</script>
+ <script type="javascript">
+ console.log('lolololol')
+
+  function udin(order)
   {
+
       //alert('sss');
       //__action=print
-        PopupCenter(' <?php echo REPORT_BIRT?>struk_kitchen.rptdesign&__format=pdf&no_bill= <?php echo $this->session->userdata('no_bill')?>&table= <?php echo $this->session->userdata('table')?>&date= <?php echo date('Y-M-d')?>&outlet= <?php echo $this->session->userdata('outlet')?>&waitress= <?php echo $this->session->userdata('name')?>','xtf','600','600');
-        myWindow.document.close();
+        //PopupCenter('<?php echo REPORT_BIRT?>struk_kitchen.rptdesign&__format=pdf&no_bill=<?php echo $this->session->userdata('no_bill')?>&table=<?php echo $this->session->userdata('table')?>&date=<?php echo date('Y-M-d')?>&outlet=<?php echo $this->session->userdata('outlet')?>&waitress=<?php echo $this->session->userdata('name')?>','xtf','600','600');
+		<?php echo $this->session->userdata('table') ?>
+	//console.log('<?php $query = $this->db->query("select sum(a.qty) qty,sum(a.amount)amount,b.name,a.menu_class_id,is_void from pos_outlet_order_detil a left join inv_outlet_menus b on a.menu_id=b.id where order_no=\'"+order+"\' and is_void=0") ?>')
+		/*myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();*/
   }
-  
+
   function print_test()
   {
         PopupCenter('<?php echo base_url()?>main/print_kitchen','xtf','600','600');
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();
   }
-  
+
      function print_payment(order)
   {
 
@@ -433,14 +445,14 @@ foreach ($this->global_model->guest()->result() as $row)
         }
       );
 
-      PopupCenter(' <?php echo REPORT_BIRT?>struk_order.rptdesign&__format=pdf&no_bill=<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>&table=<?php echo $this->uri->segment(3)?>&date= <?php echo date('Y-M-d')?>&outlet= <?php echo $this->session->userdata('outlet')?>&waitress= <?php echo $this->session->userdata('name')?>','xtf','600','600');
+      PopupCenter(' <?php echo REPORT_BIRT?>struk_order.rptdesign&__format=pdf&no_bill=<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>&table=<?php echo $this->uri->segment(3)?>&date=<?php echo date('Y-M-d')?>&outlet=<?php echo $this->session->userdata('outlet')?>&waitress=<?php echo $this->session->userdata('name')?>','xtf','600','600');
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
-        myWindow.close(); 
+        myWindow.close();
   }
 
-  
+
   function PopupCenter(url, title, w, h) {
     var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
     var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
@@ -468,15 +480,14 @@ function load()
 {
     document.forms["myform"].submit();
    //var id=document.getElementById('select_menu').value;
-  // alert(id);   
+  // alert(id);
 }
 
 
 function menu_select()
 {
   document.forms["myform"].submit();
-  
+
 
 }
 </script>
-                        

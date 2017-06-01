@@ -24,7 +24,7 @@
   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
-  
+
   <link href="<?php echo VIRTUAL_KEYBOARD?>docs/css/jquery-ui.min.css" rel="stylesheet">
 	<!-- still using jQuery v2.2.4 because Bootstrap doesn't support v3+ -->
 	<script src="<?php echo VIRTUAL_KEYBOARD?>docs/js/jquery-latest.min.js"></script>
@@ -44,8 +44,8 @@
 	<link href="<?php echo VIRTUAL_KEYBOARD?>docs/css/prettify.css" rel="stylesheet">
 	<script src="<?php echo VIRTUAL_KEYBOARD?>docs/js/demo.js"></script>
 	<script src="<?php echo VIRTUAL_KEYBOARD?>docs/js/jquery.tipsy.min.js"></script>
-	
-      
+
+
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
@@ -55,32 +55,32 @@
   <!-- /.login-logo -->
   <div class="login-box-body">
       <p class="login-box-msg">Sign in to start your session<br/><?=$alert?></p>
-    
+
     <form action="<?=base_url('login/proses')?>" method="post">
-     
+
       <div class="form-group has-feedback">
         <input id="text" type="text" name="userid" class="form-control" placeholder="UserID" required>
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
-      
+
       <div class="form-group has-feedback">
         <input id="colemak" type="password" name="password" class="form-control" placeholder="Password" required>
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
-	  
+
 	   <div class="code ui-corner-all">
 			<pre class="prettyprint lang-js">
 				$('#text')
 					.keyboard({ layout: 'qwerty' })
 					.addTyping();</pre>
-					
+
 		<pre class="prettyprint lang-js">
 				$('#colemak')
 					.keyboard({ layout: 'qwerty' })
 					.addTyping();</pre>
 		</div>
-        
-      
+
+
       <div class="form-group has-feedback">
                                             <select class="form-control" name="outlet" id="outlet" required>
                                                 <option value="">- Outlet -</option>
@@ -96,10 +96,10 @@
                                         ?>
                                             </select>
       </div>
-      
+
       <div class="row">
         <div class="col-xs-8">
-    
+
         </div>
         <!-- /.col -->
         <div class="col-xs-4">
