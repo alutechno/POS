@@ -409,7 +409,9 @@
 				</a>
 
 				<a class="btn btn-app bg-yellow"
-				   onclick="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>')">
+				   e="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>')"
+				   href="<?php echo base_url(); ?>execute?data={aasd:1}"
+				>
 					<i class="fa fa-print"></i>Print Order</a>
 				</a>
 
@@ -426,9 +428,7 @@
 	</div><!-- /.col (left) -->
 
 </div><!-- /.row -->
-
 <script type="text/javascript">
-
 	function print(order) {
 		//alert('sss');
 		//__action=print
@@ -437,6 +437,9 @@
 		myWindow.focus();
 		myWindow.print();
 		myWindow.close();
+	}
+	function print(order) {
+
 	}
 
 	function print_test() {
