@@ -1,95 +1,87 @@
 <?php
 
-if (!defined('BASEPATH'))
-    exit('No direct script access allowed');
+if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-class Mst_kitchen_section_model extends CI_Model
-{
+class Mst_kitchen_section_model extends CI_Model {
 
-    public $table = 'mst_kitchen_section';
-    public $id = 'id';
-    public $order = 'DESC';
+	public $table = 'mst_kitchen_section';
+	public $id = 'id';
+	public $order = 'DESC';
 
-    function __construct()
-    {
-        parent::__construct();
-    }
+	function __construct() {
+		parent::__construct();
+	}
 
-    // datatables
-    function json() {
-        $this->datatables->select('id,kitchen_id,code,name,short_name,description,status,created_date,modified_date,created_by,modified_by');
-        $this->datatables->from('mst_kitchen_section');
-        //add this line for join
-        //$this->datatables->join('table2', 'mst_kitchen_section.field = table2.field');
-        $this->datatables->add_column('action', anchor(base_url('master/mst_kitchen_section/update/$1'),'Update')." | ".anchor(base_url('master/mst_kitchen_section/delete/$1'),'Delete','onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id');
-        return $this->datatables->generate();
-    }
+	// datatables
+	function json() {
+		$this->datatables->select('id,kitchen_id,code,name,short_name,description,status,created_date,modified_date,created_by,modified_by');
+		$this->datatables->from('mst_kitchen_section');
+		//add this line for join
+		//$this->datatables->join('table2', 'mst_kitchen_section.field = table2.field');
+		$this->datatables->add_column('action', anchor(base_url('master/mst_kitchen_section/update/$1'), 'Update') . " | " . anchor(base_url('master/mst_kitchen_section/delete/$1'), 'Delete', 'onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id');
+		return $this->datatables->generate();
+	}
 
-    // get all
-    function get_all()
-    {
-        $this->db->order_by($this->id, $this->order);
-        return $this->db->get($this->table)->result();
-    }
+	// get all
+	function get_all() {
+		$this->db->order_by($this->id, $this->order);
+		return $this->db->get($this->table)->result();
+	}
 
-    // get data by id
-    function get_by_id($id)
-    {
-        $this->db->where($this->id, $id);
-        return $this->db->get($this->table)->row();
-    }
-    
-    // get total rows
-    function total_rows($q = NULL) {
-        $this->db->like('id', $q);
-	$this->db->or_like('kitchen_id', $q);
-	$this->db->or_like('code', $q);
-	$this->db->or_like('name', $q);
-	$this->db->or_like('short_name', $q);
-	$this->db->or_like('description', $q);
-	$this->db->or_like('status', $q);
-	
-	$this->db->from($this->table);
-        return $this->db->count_all_results();
-    }
+	// get data by id
+	function get_by_id($id) {
+		$this->db->where($this->id, $id);
+		return $this->db->get($this->table)->row();
+	}
 
-    // get data with limit and search
-    function get_limit_data($limit, $start = 0, $q = NULL) {
-        $this->db->order_by($this->id, $this->order);
-        $this->db->like('id', $q);
-	$this->db->or_like('kitchen_id', $q);
-	$this->db->or_like('code', $q);
-	$this->db->or_like('name', $q);
-	$this->db->or_like('short_name', $q);
-	$this->db->or_like('description', $q);
-	$this->db->or_like('status', $q);
-	$this->db->or_like('created_date', $q);
-	$this->db->or_like('modified_date', $q);
-	$this->db->or_like('created_by', $q);
-	$this->db->or_like('modified_by', $q);
-	$this->db->limit($limit, $start);
-        return $this->db->get($this->table)->result();
-    }
+	// get total rows
+	function total_rows($q = NULL) {
+		$this->db->like('id', $q);
+		$this->db->or_like('kitchen_id', $q);
+		$this->db->or_like('code', $q);
+		$this->db->or_like('name', $q);
+		$this->db->or_like('short_name', $q);
+		$this->db->or_like('description', $q);
+		$this->db->or_like('status', $q);
 
-    // insert data
-    function insert($data)
-    {
-        $this->db->insert($this->table, $data);
-    }
+		$this->db->from($this->table);
+		return $this->db->count_all_results();
+	}
 
-    // update data
-    function update($id, $data)
-    {
-        $this->db->where($this->id, $id);
-        $this->db->update($this->table, $data);
-    }
+	// get data with limit and search
+	function get_limit_data($limit, $start = 0, $q = NULL) {
+		$this->db->order_by($this->id, $this->order);
+		$this->db->like('id', $q);
+		$this->db->or_like('kitchen_id', $q);
+		$this->db->or_like('code', $q);
+		$this->db->or_like('name', $q);
+		$this->db->or_like('short_name', $q);
+		$this->db->or_like('description', $q);
+		$this->db->or_like('status', $q);
+		$this->db->or_like('created_date', $q);
+		$this->db->or_like('modified_date', $q);
+		$this->db->or_like('created_by', $q);
+		$this->db->or_like('modified_by', $q);
+		$this->db->limit($limit, $start);
+		return $this->db->get($this->table)->result();
+	}
 
-    // delete data
-    function delete($id)
-    {
-        $this->db->where($this->id, $id);
-        $this->db->delete($this->table);
-    }
+	// insert data
+	function insert($data) {
+		$this->db->insert($this->table, $data);
+	}
+
+	// update data
+	function update($id, $data) {
+		$this->db->where($this->id, $id);
+		$this->db->update($this->table, $data);
+	}
+
+	// delete data
+	function delete($id) {
+		$this->db->where($this->id, $id);
+		$this->db->delete($this->table);
+	}
 
 }
 
