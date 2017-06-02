@@ -1,9 +1,75 @@
+<div class="modal modal-sm fade" id="myModalCash" tabindex="-1" role="dialog"
+	 aria-labelledby="myModalCash-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalCash-label">Cash Payment</h4>
+			</div>
+			<form class="modal-body">
+				<?php
+				$outletId = $this->session->userdata('outlet');
+				$orderCode = $this->session->order_no;
+				$s = "select 
+							sum(amount + tax + service) total, 
+							sum(amount) amount, 
+							sum(tax) tax, 
+							sum(service) service,
+							sum(tax)/sum(amount)*100 tax_p,
+							sum(service)/sum(amount)*100 service_p
+						from pos_outlet_order_detil
+						where order_no = '$orderCode' and is_void = 0;";
+				$q = $this->db->query($s);
+				$rows = $q->result();
 
-<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
-<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
-<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
-<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
-<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
+				function html($label, $val) {
+					if (!($val > 0)) $val = 0;
+					return '
+						<div class="row">
+							<div class="col-lg-6">
+								<label>' . $label . '</label>
+							</div>
+							<div class="col-lg-6 text-right">
+								<label>' . rupiah($val, 2) . '</label>
+							</div>
+						</div>';
+				}
+
+				echo html('Total', $rows[0]->total);
+				echo html('Tax : ' . rupiah($rows[0]->tax_p, 2) . '%', $rows[0]->tax);
+				echo html('Service : ' . rupiah($rows[0]->service_p, 2) . '%', $rows[0]->service);
+				echo html('Grand Total', $rows[0]->total);
+				?>
+				<hr/>
+				<form id="subscribe-email-form" action="#" method="post">
+					<div class="row">
+						<div class="col-lg-6">
+							<label for="usr">Cash with</label>
+						</div>
+						<div class="col-lg-6 text-right">
+							<input type="text" class="form-control" id="card_no"
+								   name="card_no">
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-6">
+							<label for="usr">Change</label>
+						</div>
+						<div class="col-lg-6 text-right">
+							<label for="usr"></label>
+						</div>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary"
+							onclick="print_payment('<?php echo $this->session->order_no; ?>')">Submit
+					</button>
+				</div>
+		</div>
+	</div>
+</div>
 <div class="modal fade" id="myModalcard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -383,9 +449,9 @@
 							<i class="fa fa-home"></i>
 							Home
 						</a>
-						<a class="btn btn-app pull-right" style="margin-right: 20px">
-							<i class="fa fa-money"
-							   onclick="print_payment('<?php echo $this->session->order_no; ?>')"></i>
+						<a class="btn btn-app pull-right" style="margin-right: 20px"
+						   data-toggle="modal" href="#myModalCash">
+							<i class="fa fa-money"></i>
 							Cash
 						</a>
 					</div>
@@ -458,7 +524,6 @@
 
 </div><!-- /.row -->
 <script type="text/javascript">
-	$('.vk-qwerty').keyboard({ layout: 'qwerty' });
 	function print(order) {
 		//alert('sss');
 		//__action=print
@@ -522,4 +587,7 @@
 		document.forms["myform"].submit();
 
 	}
+	$(document).ready(function () {
+		$('.vk-qwerty').keyboard({ layout: 'qwerty' }).addTyping();
+	})
 </script>
