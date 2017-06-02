@@ -1,4 +1,9 @@
 <!-- Modal -->
+<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 <div class="modal fade" id="myModalcard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -15,12 +20,13 @@
 							<label>Payment Method</label>
 							<select class="form-control">
 								<?php
-								$query = $this->db->query("select * from ref_payment_method");
+								$query = $this->db->query("select id, code, name, description from ref_payment_method where category = 'CC' and status = '1'");
 
 								foreach ($query->result() as $row) {
 									?>
-									<option value="<?= $row->code ?>"><?= $row->name ?>
-										-<?= $row->description ?></option>
+									<option value="<?php echo $row->id ?>">
+										<?php echo $row->code . ' - ' . $row->name ?>
+									</option>
 									<?php
 								}
 								?>
@@ -28,7 +34,8 @@
 						</div>
 						<div class="form-group">
 							<label for="usr">Card Number:</label>
-							<input type="text" class="form-control" id="card_no" name="card_no">
+							<input type="text" class="vk-qwerty form-control" id="card_no"
+								   name="card_no">
 						</div>
 
 					</div>
@@ -241,7 +248,6 @@
 
 			<?php
 			date_default_timezone_set('Asia/Jakarta');
-
 			?>
 			<div class="tab-content">
 				<div class="tab-pane active" id="tab_1">
@@ -267,13 +273,14 @@
 					<form action=" <?php echo base_url() ?>main/reload_pesan" name="myform"
 						  id="myform" method="post">
 						<section class="content">
-							<!--<div class="input-group input-group-sm">
-                                          <input type="text" name="cari" id="cari" class="form-control" placeholder="Search menu">
-                                                          <span class="input-group-btn">
-                                                              <button class="btn btn-info btn-flat" type="button">Go!</button>
-                                                          </span>
-                            </div>-->
-
+							<!--
+							<div class="input-group input-group-sm">
+								<input type="text" name="cari" id="cari" class="form-control" placeholder="Search menu">
+								<span class="input-group-btn">
+									<button class="btn btn-info btn-flat" type="button">Go!</button>
+								</span>
+                            </div>
+                            -->
 							<div class="form-group row">
 								<div class="col-xs-3">
 									<!-- <label for="ex2">Menu Class</label>-->
@@ -369,66 +376,90 @@
 
 	<div class="col-md-4">
 		<div class="box box-solid">
-			<div class="box-header">
-
-				<!-- <a class="btn btn-app" href=' <?php echo base_url('main') ?>'>
-                                        <i class="fa fa-home"></i> Home
-                                    </a>-->
-
-				<a class="btn btn-app" data-toggle="modal" href="<?php echo base_url() ?>main">
-					<i class="fa fa-home"></i> Home
-				</a>
-
-				<a class="btn btn-app" data-toggle="modal" href="#myModalroom">
-					<i class="fa fa-edit"></i> Room
-				</a>
-
-				<a class="btn btn-app" data-toggle="modal" href="#myModalcard">
-					<i class="fa fa-credit-card"></i> Card
-				</a>
-
-				<a class="btn btn-app ">
-					<i class="fa fa-money"
-					   onclick="print_payment('<?php echo $this->session->order_no; ?>')"></i> Cash
-				</a>
-
-			</div><!-- /.box-header -->
-			<div class="box-body text-center">
-
-				<iframe width="360" scrolling="yes" frameBorder="0" height="415"
-						src="<?php echo base_url() ?>main/get_total/<?php echo $this->uri->segment(3) ?>"
-						allowfullscreen></iframe>
-				<!-- end -->
-
-				<!-- <a class="btn btn-app bg-red" href='<? //=base_url()?>main/cancel_order' onclick="javasciprt: return confirm('Are you Sure Cancel This Order ?')">
-                                        <i class="fa fa-times"></i>Cancel Order</a>
-                                    </a>-->
-
-				<a class="btn btn-app bg-red" data-toggle="modal" href="#myModal">
-					<i class="fa fa-times"></i>Cancel Order</a>
-				</a>
-
-				<a class="btn btn-app bg-yellow"
-				   e="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3))?>')"
-				   href="<?php echo base_url(); ?>execute?data={aasd:1}"
-				>
-					<i class="fa fa-print"></i>Print Order</a>
-				</a>
-
-				<a class="btn btn-app bg-green">
-					<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i> Open Menu
-				</a>
-
-				<a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalnote">
-					<i class="fa fa-edit"></i> Note
-				</a>
-
-			</div><!-- /.box-body -->
+			<div class="box-body">
+				<div class="row">
+					<div class="col-lg-12">
+						<a class="btn btn-app" data-toggle="modal" href="<?php echo base_url() ?>main">
+							<i class="fa fa-home"></i>
+							Home
+						</a>
+						<a class="btn btn-app pull-right" style="margin-right: 20px">
+							<i class="fa fa-money"
+							   onclick="print_payment('<?php echo $this->session->order_no; ?>')"></i>
+							Cash
+						</a>
+					</div>
+					<div class="col-lg-12">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalroom">
+							<i class="fa fa-edit"></i>
+							Charge room
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="#myModalcard">
+							<i class="fa fa-credit-card"></i>
+							Card
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="<?php echo base_url() ?>main">
+							<i class="fa fa-code"></i>
+							Voucher
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="<?php echo base_url() ?>main">
+							<i class="fa fa-building-o"></i>
+							City Ledger
+						</a>
+					</div>
+					<hr>
+					<div class="col-lg-12">
+						<a class="btn btn-app" data-toggle="modal" href="">
+							<i class="fa fa-arrow-down" aria-hidden="true"></i>
+							Join
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="">
+							<i class="fa fa-arrows-alt"></i>
+							Split
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="#myModalcard">
+							<i class="fa fa-times-circle"></i>
+							No Post
+						</a>
+						<a class="btn btn-app btn-warning" data-toggle="modal" href="#myModalroom">
+							<i class="fa fa-th-large"></i>
+							Cash draw
+						</a>
+					</div>
+					<div class="col-lg-12 text-center" style="margin-left: -5px;">
+						<iframe width="100%" scrolling="yes" frameBorder="0" height="375"
+								src="<?php echo base_url() ?>main/get_total/<?php echo $this->uri->segment(3) ?>"
+								allowfullscreen></iframe>
+					</div>
+					<div class="col-lg-12">
+						<a class="btn btn-app bg-red" data-toggle="modal" href="#myModal">
+							<i class="fa fa-times"></i>
+							Void Menu
+						</a>
+						<a class="btn btn-app bg-yellow"
+						   e="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>')"
+						   href="<?php echo base_url(); ?>execute?data={aasd:1}">
+							<i class="fa fa-print"></i>
+							Print Order
+						</a>
+						<a class="btn btn-app bg-green">
+							<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
+							Open Menu
+						</a>
+						<a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalnote">
+							<i class="fa fa-edit"></i>
+							Note
+						</a>
+					</div>
+				</div>
+			</div>
 		</div><!-- /.box -->
 	</div><!-- /.col (left) -->
 
 </div><!-- /.row -->
 <script type="text/javascript">
+	$('.vk-qwerty').keyboard({ layout: 'qwerty' })
+	.addTyping();
 	function print(order) {
 		//alert('sss');
 		//__action=print
@@ -437,9 +468,6 @@
 		myWindow.focus();
 		myWindow.print();
 		myWindow.close();
-	}
-	function print(order) {
-
 	}
 
 	function print_test() {
