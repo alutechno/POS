@@ -1,4 +1,3 @@
-
 <form action="<?php echo $action; ?>" method="post">
 	<div class="form-group">
 		<label for="varchar">Code <?php echo form_error('code') ?></label>
@@ -13,7 +12,7 @@
 	<div class="form-group">
 		<label for="varchar">Short Name <?php echo form_error('short_name') ?></label>
 		<input type="text" class="form-control" name="short_name" id="short_name"
-			    value="<?php echo $short_name; ?>"/>
+			   value="<?php echo $short_name; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Description <?php echo form_error('description') ?></label>
@@ -38,7 +37,7 @@
 	<div class="form-group">
 		<label for="varchar">Is Phone Number <?php echo form_error('is_phone_number') ?></label>
 		<input type="text" class="form-control" name="is_phone_number" id="is_phone_number"
-			    value="<?php echo $is_phone_number; ?>"/>
+			   value="<?php echo $is_phone_number; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Is Waiter <?php echo form_error('is_waiter') ?></label>
@@ -55,7 +54,7 @@
 	<div class="form-group">
 		<label for="varchar">Is Guest Profile <?php echo form_error('is_guest_profile') ?></label>
 		<input type="text" class="form-control" name="is_guest_profile" id="is_guest_profile"
-			    value="<?php echo $is_guest_profile; ?>"/>
+			   value="<?php echo $is_guest_profile; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Is Reservation <?php echo form_error('is_reservation') ?></label>

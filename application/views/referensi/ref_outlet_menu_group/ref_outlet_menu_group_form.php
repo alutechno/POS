@@ -1,4 +1,3 @@
-
 <form action="<?php echo $action; ?>" method="post">
 	<div class="form-group">
 		<label for="varchar">Code <?php echo form_error('code') ?></label>
@@ -29,14 +28,13 @@
 		<label for="varchar">Status <?php echo form_error('status') ?></label>
 		<select class="form-control" name="status" id="status">
 			<?
-			$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_menu_group' and column_name = 'status' and value<>2");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_menu_group' and column_name = 'status' and value<>2");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
+					<?
+				}
 			?>
 
 		</select>

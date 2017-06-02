@@ -25,14 +25,13 @@
 		<label for="varchar">Status <?php echo form_error('status') ?></label>
 		<select class="form-control" name="status" id="status">
 			<?
-			$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_type' and column_name = 'status' and value<>2");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_type' and column_name = 'status' and value<>2");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
+					<?
+				}
 			?>
 
 		</select>
@@ -43,5 +42,5 @@
 	<a href="<?php echo base_url('referensi/ref_outlet_type') ?>" class="btn btn-default">Cancel</a>
 </form>
 <script type="text/javascript">
-$('input[type="text"]').keyboard({ layout: 'qwerty' });
+	$('input[type="text"]').keyboard({layout: 'qwerty'});
 </script>

@@ -4,12 +4,12 @@
 		<label for="int">Kitchen Id <?php echo form_error('kitchen_id') ?></label>
 		<select class="form-control" name="kitchen_id" id="kitchen_id">
 			<?
-			$query = $this->db->query("select * from mst_kitchen");
-			foreach ($query->result() as $row) {
-				?>
-				<option value='<?= $row->id ?>'><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from mst_kitchen");
+				foreach ($query->result() as $row) {
+					?>
+					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<?
+				}
 			?>
 		</select>
 	</div>

@@ -27,7 +27,7 @@
 	<div class="form-group">
 		<label for="varchar">Is Credit Card <?php echo form_error('is_credit_card') ?></label>
 		<input type="text" class="form-control" name="is_credit_card" id="is_credit_card"
-			    value="<?php echo $is_credit_card; ?>"/>
+			   value="<?php echo $is_credit_card; ?>"/>
 	</div>
 
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>

@@ -6,13 +6,13 @@
 
 			<select class="form-control" name="store_id" id="store_id">
 				<?
-				$query = $this->db->query("select * from mst_outlet");
-				foreach ($query->result() as $row) {
-					?>
-					<option
-						value='<?= $row->id ?>' <? echo $row->id == $store_id ? 'selected' : ''; ?>><?= $row->name ?></option>
-					<?
-				}
+					$query = $this->db->query("select * from mst_outlet");
+					foreach ($query->result() as $row) {
+						?>
+						<option
+							value='<?= $row->id ?>' <? echo $row->id == $store_id ? 'selected' : ''; ?>><?= $row->name ?></option>
+						<?
+					}
 				?>
 			</select>
 		</div>

@@ -88,13 +88,12 @@
 				<select class="form-control" name="outlet" id="outlet" required>
 					<option value="">- Outlet -</option>
 					<?php
-					$query = $this->db->query("select * from mst_outlet where outlet_type_id=1 or outlet_type_id=2");
-
-					foreach ($query->result() as $row) {
-						?>
-						<option value="<?= $row->id ?>"><?= $row->name ?></option>
-						<?php
-					}
+						$query = $this->db->query("select * from mst_outlet where outlet_type_id=1 or outlet_type_id=2");
+						foreach ($query->result() as $row) {
+							?>
+							<option value="<?= $row->id ?>"><?= $row->name ?></option>
+							<?php
+						}
 					?>
 				</select>
 			</div>

@@ -1,6 +1,7 @@
 <div class="row" style="margin-bottom: 10px">
 	<div class="col-md-4">
-		<?php echo anchor(base_url('setting/mst_outlet/create'), 'Create', 'class="btn btn-primary"'); ?>
+		<?php echo anchor(base_url('setting/mst_outlet/create'), 'Create',
+						  'class="btn btn-primary"'); ?>
 	</div>
 	<div class="col-md-4 text-center">
 		<div style="margin-top: 4px" id="message">

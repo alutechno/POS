@@ -1,5 +1,5 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-global $template;
+	global $template;
 ?>
 
 <!DOCTYPE html>
@@ -72,9 +72,9 @@ global $template;
 <script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
 <script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 <script type="text/javascript">
-$('input[type="text"]').keyboard({ layout: 'qwerty' });
-$('input[type="number"]').keyboard({ layout: 'num' });
-$('input[type="search"]').keyboard({ layout: 'qwerty' });
+	$('input[type="text"]').keyboard({layout: 'qwerty'});
+	$('input[type="number"]').keyboard({layout: 'num'});
+	$('input[type="search"]').keyboard({layout: 'qwerty'});
 </script>
 
 <script src=" <?php echo base_url() ?>assets/js/jquery.min.js"></script>

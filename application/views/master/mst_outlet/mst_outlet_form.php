@@ -29,13 +29,12 @@
 		<label for="int">Outlet Type Id <?php echo form_error('outlet_type_id') ?></label>
 		<select class="form-control" name="outlet_type_id" id="outlet_type_id">
 			<?php
-			$query = $this->db->query("select * from ref_outlet_type where status=1 ");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option value='<?= $row->id ?>'><?= $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from ref_outlet_type where status=1 ");
+				foreach ($query->result() as $row) {
+					?>
+					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<?php
+				}
 			?>
 		</select>
 	</div>
@@ -44,13 +43,12 @@
 		<label for="int">Cost Center Id <?php echo form_error('cost_center_id') ?></label>
 		<select class="form-control" name="cost_center_id" id="cost_center_id">
 			<?
-			$query = $this->db->query("select * from ref_cost_center_type where `status`=1 ");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option value='<?= $row->id ?>'><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from ref_cost_center_type where `status`=1 ");
+				foreach ($query->result() as $row) {
+					?>
+					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<?
+				}
 			?>
 		</select>
 	</div>

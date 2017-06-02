@@ -1,5 +1,5 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-global $template;
+	global $template;
 ?>
 <!DOCTYPE html>
 <html>
@@ -97,9 +97,9 @@ global $template;
 			"bInfo": true,
 			"bAutoWidth": false
 		});
-		$('input[type="text"]').keyboard({ layout: 'qwerty' });
-		$('input[type="number"]').keyboard({ layout: 'num' });
-		$('input[type="search"]').keyboard({ layout: 'qwerty' });
+		$('input[type="text"]').keyboard({layout: 'qwerty'});
+		$('input[type="number"]').keyboard({layout: 'num'});
+		$('input[type="search"]').keyboard({layout: 'qwerty'});
 	});
 
 </script>

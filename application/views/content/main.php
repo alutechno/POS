@@ -55,39 +55,38 @@
 	<!-- Small boxes (Stat box) -->
 	<div class="row">
 		<?php
+			$query = $this->db->query("select a.*, (case when b.guest<>'' then b.guest else 0 end) as guest, b.order_no  from mst_pos_tables a  left join pos_outlet_order_header b on a.table_no=b.table_no where a.outlet_id=" . $this->session->userdata('outlet') . " order by a.id");
+			//echo $this->db->last_query();exit;
+			foreach ($query->result() as $row) {
+				?>
+				<div class="col-lg-3 col-xs-6">
+					<!-- small box -->
 
-		$query = $this->db->query("select a.*, (case when b.guest<>'' then b.guest else 0 end) as guest, b.order_no  from mst_pos_tables a  left join pos_outlet_order_header b on a.table_no=b.table_no where a.outlet_id=" . $this->session->userdata('outlet') . " order by a.id");
-		//echo $this->db->last_query();exit;
-		foreach ($query->result() as $row) {
+					<?php
+						//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
+						if ($row->order_no == "") {
+							?>
 
-			?>
-			<div class="col-lg-3 col-xs-6">
-				<!-- small box -->
+							<a data-toggle="modal" href="#"
+							   onclick="load_guest(<?= $row->table_no ?>,<?= $row->guest ?>)"> <img
+									src="<?= base_url() ?>menu/table_avai.jpeg" width="100"
+									height="100">
+								<?php echo $row->table_no ?></a>
+
+							<?php
+						} else {
+							?>
+							<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>"> <img
+									src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
+								<?php echo $row->table_no ?></a>
+							<?php
+						}
+					?>
+
+				</div><!-- ./col -->
 
 				<?php
-				//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
-				if ($row->order_no == "") {
-					?>
-
-					<a data-toggle="modal" href="#"
-					   onclick="load_guest(<?= $row->table_no ?>,<?= $row->guest ?>)"> <img
-							src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
-						<?php echo $row->table_no ?></a>
-
-					<?php
-				} else {
-					?>
-					<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>"> <img
-							src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
-						<?php echo $row->table_no ?></a>
-					<?php
-				}
-				?>
-
-			</div><!-- ./col -->
-
-			<?php
-		}
+			}
 		?>
 
 	</div><!-- /.row -->

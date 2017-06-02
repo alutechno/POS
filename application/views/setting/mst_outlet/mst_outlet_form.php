@@ -20,16 +20,16 @@
 
 		<select class="form-control" name="status" id="status">
 			<?php
-			$query = $this->db->query("select *
+				$query = $this->db->query("select *
                                     from table_ref
                                   where table_name = 'mst_outlet'
                                   and column_name = 'status'");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->value ?>' <?php echo $row->value == $status ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
-				<?php
-			}
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->value ?>' <?php echo $row->value == $status ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
+					<?php
+				}
 			?>
 		</select>
 
@@ -37,15 +37,15 @@
 
 		<select class="form-control" name="outlet_type_id" id="outlet_type_id">
 			<?php
-			$query = $this->db->query("select *
+				$query = $this->db->query("select *
                                     from ref_outlet_type
                                   ");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $outlet_type_id ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
-				<?php
-			}
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $outlet_type_id ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
+					<?php
+				}
 			?>
 		</select>
 
@@ -53,13 +53,13 @@
 
 		<select class="form-control" name="cost_center_id" id="cost_center_id">
 			<?php
-			$query = $this->db->query("select * from mst_cost_center");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $cost_center_id ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_cost_center");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $cost_center_id ? 'selected' : ''; ?>><?php echo $row->name ?> </option>
+					<?php
+				}
 			?>
 		</select>
 
@@ -102,14 +102,14 @@
 
 		<select class="form-control" name="fo_gl_journal_code" id="fo_gl_journal_code">
 			<?php
-			$query = $this->db->query("select * from mst_guest_transaction_type");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $fo_gl_journal_code ? 'selected' : ''; ?>><?php echo $row->code ?>
-					-<?php echo $row->folio_text ?> </option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_guest_transaction_type");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $fo_gl_journal_code ? 'selected' : ''; ?>><?php echo $row->code ?>
+						-<?php echo $row->folio_text ?> </option>
+					<?php
+				}
 			?>
 		</select>
 
