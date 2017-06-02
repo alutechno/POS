@@ -5,14 +5,20 @@
  * Date: 6/1/17
  * Time: 10:59 PM
  */
-echo json_encode($_GET['data']);
+echo json_encode($_GET['base']);
+$base=$_GET['base'];
+echo $_SERVER['REQUEST_URI'];
 $message=shell_exec("ls");
 $query = $this->db->query("select * from ref_outlet_menu_class");
 foreach ($query->result() as $row) {
-	?>
-	<div value="apaan-<?php echo $row->id ?>" <?php echo $row->id == $this->uri->segment(4) ? 'selected' : ''; ?>><?php echo $row->name ?></div>
-	<?php
+	echo json_encode($row);
 }
 echo $message;
-//echo json_encode($query);
+
+//header('Location: '.$base);
+
+echo '<script language="javascript">';
+echo 'alert("order successfully print");';
+echo 'location.href = '.json_encode($_GET['base']);
+echo '</script>';
 ?>

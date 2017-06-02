@@ -196,7 +196,7 @@
 					$tax = 0;
 					$amount = 0;
 					$service = 0;
-					$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil 
+					$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil
                                         where is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . " group by menu_id ");
 					$i = 1;
 					foreach ($query->result() as $row) {
@@ -438,7 +438,7 @@
 						</a>
 						<a class="btn btn-app bg-yellow"
 						   e="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>')"
-						   href="<?php echo base_url(); ?>execute?data={aasd:1}">
+						   href="<?php echo base_url() ."execute?data=".$this->global_model->get_no_bill($this->uri->segment(3))."&base=".$_SERVER['REQUEST_URI']?>"
 							<i class="fa fa-print"></i>
 							Print Order
 						</a>
