@@ -63,51 +63,39 @@
 			pesan('orders/pesan', $data);
 		}
 		function inputpesan() {
-			//echo $this->uri->segment(6);exit;
-			//echo $this->session->userdata('order_no');exit;
-			//$this->global_model->get_no_bill($this->uri->segment(3))
-			$data = array('menu_id' => $this->uri->segment(3),
-				'amount' => $this->uri->segment(4), 'qty' => 1,
-				'tax' => ($this->uri->segment(4)) * (11 / 100),
-				'service' => ($this->uri->segment(4)) * (10 / 100),
-				'order_no' => $this->session->userdata('order_no'),
-				'menu_class_id' => $this->uri->segment(5),
-				'table_id' => $this->uri->segment(6),
-				'outlet_id' => $this->session->userdata('outlet'));
 			$menuId = $this->uri->segment(3);
 			$outletId = $this->session->userdata('outlet');
 			$price = $this->uri->segment(4);
 			$taxVal = 0;
 			$serviceVal = 0;
 			$isTaxes = $this->compile("
-			select is_tax_included e from inv_outlet_menus where id = $menuId
-		");
-			if ($isTaxes[0]->e == 'Y') {
+				select is_tax_included e from inv_outlet_menus where id = $menuId
+			");
+			if ($isTaxes[0]->e == 'N') {
 				$rows = $this->compile('
-				select 
-					a.outlet_id, 
-					max(case when b.code = \'SC\' then tax_percent end) service_charge, 
-					max(case when b.code = \'TX\' then tax_percent end) tax
-				from pos_outlet_tax a
-				left join mst_pos_taxes b on b.id = a.pos_tax_id
-				where outlet_id = ' . $outletId . '
-				group by a.outlet_id
-			');
+					select 
+						a.outlet_id, 
+						max(case when b.code = \'SC\' then tax_percent end) service_charge, 
+						max(case when b.code = \'TX\' then tax_percent end) tax
+					from pos_outlet_tax a
+					left join mst_pos_taxes b on b.id = a.pos_tax_id
+					where outlet_id = ' . $outletId . '
+					group by a.outlet_id
+				');
 				$taxVal += $price * ($rows[0]->tax) / 100;
 				$serviceVal += $price * ($rows[0]->service_charge) / 100;
 				$adTaxes = $this->compile("
-				select a.outlet_menu_id, b.name, b.tax_percent 
-				from pos_menus_tax a
-				left join mst_pos_taxes b on b.id = a.pos_tax_id
-				where outlet_menu_id = $menuId
-			");
+					select a.outlet_menu_id, b.name, b.tax_percent 
+					from pos_menus_tax a
+					left join mst_pos_taxes b on b.id = a.pos_tax_id
+					where outlet_menu_id = $menuId
+				");
 				foreach ($adTaxes as $adTax) {
 					if ($adTax->tax_percent > 0) {
 						$taxVal += $price * ($adTax->tax_percent) / 100;
 					}
 				}
 			}
-			//
 			//select * where is_tax_included = 'N'
 			$data = array(
 				'menu_id' => $this->uri->segment(3),

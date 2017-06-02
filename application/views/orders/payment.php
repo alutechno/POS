@@ -446,7 +446,7 @@
 							<i class="fa fa-home"></i>
 							Home
 						</a>
-						<a class="btn btn-app pull-right" style="margin-right: 20px"
+						<a class="btn btn-app"
 						   data-toggle="modal" href="#myModalCash">
 							<i class="fa fa-money"></i>
 							Cash
