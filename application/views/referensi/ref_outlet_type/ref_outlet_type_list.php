@@ -1,3 +1,4 @@
+
 <div class="row" style="margin-bottom: 10px">
 	<div class="col-md-4">
 
@@ -28,6 +29,7 @@
 <script src="<?php echo base_url('assets/js/jquery-1.11.2.min.js') ?>"></script>
 <script src="<?php echo base_url('assets/datatables/jquery.dataTables.js') ?>"></script>
 <script src="<?php echo base_url('assets/datatables/dataTables.bootstrap.js') ?>"></script>
+
 <script type="text/javascript">
 	$(document).ready(function () {
 		$.fn.dataTableExt.oApi.fnPagingInfo = function (oSettings) {
@@ -44,7 +46,9 @@
 
 		var t = $("#mytable").dataTable({
 			initComplete: function () {
+				console.log("udin")
 				var api = this.api();
+				$('input[type="search"]').keyboard({ layout: 'qwerty' });
 				$('#mytable_filter input')
 				.off('.DT')
 				.on('keyup.DT', function (e) {

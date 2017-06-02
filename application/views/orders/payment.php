@@ -1,4 +1,4 @@
-<!-- Modal -->
+
 <link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
 <link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
 <script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
@@ -458,8 +458,7 @@
 
 </div><!-- /.row -->
 <script type="text/javascript">
-	$('.vk-qwerty').keyboard({ layout: 'qwerty' })
-	.addTyping();
+	$('.vk-qwerty').keyboard({ layout: 'qwerty' });
 	function print(order) {
 		//alert('sss');
 		//__action=print

@@ -1,23 +1,24 @@
+
 <form action="<?php echo $action; ?>" method="post">
 	<div class="form-group">
 		<label for="varchar">Code <?php echo form_error('code') ?></label>
-		<input type="text" class="form-control" name="code" id="code" placeholder="Code"
+		<input type="text" class="form-control" name="code" id="code"
 			   value="<?php echo $code; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Name <?php echo form_error('name') ?></label>
-		<input type="text" class="form-control" name="name" id="name" placeholder="Name"
+		<input type="text" class="form-control" name="name" id="name"
 			   value="<?php echo $name; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Short Name <?php echo form_error('short_name') ?></label>
 		<input type="text" class="form-control" name="short_name" id="short_name"
-			   placeholder="Short Name" value="<?php echo $short_name; ?>"/>
+			    value="<?php echo $short_name; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Description <?php echo form_error('description') ?></label>
 		<input type="text" class="form-control" name="description" id="description"
-			   placeholder="Description" value="<?php echo $description; ?>"/>
+			   value="<?php echo $description; ?>"/>
 	</div>
 	<!--<div class="form-group">
             <label for="varchar">Status <?php // echo form_error('status') ?></label>
@@ -44,7 +45,7 @@
 	<div class="form-group">
 		<label for="int">Parent Class Id <?php echo form_error('parent_class_id') ?></label>
 		<input type="text" class="form-control" name="parent_class_id" id="parent_class_id"
-			   placeholder="Parent Class Id" value="<?php echo $parent_class_id; ?>"/>
+			   value="<?php echo $parent_class_id; ?>"/>
 	</div>
 
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>

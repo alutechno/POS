@@ -69,6 +69,10 @@ global $template;
 		</section><!-- /.content -->
 	</aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
+<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 
 <!-- jQuery 2.0.2 -->
 <!-- Bootstrap -->
@@ -93,7 +97,11 @@ global $template;
 			"bInfo": true,
 			"bAutoWidth": false
 		});
+		$('input[type="text"]').keyboard({ layout: 'qwerty' });
+		$('input[type="number"]').keyboard({ layout: 'num' });
+		$('input[type="search"]').keyboard({ layout: 'qwerty' });
 	});
+
 </script>
 
 </body>

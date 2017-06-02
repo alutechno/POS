@@ -1,12 +1,13 @@
+
 <form action="<?php echo $action; ?>" method="post">
 	<div class="form-group">
 		<label for="varchar">Code <?php echo form_error('code') ?></label>
-		<input type="text" class="form-control" name="code" id="code" placeholder="Code"
+		<input type="text" class="form-control" name="code" id="code"
 			   value="<?php echo $code; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Name <?php echo form_error('name') ?></label>
-		<input type="text" class="form-control" name="name" id="name" placeholder="Name"
+		<input type="text" class="form-control" name="name" id="name"
 			   value="<?php echo $name; ?>"/>
 	</div>
 	<div class="form-group">
