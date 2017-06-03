@@ -8,6 +8,7 @@
 	<title><?= APP_TITLE ?></title>
 	<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
 		  name='viewport'>
+
 	<!-- bootstrap 3.0.2 -->
 	<link href="<?= MY_ASSETS ?>css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
 	<!-- font Awesome -->
@@ -26,6 +27,11 @@
 
 </head>
 <body class="skin-black">
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
+	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
+	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 
 <?php $this->load->view($view); ?>
 
@@ -34,6 +40,8 @@
 <!-- Bootstrap -->
 <script src="<?= MY_ASSETS ?>js/bootstrap.min.js" type="text/javascript"></script>
 <!-- AdminLTE App -->
-
+<script type="text/javascript">
+  $('input[type="text"]').keyboard({layout: 'qwerty'});
+</script>
 </body>
 </html>

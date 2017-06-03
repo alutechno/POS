@@ -11,10 +11,10 @@
 				<?php
 					$outletId = $this->session->userdata('outlet');
 					$orderCode = $this->session->order_no;
-					$s = "select 
-							sum(amount + tax + service) total, 
-							sum(amount) amount, 
-							sum(tax) tax, 
+					$s = "select
+							sum(amount + tax + service) total,
+							sum(amount) amount,
+							sum(tax) tax,
 							sum(service) service,
 							sum(tax)/sum(amount)*100 tax_p,
 							sum(service)/sum(amount)*100 service_p
@@ -588,7 +588,7 @@
 </div><!-- /.row -->
 
 <script type="text/javascript">
-
+	$('input[type="text"]').keyboard({layout: 'qwerty'});
 	function print(order) {
 		//alert('sss');
 		//__action=print
