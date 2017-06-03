@@ -120,10 +120,20 @@
 				"created_by" => $user_id,
                 "created_date" => date('Y-m-d H:i:s')
             );
+
 			// updating phase #1
 			$this->db->set('tax_amount', 'tax_amount+('. $price .'*tax_percent/100)', FALSE);
 			$this->db->where('order_id', $orderId);
 			$this->db->update('pos_order_taxes');
+
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$orderId);
+			$sum = $sum[0]->tax;
+			// updating phase #2
+			$this->db->set('sub_total_amount', 'sub_total_amount+'. $price, FALSE);
+			$this->db->set('tax_total_amount', $sum, FALSE);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->where('id', $orderId);
+			$this->db->update('pos_orders');
 
 			// real inserting
 			$this->db->insert('pos_orders_line_item', $data);
@@ -223,8 +233,13 @@
 				'outlet_id' => $outlet_id,
 				'table_id' => $table_id,
 				'num_of_cover' => $num_of_cover,
+				'sub_total_amount' => 0,
+				'discount_total_amount' => 0,
+				'tax_total_amount' => 0,
+				'payment_amount' => 0,
+				'due_amount' => 0,
 				'segment_id' => 1,
-				'status' => 1,
+				'status' => 0,
 				'waiter_user_id' => $user_id,
 				'created_by' => $user_id,
 				'created_date' => date('Y-m-d H:i:s')
@@ -246,7 +261,7 @@
 					'created_date' => date('Y-m-d H:i:s')
 				));
 			}
-			redirect(base_url('main/payment/' . $table_id));
+			redirect(base_url('main/payment/' . $parentId));
 		}
 		function save_note() {
 			//$bill=$this->session->userdata('no_bill');

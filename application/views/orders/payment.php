@@ -10,37 +10,40 @@
 			<form class="modal-body">
 				<?php
 					$outletId = $this->session->userdata('outlet');
+					$orderId = $this->uri->segment(3);
 					$orderCode = $this->session->order_no;
-					$s = "select
-							sum(amount + tax + service) total,
-							sum(amount) amount,
-							sum(tax) tax,
-							sum(service) service,
-							sum(tax)/sum(amount)*100 tax_p,
-							sum(service)/sum(amount)*100 service_p
-						from pos_outlet_order_detil
-						where order_no = '$orderCode' and is_void = 0;";
-					$q = $this->db->query($s);
+					$q = $this->db->query("
+						select 
+							a.sub_total_amount total,a.due_amount grandtotal,
+							c.name,b.tax_percent,b.tax_amount
+						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
+						where a.id=b.order_id
+						and b.tax_id=c.id
+						and a.id=". $orderId
+					);
 					$rows = $q->result();
-					function html($label, $val) {
+					function html($label, $val, $id = '') {
+						$val = floatval($val);
 						if (!($val > 0)) $val = 0;
-
 						return '
 						<div class="row">
 							<div class="col-lg-6">
 								<label>' . $label . '</label>
 							</div>
 							<div class="col-lg-6 text-right">
-								<label>' . rupiah($val, 2) . '</label>
+								<label for="'. $id .'" val="'. $val .'">
+								' . rupiah($val, 2) . '</label>
 							</div>
 						</div>';
 					}
 
 					echo html('Total', $rows[0]->total);
-					echo html('Tax : ' . rupiah($rows[0]->tax_p, 2) . '%', $rows[0]->tax);
-					echo html('Service : ' . rupiah($rows[0]->service_p, 2) . '%',
-							  $rows[0]->service);
-					echo html('Grand Total', $rows[0]->total);
+					foreach ($rows as $row) {
+						$l = '&nbsp&nbsp'.$row->name.'<small>&nbsp&nbsp&nbsp'.rupiah($row->tax_percent, 2).'% </small>';
+						$v = $row->tax_amount;
+						echo html($l, $v);
+					}
+					echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
 				?>
 				<hr/>
 				<form id="subscribe-email-form" action="#" method="post">
@@ -58,7 +61,7 @@
 							<label for="usr">Change</label>
 						</div>
 						<div class="col-lg-6 text-right">
-							<label for="usr"></label>
+							<label for="change"></label>
 						</div>
 					</div>
 				</form>
@@ -660,7 +663,12 @@
 	//
 	$(document).ready(function () {
 		$('input[type="currency"]').on('blur', function () {
-			console.log($(this).data())
+			var bayar = parseFloat($(this).data('value'));
+			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
+			var change = bayar - grandtotal;
+			var displayChange = (parseFloat(change.toString().replace(/\,/g, "")).toFixed(2)
+				.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			$('label[for="change"]').html(displayChange);
 		});
 		$("#search_food").keypress(function (e) {
 			if (e.which == 13) {
