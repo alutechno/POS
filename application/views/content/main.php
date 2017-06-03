@@ -56,10 +56,10 @@
 		<?php
 			$query = $this->db->query("
 				select * from (
-					select 
+					select
 						a.*, b.id as `is`, b.num_of_cover guest
-					from mst_pos_tables a 
-					left join pos_orders b 
+					from mst_pos_tables a
+					left join pos_orders b
 					on a.id=b.table_id and b.status in (0,1)
 					where a.outlet_id=". $this->session->userdata('outlet') ."
 					group by a.id order by b.id DESC
@@ -83,7 +83,7 @@
 							<?php
 						} else {
 							?>
-							<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>">
+							<a href="<?php echo base_url() ?>main/payment/<?= $row->is ?>">
 								<img src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
 								<?php echo $row->table_no ?>
 							</a>

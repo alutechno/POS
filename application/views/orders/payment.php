@@ -354,7 +354,7 @@
 							<th>:</th>
 							<th>
 								<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>
-								/<?php echo $this->uri->segment(3) ?>
+								
 							</th>
 							<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
 							<th>Meal Time</th>

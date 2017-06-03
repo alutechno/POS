@@ -361,7 +361,7 @@
 				'outlet_id' => $post['outlet']
 			);
 			//order_no
-			$this->db->insert('pos_outlet_order_detil', $data);
+			$this->db->insert('pos_order', $data);
 
 			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(3) . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
 		}
