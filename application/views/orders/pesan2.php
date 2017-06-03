@@ -40,33 +40,33 @@
 					</tr>
 
 					<?php
-					$tax = 0;
-					$amount = 0;
-					$service = 0;
-					$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil 
+						$tax = 0;
+						$amount = 0;
+						$service = 0;
+						$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil 
                                         where is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . " group by menu_id ");
-					$i = 1;
-					foreach ($query->result() as $row) {
-						?>
-						<tr>
-							<td> <?php echo $i ?></td>
-							<td> <?php echo $this->global_model->get_menu_name($row->menu_id) ?></td>
-							<td> <?php echo $row->qty ?></td>
-							<td align="right">
-								<?php echo number_format($row->amount) ?>
-							</td>
+						$i = 1;
+						foreach ($query->result() as $row) {
+							?>
+							<tr>
+								<td> <?php echo $i ?></td>
+								<td> <?php echo $this->global_model->get_menu_name($row->menu_id) ?></td>
+								<td> <?php echo $row->qty ?></td>
+								<td align="right">
+									<?php echo number_format($row->amount) ?>
+								</td>
 
-							<td align="center"><a
-									href="<?php echo base_url() ?>main/void_item/<?php echo $this->session->userdata('table') ?>/<?php echo $this->session->userdata('outlet') ?>/<?php echo $row->menu_id ?>">
-									<button type="button" class="btn btn-danger">Delete</button>
-								</a></td>
-						</tr>
-						<?php
-						$tax += $row->tax;
-						$amount += $row->amount;
-						$service += $row->service;
-						$i++;
-					}
+								<td align="center"><a
+										href="<?php echo base_url() ?>main/void_item/<?php echo $this->session->userdata('table') ?>/<?php echo $this->session->userdata('outlet') ?>/<?php echo $row->menu_id ?>">
+										<button type="button" class="btn btn-danger">Delete</button>
+									</a></td>
+							</tr>
+							<?php
+							$tax += $row->tax;
+							$amount += $row->amount;
+							$service += $row->service;
+							$i++;
+						}
 					?>
 					<tr>
 						<td colspan="4" align="left">&nbsp;</td>
@@ -101,8 +101,7 @@
                                         <i class="fa fa-home"></i> Home
                                     </a>-->
 			<?php
-			date_default_timezone_set('Asia/Jakarta');
-
+				date_default_timezone_set('Asia/Jakarta');
 			?>
 			<div class="tab-content">
 				<div class="tab-pane active" id="tab_1">
@@ -140,14 +139,13 @@
 									<label for="ex2">Menu Class</label>
 									<select class="form-control" name="select_menu">
 										<?php
-
-										$query = $this->db->query("select * from ref_outlet_menu_class");
-										foreach ($query->result() as $row) {
-											?>
-											<option
-												value="<?php echo $row->id ?>"><?php echo $row->name ?></option>
-											<?php
-										}
+											$query = $this->db->query("select * from ref_outlet_menu_class");
+											foreach ($query->result() as $row) {
+												?>
+												<option
+													value="<?php echo $row->id ?>"><?php echo $row->name ?></option>
+												<?php
+											}
 										?>
 									</select>
 								</div>
@@ -164,30 +162,25 @@
 						<!-- Small boxes (Stat box) -->
 						<div class="row">
 							<?php
-							//echo $this->input->post('select_menu');exit;
-							// select a.* from mst_pos_tables a left join pos_orders b on a.id=b.table_id
+								//echo $this->input->post('select_menu');exit;
+								// select a.* from mst_pos_tables a left join pos_orders b on a.id=b.table_id
+								$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . " and a.menu_class_id ='" . $this->input->post('select_menu') . "'");
+								foreach ($query->result() as $row) {
+									?>
+									<div class="col-lg-3 col-xs-6">
+										<div class="small-box bg-aqua">
+											<a href="<?php echo base_url() ?>main/inputpesan/<?php echo $row->id ?>/<?php echo $row->menu_price ?>/<?php echo $row->menu_class_id ?>/<?php echo $this->uri->segment(3) ?>"
+											   class="small-box-footer">&nbsp;<center><img
+														src="<?php echo base_url() ?>menu/<?php echo $row->image <> '' ? $row->image : 'no_image.svg'; ?>"
+														width="130" height="80"></center>
+												<center>  <?php echo $row->short_name ?></center>
+												<?php echo number_format($row->menu_price) ?>
+											</a>
+										</div>
 
-
-							$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . " and a.menu_class_id ='" . $this->input->post('select_menu') . "'");
-
-
-							foreach ($query->result() as $row) {
-
-								?>
-								<div class="col-lg-3 col-xs-6">
-									<div class="small-box bg-aqua">
-										<a href="<?php echo base_url() ?>main/inputpesan/<?php echo $row->id ?>/<?php echo $row->menu_price ?>/<?php echo $row->menu_class_id ?>/<?php echo $this->uri->segment(3) ?>"
-										   class="small-box-footer">&nbsp;<center><img
-													src="<?php echo base_url() ?>menu/<?php echo $row->image <> '' ? $row->image : 'no_image.svg'; ?>"
-													width="130" height="80"></center>
-											<center>  <?php echo $row->short_name ?></center>
-											<?php echo number_format($row->menu_price) ?>
-										</a>
 									</div>
-
-								</div>
-								<?php
-							}
+									<?php
+								}
 							?>
 
 						</div><!-- /.row -->

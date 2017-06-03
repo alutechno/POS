@@ -46,15 +46,14 @@
 
 			<div class="box-body">
 				<?php
-				$query = $this->db->query("select * from mst_pos_report");
-
-				foreach ($query->result() as $row) {
-					?>
-					<h5><a href="#" data-toggle="modal" data-target="#compose-modal"
-						   onclick="parsing('<?php echo $row->report_file ?>','<?php echo $row->report_name ?>')"><?php echo $row->report_name ?></a>
-					</h5>
-					<?php
-				}
+					$query = $this->db->query("select * from mst_pos_report");
+					foreach ($query->result() as $row) {
+						?>
+						<h5><a href="#" data-toggle="modal" data-target="#compose-modal"
+							   onclick="parsing('<?php echo $row->report_file ?>','<?php echo $row->report_name ?>')"><?php echo $row->report_name ?></a>
+						</h5>
+						<?php
+					}
 				?>
 			</div><!-- /.box-body -->
 		</div><!-- /.box -->

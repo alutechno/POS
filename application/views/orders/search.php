@@ -21,26 +21,25 @@
 						<!-- Small boxes (Stat box) -->
 						<div class="row">
 							<?php
-							//select a.* from mst_pos_tables a left join pos_orders b on a.id=b.table_id
-							//$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=".$this->session->userdata('outlet')."");
+								//select a.* from mst_pos_tables a left join pos_orders b on a.id=b.table_id
+								//$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=".$this->session->userdata('outlet')."");
+								foreach ($query as $row) {
+									?>
+									<div class="col-lg-3 col-xs-6">
+										<div class="small-box bg-aqua">
+											<a href="<?= base_url() ?>main/inputpesan/<?= $row->id ?>/<?= $row->menu_price ?>/<?= $row->menu_class_id ?>"
+											   class="small-box-footer">&nbsp;<center><img
+														src="<?= base_url() ?>menu/<?= $row->image ?>"
+														width="160" height="80"></center>
+												<center> <?= $row->short_name ?></center>
 
-							foreach ($query as $row) {
-								?>
-								<div class="col-lg-3 col-xs-6">
-									<div class="small-box bg-aqua">
-										<a href="<?= base_url() ?>main/inputpesan/<?= $row->id ?>/<?= $row->menu_price ?>/<?= $row->menu_class_id ?>"
-										   class="small-box-footer">&nbsp;<center><img
-													src="<?= base_url() ?>menu/<?= $row->image ?>"
-													width="160" height="80"></center>
-											<center> <?= $row->short_name ?></center>
-
-											<?= number_format($row->menu_price) ?>
-										</a>
+												<?= number_format($row->menu_price) ?>
+											</a>
+										</div>
 									</div>
-								</div>
 
-								<?
-							}
+									<?
+								}
 							?>
 
 						</div><!-- /.row -->

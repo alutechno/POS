@@ -1,136 +1,103 @@
 <?php
+	if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-if (!defined('BASEPATH')) exit('No direct script access allowed');
+	class Global_model extends CI_Model {
+		function get_menu_name($id) {
+			$query = $this->db->query("select * from inv_outlet_menus where id=" . $id . "");
+			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $row) {
+					$name = $row->name;
+				}
 
-class Global_model extends CI_Model {
-
-	function get_menu_name($id) {
-		$query = $this->db->query("select * from inv_outlet_menus where id=" . $id . "");
-
-		if ($query->num_rows() > 0) {
-			foreach ($query->result() as $row) {
-				$name = $row->name;
+				return $name;
 			}
-			return $name;
 		}
+		function get_outlet_name($id) {
+			$query = $this->db->query("select * from inv_outlet_menus where id=" . $id . "");
+			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $row) {
+					$name = $row->name;
+				}
 
-	}
-
-
-	function get_outlet_name($id) {
-		$query = $this->db->query("select * from inv_outlet_menus where id=" . $id . "");
-
-		if ($query->num_rows() > 0) {
-			foreach ($query->result() as $row) {
-				$name = $row->name;
+				return $name;
 			}
-			return $name;
 		}
+		function get_tot_food($table_id) {
+			//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
+			$query = $this->db->query("select sum(amount) as total from pos_outlet_order_detil WHERE is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . "  and menu_class_id=1");
+			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $row) {
+					$total = $row->total;
+				}
 
-	}
-
-	function get_tot_food($table_id) {
-		//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
-		$query = $this->db->query("select sum(amount) as total from pos_outlet_order_detil WHERE is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . "  and menu_class_id=1");
-
-		if ($query->num_rows() > 0) {
-			foreach ($query->result() as $row) {
-				$total = $row->total;
+				return $total;
 			}
-
-			return $total;
 		}
-	}
+		function get_tot_beverages($table_id) {
+			//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
+			$query = $this->db->query("select sum(amount) as total from pos_outlet_order_detil WHERE  is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . "  and menu_class_id=2");
+			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $row) {
+					$total = $row->total;
+				}
 
-
-	function get_tot_beverages($table_id) {
-		//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
-		$query = $this->db->query("select sum(amount) as total from pos_outlet_order_detil WHERE  is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . "  and menu_class_id=2");
-		if ($query->num_rows() > 0) {
-			foreach ($query->result() as $row) {
-				$total = $row->total;
+				return $total;
 			}
-
-			return $total;
 		}
+		//select table_id, closed_bill from pos_outlet_order_detil where outlet_id=1 GROUP BY table_id,closed_bill
+		function get_table_available3($table_id, $outlet_id) {
+			//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
+			$closed_bill = 1;
+			$query = $this->db->query("select closed_bill from pos_outlet_order_detil where outlet_id=" . $outlet_id . " and table_id=" . $table_id . " GROUP BY closed_bill");
+			// echo $this->db->last_query();exit;
+			if ($query->num_rows() > 0) {
+				foreach ($query->result() as $row) {
+					$closed_bill = $row->closed_bill;
+				}
 
-	}
-
-	//select table_id, closed_bill from pos_outlet_order_detil where outlet_id=1 GROUP BY table_id,closed_bill
-
-	function get_table_available3($table_id, $outlet_id) {
-		//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
-		$closed_bill = 1;
-		$query = $this->db->query("select closed_bill from pos_outlet_order_detil where outlet_id=" . $outlet_id . " and table_id=" . $table_id . " GROUP BY closed_bill");
-		// echo $this->db->last_query();exit;
-		if ($query->num_rows() > 0) {
+				return $closed_bill;
+			}
+		}
+		function get_table_available($table_id, $outlet_id) {
+			//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
+			$closed_bill = 1;
+			$query = $this->db->query("select closed_bill from pos_outlet_order_detil where outlet_id=" . $outlet_id . " and table_id=" . $table_id . " GROUP BY closed_bill");
 			foreach ($query->result() as $row) {
 				$closed_bill = $row->closed_bill;
 			}
 
 			return $closed_bill;
 		}
+		function get_no_bill($table_id) {
+			//select order_no  from pos_outlet_order_detil where table_id=1 and closed_bill=0 group by order_no
+			$query = $this->db->query("select order_no  from pos_outlet_order_header where table_no=" . $table_id . " and outlet_id=" . $this->session->userdata('outlet') . " group by order_no");
+			foreach ($query->result() as $row) {
+				$order_no = $row->order_no;
+			}
 
-	}
-
-
-	function get_table_available($table_id, $outlet_id) {
-		//select sum(amount) as tot from pos_outlet_order_detil WHERE table_id= and outlet_id= and menu_class_id=1
-		$closed_bill = 1;
-		$query = $this->db->query("select closed_bill from pos_outlet_order_detil where outlet_id=" . $outlet_id . " and table_id=" . $table_id . " GROUP BY closed_bill");
-
-		foreach ($query->result() as $row) {
-			$closed_bill = $row->closed_bill;
+			return $order_no;
 		}
+		function get_meal_time() {
+			date_default_timezone_set('Asia/Jakarta');
+			$query = $this->db->query(" select id from ref_meal_time where '" . date('H:i') . "' BETWEEN start_time and end_time limit 1 ");
+			foreach ($query->result() as $row) {
+				$strid = $row->id;
+			}
 
-		return $closed_bill;
-
-
-	}
-
-
-	function get_no_bill($table_id) {
-		//select order_no  from pos_outlet_order_detil where table_id=1 and closed_bill=0 group by order_no
-
-		$query = $this->db->query("select order_no  from pos_outlet_order_header where table_no=" . $table_id . " and outlet_id=" . $this->session->userdata('outlet') . " group by order_no");
-
-		foreach ($query->result() as $row) {
-			$order_no = $row->order_no;
+			return $strid;
 		}
+		function get_meal_time_name() {
+			date_default_timezone_set('Asia/Jakarta');
+			$query = $this->db->query("select name from ref_meal_time where '" . date('H:i') . "' BETWEEN start_time and end_time limit 1 ");
+			//echo $this->db->last_query();
+			foreach ($query->result() as $row) {
+				$strname = $row->name;
+			}
 
-		return $order_no;
-
-	}
-
-	function get_meal_time() {
-		date_default_timezone_set('Asia/Jakarta');
-
-		$query = $this->db->query(" select id from ref_meal_time where '" . date('H:i') . "' BETWEEN start_time and end_time limit 1 ");
-
-		foreach ($query->result() as $row) {
-			$strid = $row->id;
+			return $strname;
 		}
-
-		return $strid;
-
-	}
-
-	function get_meal_time_name() {
-		date_default_timezone_set('Asia/Jakarta');
-
-		$query = $this->db->query("select name from ref_meal_time where '" . date('H:i') . "' BETWEEN start_time and end_time limit 1 ");
-		//echo $this->db->last_query();
-		foreach ($query->result() as $row) {
-			$strname = $row->name;
-		}
-
-		return $strname;
-
-	}
-
-	function guest() {
-
-		$query = $this->db->query("SELECT 
+		function guest() {
+			$query = $this->db->query("SELECT 
         `a`.`id` AS `folio_id`,
         CONCAT(`b`.`first_name`, `b`.`last_name`, ',') AS `guest_name`,
         `d`.`name` AS `room_type`,
@@ -174,9 +141,7 @@ class Global_model extends CI_Model {
         LEFT JOIN `media`.`fd_mice_deposit` `t` ON ((`a`.`mice_id` = `t`.`mice_id`)))
     WHERE
         (`a`.`reservation_status` = '4')");
-		return $query;
 
+			return $query;
+		}
 	}
-
-
-}

@@ -29,12 +29,12 @@
 		<label for="int">Pos Cost Center Id <?php echo form_error('pos_cost_center_id') ?></label>
 		<select class="form-control" name="pos_cost_center_id" id="pos_cost_center_id">
 			<?
-			$query = $this->db->query("select * from mst_pos_cost_center");
-			foreach ($query->result() as $row) {
-				?>
-				<option value='<?= $row->id ?>'><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from mst_pos_cost_center");
+				foreach ($query->result() as $row) {
+					?>
+					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<?
+				}
 			?>
 		</select>
 	</div>

@@ -1,7 +1,8 @@
 <div class="row" style="margin-bottom: 10px">
 	<div class="col-md-4">
 
-		<?php echo anchor(base_url('referensi/ref_outlet_type/create'), 'Create', 'class="btn btn-primary"'); ?>
+		<?php echo anchor(base_url('referensi/ref_outlet_type/create'), 'Create',
+						  'class="btn btn-primary"'); ?>
 	</div>
 	<div class="col-md-4 text-center">
 		<div style="margin-top: 4px" id="message">
@@ -28,6 +29,7 @@
 <script src="<?php echo base_url('assets/js/jquery-1.11.2.min.js') ?>"></script>
 <script src="<?php echo base_url('assets/datatables/jquery.dataTables.js') ?>"></script>
 <script src="<?php echo base_url('assets/datatables/dataTables.bootstrap.js') ?>"></script>
+
 <script type="text/javascript">
 	$(document).ready(function () {
 		$.fn.dataTableExt.oApi.fnPagingInfo = function (oSettings) {
@@ -45,6 +47,7 @@
 		var t = $("#mytable").dataTable({
 			initComplete: function () {
 				var api = this.api();
+				$('input[type="search"]').keyboard({layout: 'qwerty'});
 				$('#mytable_filter input')
 				.off('.DT')
 				.on('keyup.DT', function (e) {

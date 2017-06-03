@@ -5,13 +5,12 @@
 		<select class="form-control" name="outlet_menu_id" id="outlet_menu_id" required>
 			<option value="">- Outlet -</option>
 			<?
-			$query = $this->db->query("select * from mst_outlet where outlet_type_id=1 or outlet_type_id=2");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option value="<?= $row->id ?>"><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from mst_outlet where outlet_type_id=1 or outlet_type_id=2");
+				foreach ($query->result() as $row) {
+					?>
+					<option value="<?= $row->id ?>"><?= $row->name ?></option>
+					<?
+				}
 			?>
 		</select>
 	</div>

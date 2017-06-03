@@ -49,58 +49,60 @@
 	<!-- Small boxes (Stat box) -->
 	<div class="row">
 		<?php
-
-		$query = $this->db->query("select a.* from mst_pos_tables a   where a.outlet_id=" . $this->session->userdata('outlet') . "");
-
-		foreach ($query->result() as $row) {
-
-			?>
-			<div class="col-lg-3 col-xs-6">
-				<!-- small box -->
-				<!--<div class="small-box <?php echo $this->global_model->get_table_available($row->id, $this->session->userdata('outlet')) == 1 ? 'bg-aqua' : 'bg-red' ?>">
+			$query = $this->db->query("select a.* from mst_pos_tables a   where a.outlet_id=" . $this->session->userdata('outlet') . "");
+			foreach ($query->result() as $row) {
+				?>
+				<div class="col-lg-3 col-xs-6">
+					<!-- small box -->
+					<!--<div class="small-box <?php echo $this->global_model->get_table_available($row->id,
+																								  $this->session->userdata('outlet')) == 1 ? 'bg-aqua' : 'bg-red' ?>">
                               <div class="inner">
                                     <h3>
                                         &nbsp;
                                     </h3>
                                     <p>
                                        Table No:  <?//=$row->table_no
-				?><br/>
+					?><br/>
                                        Capacity : <?//=$row->cover
-				?></br>
+					?></br>
                                        Available : <?//=$this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))
-				?>
+					?>
                                     </p>
                                 </div>
                                 <div class="icon">
                                     <i class="fa fa-cutlery"></i>
                                 </div>-->
+					<?php
+						if ($this->global_model->get_table_available($row->id,
+																	 $this->session->userdata('outlet')) == 1
+						) {
+							?>
+							<!-- <a href="<?= base_url() ?>main/order/<?= $row->id ?>"> <img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
+                                    <?php echo $row->table_no ?></a>-->
+
+							<!--<a   data-toggle="modal" href="#myModalguest"> <img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
+                                    <?php echo $row->table_no ?></a>-->
+
+							<a data-toggle="modal" href="#"
+							   onclick="load_guest(<?= $row->table_no ?>)">
+								<img src="<?= base_url() ?>menu/table_avai.jpeg" width="100"
+									 height="100">
+								<?php echo $row->table_no ?></a>
+
+							<?php
+						} else {
+							?>
+							<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>"> <img
+									src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
+								<?php echo $row->table_no ?></a>
+							<?php
+						}
+					?>
+
+				</div><!-- ./col -->
+
 				<?php
-				if ($this->global_model->get_table_available($row->id, $this->session->userdata('outlet')) == 1) {
-					?>
-					<!-- <a href="<?= base_url() ?>main/order/<?= $row->id ?>"> <img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
-                                    <?php echo $row->table_no ?></a>-->
-
-					<!--<a   data-toggle="modal" href="#myModalguest"> <img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
-                                    <?php echo $row->table_no ?></a>-->
-
-					<a data-toggle="modal" href="#" onclick="load_guest(<?= $row->table_no ?>)">
-						<img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
-						<?php echo $row->table_no ?></a>
-
-					<?php
-				} else {
-					?>
-					<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>"> <img
-							src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
-						<?php echo $row->table_no ?></a>
-					<?php
-				}
-				?>
-
-			</div><!-- ./col -->
-
-			<?php
-		}
+			}
 		?>
 
 	</div><!-- /.row -->

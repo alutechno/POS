@@ -1,5 +1,5 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-global $template;
+	global $template;
 ?>
 
 <!DOCTYPE html>
@@ -66,6 +66,16 @@ global $template;
 	</aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
 <!-- jQuery 2.0.2 -->
+<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
+<script type="text/javascript">
+	$('input[type="text"]').keyboard({layout: 'qwerty'});
+	$('input[type="number"]').keyboard({layout: 'num'});
+	$('input[type="search"]').keyboard({layout: 'qwerty'});
+</script>
 
 <script src=" <?php echo base_url() ?>assets/js/jquery.min.js"></script>
 <!-- Bootstrap -->

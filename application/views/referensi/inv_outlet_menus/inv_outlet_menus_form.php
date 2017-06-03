@@ -31,13 +31,13 @@
 		<label for="varchar">Outlet <?php echo form_error('outlet_id') ?></label>
 		<select class="form-control" name="outlet_id" id="outlet_id">
 			<?php
-			$query = $this->db->query("select * from mst_outlet");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $outlet_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_outlet");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $outlet_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -51,14 +51,13 @@
 		<label for="varchar">Status <?php echo form_error('status') ?></label>
 		<select class="form-control" name="status" id="status">
 			<?php
-			$query = $this->db->query("select * from table_ref where table_name = 'inv_outlet_menus' and column_name = 'status' and value<>2");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->value ?>' <?php echo $row->value == $status ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from table_ref where table_name = 'inv_outlet_menus' and column_name = 'status' and value<>2");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->value ?>' <?php echo $row->value == $status ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -79,14 +78,13 @@
 
 		<select class="form-control" name="menu_group_id" id="menu_group_id">
 			<?php
-			$query = $this->db->query("select * from ref_outlet_menu_group ");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $menu_group_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from ref_outlet_menu_group ");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $menu_group_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -107,13 +105,13 @@
 		<label for="varchar">Product Id <?php echo form_error('product_id') ?></label>
 		<select class="form-control" name="product_id" id="product_id">
 			<?php
-			$query = $this->db->query("select * from mst_product");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $product_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_product");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $product_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -128,13 +126,13 @@
 		<label for="varchar">Recipe Id <?php echo form_error('recipe_id') ?></label>
 		<select class="form-control" name="recipe_id" id="recipe_id">
 			<?php
-			$query = $this->db->query("select * from mst_cuisine_recipe");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $recipe_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_cuisine_recipe");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $recipe_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -195,13 +193,13 @@
 		<label for="varchar">Print Kitchen Id <?php echo form_error('print_kitchen_id') ?></label>
 		<select class="form-control" name="print_kitchen_id" id="print_kitchen_id">
 			<?php
-			$query = $this->db->query("select * from mst_kitchen");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_kitchen");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>
@@ -212,13 +210,13 @@
 			Id <?php echo form_error('print_kitchen_section_id') ?></label>
 		<select class="form-control" name="print_kitchen_section_id" id="print_kitchen_section_id">
 			<?php
-			$query = $this->db->query("select * from mst_kitchen_section");
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_kitchen_section");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
 			?>
 
 		</select>

@@ -1,12 +1,12 @@
 <form action="<?php echo $action; ?>" method="post">
 	<div class="form-group">
 		<label for="varchar">Code <?php echo form_error('code') ?></label>
-		<input type="text" class="form-control" name="code" id="code" placeholder="Code"
+		<input type="text" class="form-control" name="code" id="code"
 			   value="<?php echo $code; ?>"/>
 	</div>
 	<div class="form-group">
 		<label for="varchar">Name <?php echo form_error('name') ?></label>
-		<input type="text" class="form-control" name="name" id="name" placeholder="Name"
+		<input type="text" class="form-control" name="name" id="name"
 			   value="<?php echo $name; ?>"/>
 	</div>
 	<div class="form-group">
@@ -28,14 +28,13 @@
 		<label for="varchar">Status <?php echo form_error('status') ?></label>
 		<select class="form-control" name="status" id="status">
 			<?
-			$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_menu_group' and column_name = 'status' and value<>2");
-
-			foreach ($query->result() as $row) {
-				?>
-				<option
-					value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
-				<?
-			}
+				$query = $this->db->query("select * from table_ref where table_name = 'ref_outlet_menu_group' and column_name = 'status' and value<>2");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?= $row->value ?>' <? echo $row->value == $status ? 'selected' : ''; ?>><?= $row->name ?></option>
+					<?
+				}
 			?>
 
 		</select>

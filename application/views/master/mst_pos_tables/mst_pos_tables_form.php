@@ -8,12 +8,12 @@
 		<label for="int">Outlet Id <?php echo form_error('outlet_id') ?></label>
 		<select class="form-control" name="outlet_id" id="outlet_id">
 			<?php
-			$query = $this->db->query("select * from mst_outlet where status=1");
-			foreach ($query->result() as $row) {
-				?>
-				<option value='<?= $row->id ?>'><?= $row->name ?></option>
-				<?php
-			}
+				$query = $this->db->query("select * from mst_outlet where status=1");
+				foreach ($query->result() as $row) {
+					?>
+					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<?php
+				}
 			?>
 		</select>
 	</div>

@@ -1,97 +1,95 @@
 <?php
+	if (!defined('BASEPATH')) exit('No direct script access allowed');
 
-if (!defined('BASEPATH')) exit('No direct script access allowed');
+	class User_model extends CI_Model {
+		public $table = 'user';
+		public $id = 'id';
+		public $order = 'DESC';
+		function __construct() {
+			parent::__construct();
+		}
+		// datatables
+		function json() {
+			$this->datatables->select('id,name,password,token,role_id,full_name,default_module,default_menu,mobile,email,image,department_id');
+			$this->datatables->from('user');
+			//add this line for join
+			//$this->datatables->join('table2', 'user.field = table2.field');
+			$this->datatables->add_column('action', anchor(base_url('setting/user/read/$1'),
+														   'Read') . " | " . anchor(base_url('setting/user/update/$1'),
+																					'Update') . " | " . anchor(base_url('setting/user/delete/$1'),
+																											   'Delete',
+																											   'onclick="javasciprt: return confirm(\'Are You Sure ?\')"'),
+										  'id');
 
-class User_model extends CI_Model {
+			return $this->datatables->generate();
+		}
+		// get all
+		function get_all() {
+			$this->db->order_by($this->id, $this->order);
 
-	public $table = 'user';
-	public $id = 'id';
-	public $order = 'DESC';
+			return $this->db->get($this->table)->result();
+		}
+		// get data by id
+		function get_by_id($id) {
+			$this->db->where($this->id, $id);
 
-	function __construct() {
-		parent::__construct();
+			return $this->db->get($this->table)->row();
+		}
+		// get total rows
+		function total_rows($q = null) {
+			$this->db->like('id', $q);
+			$this->db->or_like('name', $q);
+			$this->db->or_like('password', $q);
+			$this->db->or_like('token', $q);
+			$this->db->or_like('role_id', $q);
+			$this->db->or_like('full_name', $q);
+			$this->db->or_like('default_module', $q);
+			$this->db->or_like('default_menu', $q);
+			$this->db->or_like('mobile', $q);
+			$this->db->or_like('email', $q);
+			$this->db->or_like('image', $q);
+			$this->db->or_like('department_id', $q);
+			$this->db->from($this->table);
+
+			return $this->db->count_all_results();
+		}
+		// get data with limit and search
+		function get_limit_data($limit, $start = 0, $q = null) {
+			$this->db->order_by($this->id, $this->order);
+			$this->db->like('id', $q);
+			$this->db->or_like('name', $q);
+			$this->db->or_like('password', $q);
+			$this->db->or_like('token', $q);
+			$this->db->or_like('role_id', $q);
+			$this->db->or_like('full_name', $q);
+			$this->db->or_like('default_module', $q);
+			$this->db->or_like('default_menu', $q);
+			$this->db->or_like('mobile', $q);
+			$this->db->or_like('email', $q);
+			$this->db->or_like('image', $q);
+			$this->db->or_like('department_id', $q);
+			$this->db->limit($limit, $start);
+
+			return $this->db->get($this->table)->result();
+		}
+		// insert data
+		function insert($data) {
+			$this->db->insert($this->table, $data);
+		}
+		// update data
+		function update($id, $data) {
+			$this->db->where($this->id, $id);
+			$this->db->update($this->table, $data);
+		}
+		// delete data
+		function delete($id) {
+			$this->db->where($this->id, $id);
+			$this->db->delete($this->table);
+		}
 	}
 
-	// datatables
-	function json() {
-		$this->datatables->select('id,name,password,token,role_id,full_name,default_module,default_menu,mobile,email,image,department_id');
-		$this->datatables->from('user');
-		//add this line for join
-		//$this->datatables->join('table2', 'user.field = table2.field');
-		$this->datatables->add_column('action', anchor(base_url('setting/user/read/$1'), 'Read') . " | " . anchor(base_url('setting/user/update/$1'), 'Update') . " | " . anchor(base_url('setting/user/delete/$1'), 'Delete', 'onclick="javasciprt: return confirm(\'Are You Sure ?\')"'), 'id');
-		return $this->datatables->generate();
-	}
-
-	// get all
-	function get_all() {
-		$this->db->order_by($this->id, $this->order);
-		return $this->db->get($this->table)->result();
-	}
-
-	// get data by id
-	function get_by_id($id) {
-		$this->db->where($this->id, $id);
-		return $this->db->get($this->table)->row();
-	}
-
-	// get total rows
-	function total_rows($q = NULL) {
-		$this->db->like('id', $q);
-		$this->db->or_like('name', $q);
-		$this->db->or_like('password', $q);
-		$this->db->or_like('token', $q);
-		$this->db->or_like('role_id', $q);
-		$this->db->or_like('full_name', $q);
-		$this->db->or_like('default_module', $q);
-		$this->db->or_like('default_menu', $q);
-		$this->db->or_like('mobile', $q);
-		$this->db->or_like('email', $q);
-		$this->db->or_like('image', $q);
-		$this->db->or_like('department_id', $q);
-		$this->db->from($this->table);
-		return $this->db->count_all_results();
-	}
-
-	// get data with limit and search
-	function get_limit_data($limit, $start = 0, $q = NULL) {
-		$this->db->order_by($this->id, $this->order);
-		$this->db->like('id', $q);
-		$this->db->or_like('name', $q);
-		$this->db->or_like('password', $q);
-		$this->db->or_like('token', $q);
-		$this->db->or_like('role_id', $q);
-		$this->db->or_like('full_name', $q);
-		$this->db->or_like('default_module', $q);
-		$this->db->or_like('default_menu', $q);
-		$this->db->or_like('mobile', $q);
-		$this->db->or_like('email', $q);
-		$this->db->or_like('image', $q);
-		$this->db->or_like('department_id', $q);
-		$this->db->limit($limit, $start);
-		return $this->db->get($this->table)->result();
-	}
-
-	// insert data
-	function insert($data) {
-		$this->db->insert($this->table, $data);
-	}
-
-	// update data
-	function update($id, $data) {
-		$this->db->where($this->id, $id);
-		$this->db->update($this->table, $data);
-	}
-
-	// delete data
-	function delete($id) {
-		$this->db->where($this->id, $id);
-		$this->db->delete($this->table);
-	}
-
-}
-
-/* End of file User_model.php */
-/* Location: ./application/models/User_model.php */
-/* Please DO NOT modify this information : */
-/* Generated by Harviacode Codeigniter CRUD Generator 2017-04-07 03:55:43 */
-/* http://harviacode.com */
+	/* End of file User_model.php */
+	/* Location: ./application/models/User_model.php */
+	/* Please DO NOT modify this information : */
+	/* Generated by Harviacode Codeigniter CRUD Generator 2017-04-07 03:55:43 */
+	/* http://harviacode.com */
