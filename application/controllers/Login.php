@@ -13,6 +13,7 @@
 			$query = $this->db->query("select * from user where name='" . $userid . "' and password='" . $password . "'");
 			if ($query->num_rows() > 0) {
 				foreach ($query->result() as $row) {
+					$data['user_id'] = $row->id;
 					$data['role_id'] = $row->role_id;
 					$data['name'] = $row->name;
 					$data['full_name'] = $row->full_name;

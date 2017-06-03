@@ -21,6 +21,14 @@
 			$data = "";
 			show($view, $data);
 		}
+		public function log($el, $stringy = false) {
+			if (gettype($el) == 'object' or gettype($el) == 'array' or gettype($el) == 'string') {
+				$el = json_encode($el);
+			}
+			if ($stringy) $el = "JSON.stringify($el)";
+
+			echo '<script language="javascript">console.info(`PHP`, '.$el.');</script>';
+		}
 		function payment() {
 			/*$query = $this->db->query("select order_no from pos_outlet_order_header where table_no=".$this->uri->segment(3)." and status_closed=0");
                         if ($query->num_rows() > 0)
@@ -196,26 +204,26 @@
 			redirect(base_url() . "main/payment/" . $this->session->userdata('table'));
 		}
 		function input_guest() {
-			//echo $this->session->userdata('no_bill');exit;
+			$user_id = $this->session->userdata('user_id');
 			$outlet_id = $this->session->userdata('outlet');
 			$table_id = $this->input->post('table');
-			$guest = $this->input->post('guest');
-			$tables = $this->uri->segment(3);
-			$this->session->set_userdata('table', $tables);
-			$query = $this->db->query("select count(id)+1 as no_bill from pos_outlet_order_header where outlet_id='" . $this->session->userdata('outlet') . "'");
-			//echo $this->db->last_query();exit;
-			foreach ($query->result() as $row) {
-				$nomor_bill = "CHK-" . $row->no_bill;
-			}
-			// echo $nomor_bill;exit;
-			$this->session->set_userdata('no_bill', $nomor_bill);
-			//echo $this->input->post('no_bill');exit;
-			$data = array('outlet_id' => $outlet_id, 'table_no' => $table_id, 'guest' => $guest,
-				'status_closed' => 0, 'order_no' => $nomor_bill);
-			$this->db->insert('pos_outlet_order_header', $data);
-			// echo $table_id;exit;
-			redirect(base_url('main/order/' . $table_id));
-			// echo $outlet_id;exit;
+			$num_of_cover = $this->input->post('guest');
+			$count = $this->compile("select count(id)+1 as no_bill from pos_orders where outlet_id='" . $this->session->userdata('outlet') . "'");
+			$count = $count[0]->no_bill;
+			$code = "CHK-" . $count;
+			$this->session->set_userdata('no_bill', $code);
+			$this->db->insert('pos_orders', array(
+				'code' => $code,
+				'outlet_id' => $outlet_id,
+				'table_id' => $table_id,
+				'num_of_cover' => $num_of_cover,
+				'segment_id' => 1,
+				'status' => 1,
+				'waiter_user_id' => $user_id,
+				'created_by' => $user_id,
+				'created_date' => date('Y-m-d H:i:s')
+			));
+			redirect(base_url('main/payment/' . $table_id));
 		}
 		function save_note() {
 			//$bill=$this->session->userdata('no_bill');

@@ -84,7 +84,6 @@
 			<div class="modal-body">
 				<form id="subscribe-email-form" action="#" method="post">
 					<div class="form-group">
-
 						<div class="form-group">
 							<label>Payment Method</label>
 							<select class="form-control">

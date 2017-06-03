@@ -29,7 +29,6 @@
 			<div class="modal-body">
 				<form id="subscribe-email-form" action="<?= base_url() ?>main/input_guest"
 					  method="post">
-
 					<div class="form-group">
 						<label for="usr">Table:</label>
 						<input type="text" class="form-control" id="table" name="table">
@@ -56,14 +55,18 @@
 	<div class="row">
 		<?php
 			$query = $this->db->query("
-				select a.*, b.id `is`, b.num_of_cover guest
-				from mst_pos_tables a 
-				left join pos_orders b 
-				on a.id=b.table_id and b.status in (0,1)
-				where a.outlet_id=". $this->session->userdata('outlet') ."
-				order by a.id
+				select * from (
+					select 
+						a.*, b.id as `is`, b.num_of_cover guest
+					from mst_pos_tables a 
+					left join pos_orders b 
+					on a.id=b.table_id and b.status in (0,1)
+					where a.outlet_id=". $this->session->userdata('outlet') ."
+					group by a.id order by b.id DESC
+				) x order by table_no, id;
 			");
 			//echo $this->db->last_query();exit;
+//			Main::log($query->result());
 			foreach ($query->result() as $row) {
 				?>
 				<div class="col-lg-3 col-xs-6">
@@ -73,18 +76,17 @@
 						//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
 						if (!($row->is)) {
 							?>
-							<a data-toggle="modal" href="#"
-							   onclick="load_guest(<?= $row->table_no ?>, <?= $row->guest ?>)"> <img
-									src="<?= base_url() ?>menu/table_avai.jpeg" width="100"
-									height="100">
-								<?php echo $row->table_no ?></a>
-
+							<a data-toggle="modal" href="#" onclick="load_guest(<?=$row->table_no?>, 0)">
+								<img src="<?= base_url() ?>menu/table_avai.jpeg" width="100" height="100">
+								<?php echo $row->table_no ?>
+							</a>
 							<?php
 						} else {
 							?>
-							<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>"> <img
-									src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
-								<?php echo $row->table_no ?></a>
+							<a href="<?php echo base_url() ?>main/payment/<?= $row->id ?>">
+								<img src="<?= base_url() ?>menu/table.jpeg" width="100" height="100">
+								<?php echo $row->table_no ?>
+							</a>
 							<?php
 						}
 					?>
