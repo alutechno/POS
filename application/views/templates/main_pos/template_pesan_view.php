@@ -17,8 +17,6 @@
 	<link href="<?= MY_ASSETS ?>css/ionicons.min.css" rel="stylesheet" type="text/css"/>
 	<!-- Theme style -->
 	<link href="<?= MY_ASSETS ?>css/AdminLTE.css" rel="stylesheet" type="text/css"/>
-	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
-	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -35,34 +33,13 @@
 	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
 	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 
-<!-- jQuery 2.0.2 -->
-<script src="<?= base_url() ?>assets/js/jquery.min.js"></script>
-<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
-<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
-
 <?php $this->load->view($view); ?>
 
+<!-- jQuery 2.0.2 -->
+<script src="<?= base_url() ?>assets/js/jquery.min.js"></script>
 <!-- Bootstrap -->
 <script src="<?= MY_ASSETS ?>js/bootstrap.min.js" type="text/javascript"></script>
 <!-- AdminLTE App -->
-<script type="text/javascript">
-	var s = $('input[type="currency"]');
-	s.keyboard({layout: 'num'});
-	s.css('text-align', 'end');
-	s.on('change', function () {
-	    var el = $(this);
-	    var val = el.val();
-	    el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
-	    el.data('display',
-			parseFloat(val.replace(/\,/g, ""))
-			.toFixed(2).toString()
-			.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-		);
-	    el.attr('value', el.data('display'));
-	    el.val(el.data('display'));
-	});
-	//
-	$('input[type="text"]').keyboard({layout: 'qwerty'});
-</script>
+
 </body>
 </html>

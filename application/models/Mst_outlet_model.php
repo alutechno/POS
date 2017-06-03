@@ -107,7 +107,7 @@
 		}
 		// insert data
 		function insert($data) {
-			$this->db->insert($this->table, $data);
+			$e=$this->db->insert($this->table, $data);
 		}
 		// update data
 		function update($id, $data) {

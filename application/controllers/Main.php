@@ -81,9 +81,9 @@
 			");
 			if ($isTaxes[0]->e == 'N') {
 				$rows = $this->compile('
-					select 
-						a.outlet_id, 
-						max(case when b.code = \'SC\' then tax_percent end) service_charge, 
+					select
+						a.outlet_id,
+						max(case when b.code = \'SC\' then tax_percent end) service_charge,
 						max(case when b.code = \'TX\' then tax_percent end) tax
 					from pos_outlet_tax a
 					left join mst_pos_taxes b on b.id = a.pos_tax_id
@@ -93,7 +93,7 @@
 				$taxVal += $price * ($rows[0]->tax) / 100;
 				$serviceVal += $price * ($rows[0]->service_charge) / 100;
 				$adTaxes = $this->compile("
-					select a.outlet_menu_id, b.name, b.tax_percent 
+					select a.outlet_menu_id, b.name, b.tax_percent
 					from pos_menus_tax a
 					left join mst_pos_taxes b on b.id = a.pos_tax_id
 					where outlet_menu_id = $menuId
@@ -325,9 +325,9 @@
 			");
 			if ($isTaxes[0]->e == 'N') {
 				$rows = $this->compile('
-					select 
-						a.outlet_id, 
-						max(case when b.code = \'SC\' then tax_percent end) service_charge, 
+					select
+						a.outlet_id,
+						max(case when b.code = \'SC\' then tax_percent end) service_charge,
 						max(case when b.code = \'TX\' then tax_percent end) tax
 					from pos_outlet_tax a
 					left join mst_pos_taxes b on b.id = a.pos_tax_id
@@ -337,7 +337,7 @@
 				$taxVal += $price * ($rows[0]->tax) / 100;
 				$serviceVal += $price * ($rows[0]->service_charge) / 100;
 				$adTaxes = $this->compile("
-					select a.outlet_menu_id, b.name, b.tax_percent 
+					select a.outlet_menu_id, b.name, b.tax_percent
 					from pos_menus_tax a
 					left join mst_pos_taxes b on b.id = a.pos_tax_id
 					where outlet_menu_id = $menuId

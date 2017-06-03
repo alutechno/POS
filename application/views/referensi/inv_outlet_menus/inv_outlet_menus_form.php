@@ -65,8 +65,18 @@
 
 	<div class="form-group">
 		<label for="int">Menu Class Id <?php echo form_error('menu_class_id') ?></label>
-		<input type="text" class="form-control" name="menu_class_id" id="menu_class_id"
-			   placeholder="Menu Class Id" value="<?php echo $menu_class_id; ?>"/>
+		<select class="form-control" name="menu_class_id" id="menu_class_id">
+			<?php
+				$query = $this->db->query("select * from ref_outlet_menu_class ");
+				foreach ($query->result() as $row) {
+					?>
+					<option
+						value='<?php echo $row->id ?>' <?php echo $row->id == $menu_class_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+					<?php
+				}
+			?>
+
+		</select>
 	</div>
 	<!--<div class="form-group">
             <label for="int">Menu Group Id <?php echo form_error('menu_group_id') ?></label>

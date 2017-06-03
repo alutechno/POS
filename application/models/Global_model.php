@@ -70,9 +70,9 @@
 		}
 		function get_no_bill($table_id) {
 			//select order_no  from pos_outlet_order_detil where table_id=1 and closed_bill=0 group by order_no
-			$query = $this->db->query("select order_no  from pos_outlet_order_header where table_no=" . $table_id . " and outlet_id=" . $this->session->userdata('outlet') . " group by order_no");
+			$query = $this->db->query("select code  from pos_orders where table_id=" . $table_id . " and outlet_id=" . $this->session->userdata('outlet') . " group by code");
 			foreach ($query->result() as $row) {
-				$order_no = $row->order_no;
+				$order_no = $row->code;
 			}
 
 			return $order_no;
@@ -97,7 +97,7 @@
 			return $strname;
 		}
 		function guest() {
-			$query = $this->db->query("SELECT 
+			$query = $this->db->query("SELECT
         `a`.`id` AS `folio_id`,
         CONCAT(`b`.`first_name`, `b`.`last_name`, ',') AS `guest_name`,
         `d`.`name` AS `room_type`,

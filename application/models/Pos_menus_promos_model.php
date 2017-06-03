@@ -14,8 +14,7 @@
 			$this->datatables->from('pos_menus_promos');
 			//add this line for join
 			//$this->datatables->join('table2', 'pos_menus_promos.field = table2.field');
-			$this->datatables->add_column('action', anchor(site_url('pos_menus_promos/read/$1'),
-														   'Read') . " | " . anchor(site_url('pos_menus_promos/update/$1'),
+			$this->datatables->add_column('action',  anchor(site_url('pos_menus_promos/update/$1'),
 																					'Update') . " | " . anchor(site_url('pos_menus_promos/delete/$1'),
 																											   'Delete',
 																											   'onclick="javasciprt: return confirm(\'Are You Sure ?\')"'),
@@ -96,7 +95,7 @@
 		}
 		// insert data
 		function insert($data) {
-			$this->db->insert($this->table, $data);
+			$e=$this->db->insert($this->table, $data);
 		}
 		// update data
 		function update($id, $data) {

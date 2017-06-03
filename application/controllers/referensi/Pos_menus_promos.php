@@ -92,7 +92,7 @@
 					'modified_by' => $this->input->post('modified_by', true),);
 				$this->Pos_menus_promos_model->insert($data);
 				$this->session->set_flashdata('message', 'Create Record Success');
-				redirect(base_url('pos_menus_promos'));
+				redirect(base_url('referensi/pos_menus_promos'));
 			}
 		}
 		public function update($id) {
@@ -175,7 +175,7 @@
 			$this->form_validation->set_rules('end_date', 'end date', 'trim|required');
 			$this->form_validation->set_rules('begin_time', 'begin time', 'trim|required');
 			$this->form_validation->set_rules('end_time', 'end time', 'trim|required');
-			$this->form_validation->set_rules('discount_id', 'discount id', 'trim|required');
+			/*$this->form_validation->set_rules('discount_id', 'discount id', 'trim|required');
 			$this->form_validation->set_rules('discount_percent', 'discount percent',
 											  'trim|required|numeric');
 			$this->form_validation->set_rules('discount_amount', 'discount amount',
@@ -201,7 +201,7 @@
 			$this->form_validation->set_rules('created_by', 'created by', 'trim|required');
 			$this->form_validation->set_rules('modified_by', 'modified by', 'trim|required');
 			$this->form_validation->set_rules('id', 'id', 'trim');
-			$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
+			$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');*/
 		}
 	}
 
