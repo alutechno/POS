@@ -71,9 +71,8 @@
 
 					<?php
 						//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
-						if ($row->is == "") {
+						if (!($row->is)) {
 							?>
-
 							<a data-toggle="modal" href="#"
 							   onclick="load_guest(<?= $row->table_no ?>, <?= $row->guest ?>)"> <img
 									src="<?= base_url() ?>menu/table_avai.jpeg" width="100"
