@@ -17,6 +17,8 @@
 	<link href=" <?php echo MY_ASSETS ?>css/ionicons.min.css" rel="stylesheet" type="text/css"/>
 	<!-- Theme style -->
 	<link href=" <?php echo MY_ASSETS ?>css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -66,21 +68,18 @@
 	</aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
 <!-- jQuery 2.0.2 -->
-<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
-<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
-<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
+<script src=" <?php echo base_url() ?>assets/js/jquery.min.js"></script>
 <script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
 <script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
+
+<!-- Bootstrap -->
+<script src=" <?php echo MY_ASSETS ?>js/bootstrap.min.js" type="text/javascript"></script>
+<!-- AdminLTE App -->
+<script src=" <?php echo MY_ASSETS ?>js/AdminLTE/app.js" type="text/javascript"></script>
 <script type="text/javascript">
 	$('input[type="text"]').keyboard({layout: 'qwerty'});
 	$('input[type="number"]').keyboard({layout: 'num'});
 	$('input[type="search"]').keyboard({layout: 'qwerty'});
 </script>
-
-<script src=" <?php echo base_url() ?>assets/js/jquery.min.js"></script>
-<!-- Bootstrap -->
-<script src=" <?php echo MY_ASSETS ?>js/bootstrap.min.js" type="text/javascript"></script>
-<!-- AdminLTE App -->
-<script src=" <?php echo MY_ASSETS ?>js/AdminLTE/app.js" type="text/javascript"></script>
 </body>
 </html>

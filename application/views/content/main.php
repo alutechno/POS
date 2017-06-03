@@ -55,7 +55,14 @@
 	<!-- Small boxes (Stat box) -->
 	<div class="row">
 		<?php
-			$query = $this->db->query("select a.*, (case when b.guest<>'' then b.guest else 0 end) as guest, b.order_no  from mst_pos_tables a  left join pos_outlet_order_header b on a.table_no=b.table_no where a.outlet_id=" . $this->session->userdata('outlet') . " order by a.id");
+			$query = $this->db->query("
+				select a.*, b.id `is`, b.num_of_cover guest
+				from mst_pos_tables a 
+				left join pos_orders b 
+				on a.id=b.table_id and b.status in (0,1)
+				where a.outlet_id=". $this->session->userdata('outlet') ."
+				order by a.id
+			");
 			//echo $this->db->last_query();exit;
 			foreach ($query->result() as $row) {
 				?>
@@ -64,11 +71,11 @@
 
 					<?php
 						//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
-						if ($row->order_no == "") {
+						if ($row->is == "") {
 							?>
 
 							<a data-toggle="modal" href="#"
-							   onclick="load_guest(<?= $row->table_no ?>,<?= $row->guest ?>)"> <img
+							   onclick="load_guest(<?= $row->table_no ?>, <?= $row->guest ?>)"> <img
 									src="<?= base_url() ?>menu/table_avai.jpeg" width="100"
 									height="100">
 								<?php echo $row->table_no ?></a>

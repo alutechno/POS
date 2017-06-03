@@ -19,6 +19,8 @@
 		  type="text/css"/>
 	<!-- Theme style -->
 	<link href="<?php echo MY_ASSETS ?>css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -69,11 +71,6 @@
 		</section><!-- /.content -->
 	</aside><!-- /.right-side -->
 </div><!-- ./wrapper -->
-<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
-<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
-<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
-<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
-
 <!-- jQuery 2.0.2 -->
 <!-- Bootstrap -->
 <script src="<?php echo MY_ASSETS ?>js/bootstrap.min.js" type="text/javascript"></script>
@@ -84,7 +81,8 @@
 		type="text/javascript"></script>
 <!-- AdminLTE App -->
 <script src="<?php echo MY_ASSETS ?>js/AdminLTE/app.js" type="text/javascript"></script>
-
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 <!-- page script -->
 <script type="text/javascript">
 	$(function () {
@@ -103,6 +101,5 @@
 	});
 
 </script>
-
 </body>
 </html>

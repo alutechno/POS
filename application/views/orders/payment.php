@@ -49,8 +49,8 @@
 							<label for="usr">Cash with</label>
 						</div>
 						<div class="col-lg-6 text-right">
-							<input type="text" class="form-control" id="card_no"
-								   name="card_no">
+							<input type="currency" class="form-control"
+								   name="currency">
 						</div>
 					</div>
 					<div class="row">
@@ -657,15 +657,17 @@
 
 	function menu_select() {
 		document.forms["myform"].submit();
-
 	}
+	//
 	$(document).ready(function () {
-		$('.vk-qwerty').keyboard({layout: 'qwerty'}).addTyping();
-		$("#search_food").keypress(function (e) {
-		  if (e.which == 13) {
-			document.forms["myform"].submit();
-		    return false;    //<---- Add this line
-		  }
+		$('input[type="currency"]').on('blur', function () {
+			console.log($(this).data())
 		});
-	})
+		$("#search_food").keypress(function (e) {
+			if (e.which == 13) {
+				document.forms["myform"].submit();
+				return false;    //<---- Add this line
+			}
+		});
+	});
 </script>
