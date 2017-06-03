@@ -71,6 +71,9 @@
 			pesan('orders/pesan', $data);
 		}
 		function inputpesan() {
+			$user_id = $this->session->userdata('user_id');
+			$menuClassId = $this->uri->segment(5);
+			$orderId = $this->uri->segment(6);
 			$menuId = $this->uri->segment(3);
 			$outletId = $this->session->userdata('outlet');
 			$price = $this->uri->segment(4);
@@ -104,24 +107,27 @@
 					}
 				}
 			}
-			//select * where is_tax_included = 'N'
 			$data = array(
-				'menu_id' => $this->uri->segment(3),
-				'amount' => $this->uri->segment(4),
-				'qty' => 1,
-				'tax' => $taxVal,
-				'service' => $serviceVal,
-				'order_no' => $this->session->userdata('order_no'),
-				'menu_class_id' => $this->uri->segment(5),
-				'table_id' => $this->uri->segment(6),
-				'outlet_id' => $outletId
-			);
-			//order_no
-			$this->db->insert('pos_outlet_order_detil', $data);
-			// echo $this->db->last_query();exit;
+                "order_id" => $orderId,
+                "menu_class_id" => $menuClassId,
+                "outlet_menu_id" => $menuId,
+                "modifier_id" => null,
+                "kitchen_id" => null,
+                "serving_status" => 0,
+                "order_qty" => 1,
+                "price_amount" => $price,
+                "total_amount" => $price,
+				"created_by" => $user_id,
+                "created_date" => date('Y-m-d H:i:s')
+            );
+			// updating phase #1
+			$this->db->set('tax_amount', 'tax_amount+('. $price .'*tax_percent/100)', FALSE);
+			$this->db->where('order_id', $orderId);
+			$this->db->update('pos_order_taxes');
+
+			// real inserting
+			$this->db->insert('pos_orders_line_item', $data);
 			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(6) . ($this->uri->segment(7) ? "/".$this->uri->segment(7) : "") . ($this->uri->segment(8) ? "/".$this->uri->segment(8) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
-			// echo base_url() . "main/reload_pesan/" . $this->uri->segment(6) . ($this->uri->segment(7) ? "/".$this->uri->segment(7) : "") . ($this->uri->segment(8) ? "/".$this->uri->segment(8) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""); exit;
-			//redirect(base_url()."main/reload_pesan/".$this->session->table);
 		}
 		function cancel_order() {
 			// echo "sss";exit;
@@ -223,6 +229,23 @@
 				'created_by' => $user_id,
 				'created_date' => date('Y-m-d H:i:s')
 			));
+			$parentId = $this->db->insert_id();
+			$taxes = $this->compile("
+				select b.*
+				from pos_outlet_tax a
+				left join mst_pos_taxes b on b.id = a.pos_tax_id
+				where outlet_id  = ". $outlet_id ."
+			");
+			foreach ($taxes as $tax) {
+				$this->db->insert('pos_order_taxes', array(
+					'order_id' => $parentId,
+					'tax_id' => $tax->id,
+					'tax_percent' => $tax->tax_percent,
+					'tax_amount' => 0,
+					'created_by' => $user_id,
+					'created_date' => date('Y-m-d H:i:s')
+				));
+			}
 			redirect(base_url('main/payment/' . $table_id));
 		}
 		function save_note() {
