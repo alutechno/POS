@@ -39,14 +39,24 @@
 			$amount += $row->price;
 			$i++;
 		}
-		$query = $this->db->query("select tax_id,a.tax_amount,b.name tax_name
+		$query = $this->db->query("select tax_id,sum(a.tax_amount) tax_amount,b.name tax_name
 			from pos_order_taxes a,mst_pos_taxes b
 			where a.tax_id=b.id
-			and a.order_id=".$this->uri->segment(3));
+			and a.order_id in (".$order_id.")
+			group by tax_id");
 		$data=[];
 		foreach ($query->result() as $row) {
 			$data[$row->tax_name]=$row->tax_amount;
 			$amount+=$row->tax_amount;
+		}
+
+		$query = $this->db->query("select b.name,sum(price_amount)price from pos_orders_line_item a,ref_outlet_menu_class b
+			where a.menu_class_id=b.id
+			and a.order_id in  (27,26)
+			group by b.name");
+		$class=[];
+		foreach ($query->result() as $row) {
+			$class[$row->name]=$row->price;
 		}
 	?>
 
@@ -55,24 +65,18 @@
 		<td align="right">&nbsp;</td>
 	</tr>
 
+	<?php foreach($class as $key => $value){
+		?>
 	<tr>
-		<td colspan="3" align="left">Total Food</td>
-		<td align="right"><?php echo number_format($this->global_model->get_tot_food($this->session->table,
-																					 $this->session->userdata('no_bill'))) ?></td>
+		<td colspan="3" align="left">Total <?php echo $key?></td>
+		<td align="right"><?php echo number_format($value) ?></td>
 	</tr>
 	<tr>
-		<td colspan="3" align="left">Diskon Food</td>
+		<td colspan="3" align="left">Discount <?php echo $key?></td>
 		<td align="right">0</td>
 	</tr>
-	<tr>
-		<td colspan="3" align="left">Total Beverages</td>
-		<td align="right"><?php echo number_format($this->global_model->get_tot_beverages($this->session->table,
-																						  $this->session->userdata('no_bill'))) ?></td>
-	</tr>
-	<tr>
-		<td colspan="3" align="left">Discount Beverages</td>
-		<td align="right">0</td>
-	</tr>
+	<?php }?>
+
 	<?php foreach($data as $key => $value){
 		?>
 	<tr>
