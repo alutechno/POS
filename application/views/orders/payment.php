@@ -8,11 +8,12 @@
 				<h4 class="modal-title" id="myModalCash-label">Cash Payment</h4>
 			</div>
 			<form class="modal-body">
-				<?php
-					$outletId = $this->session->userdata('outlet');
-					$orderId = $this->uri->segment(3);
-					$orderCode = $this->session->order_no;
-					$q = $this->db->query("
+				<form id="subscribe-email-form" action="#" method="post">
+					<?php
+						$outletId = $this->session->userdata('outlet');
+						$orderId = $this->uri->segment(3);
+						$orderCode = $this->session->order_no;
+						$q = $this->db->query("
 						select
 							a.sub_total_amount total,a.due_amount grandtotal,
 							c.name,b.tax_percent,b.tax_amount
@@ -20,42 +21,41 @@
 						where a.id=b.order_id
 						and b.tax_id=c.id
 						and a.id=" . $orderId
-					);
-					$rows = $q->result();
-					function html($label, $val, $id = '') {
-						$val = floatval($val);
-						if (!($val > 0)) $val = 0;
+						);
+						$rows = $q->result();
+						function html($label, $val, $id = '') {
+							$val = floatval($val);
+							if (!($val > 0)) $val = 0;
 
-						return '
-						<div class="row">
-							<div class="col-lg-6">
-								<label>' . $label . '</label>
-							</div>
-							<div class="col-lg-6 text-right">
-								<label for="' . $id . '" val="' . $val . '">
-								' . rupiah($val, 2) . '</label>
-							</div>
-						</div>';
-					}
+							return '
+								<div class="row">
+									<div class="col-lg-6">
+										<label>' . $label . '</label>
+									</div>
+									<div class="col-lg-6 text-right">
+										<label style="margin-right: 13px;" for="' . $id . '" val="' . $val . '">
+										' . rupiah($val, 2) . '</label>
+									</div>
+								</div>';
+						}
 
-					echo html('Total', $rows[0]->total);
-					foreach ($rows as $row) {
-						$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
-																						   2) . '% </small>';
-						$v = $row->tax_amount;
-						echo html($l, $v);
-					}
-					echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
-				?>
-				<hr/>
-				<form id="subscribe-email-form" action="#" method="post">
+						echo html('Total', $rows[0]->total);
+						foreach ($rows as $row) {
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																							   2) . '% </small>';
+							$v = $row->tax_amount;
+							echo html($l, $v);
+						}
+						echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+					?>
 					<div class="row">
 						<div class="col-lg-6">
 							<label for="usr">Cash with</label>
 						</div>
 						<div class="col-lg-6 text-right">
-							<input type="currency" class="form-control"
-								   name="currency">
+							<input type="hidden" class="form-control" name="order_id"
+								   value="<?php echo $orderId; ?>">
+							<input type="currency" class="form-control" name="payment_amount">
 						</div>
 					</div>
 					<div class="row">
@@ -63,7 +63,7 @@
 							<label for="usr">Change</label>
 						</div>
 						<div class="col-lg-6 text-right">
-							<label for="change"></label>
+							<label for="change" style="margin-right: 13px;"></label>
 						</div>
 					</div>
 				</form>
@@ -87,6 +87,30 @@
 				<h4 class="modal-title" id="myModalLabel">Debit/Credit Card Payment</h4>
 			</div>
 			<div class="modal-body">
+				<?php
+					$outletId = $this->session->userdata('outlet');
+					$orderId = $this->uri->segment(3);
+					$orderCode = $this->session->order_no;
+					$q = $this->db->query("
+						select
+							a.sub_total_amount total,a.due_amount grandtotal,
+							c.name,b.tax_percent,b.tax_amount
+						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
+						where a.id=b.order_id
+						and b.tax_id=c.id
+						and a.id=" . $orderId
+					);
+					$rows = $q->result();
+					echo html('Total', $rows[0]->total);
+					foreach ($rows as $row) {
+						$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																						   2) . '% </small>';
+						$v = $row->tax_amount;
+						echo html($l, $v);
+					}
+					echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+				?>
+				<hr/>
 				<form id="subscribe-email-form" action="#" method="post">
 					<div class="row">
 						<div class="col-lg-3">
@@ -98,9 +122,7 @@
 								</select>
 							</div>
 						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-12">
+						<div class="col-lg-9">
 							<div class="form-group">
 								<label>Bank</label>
 								<select class="form-control">
@@ -156,7 +178,6 @@
 		</div>
 	</div>
 </div>
-
 <!-- modal -->
 <div class="modal fade" id="myModalOpenMenu" tabindex="-1" role="dialog"
 	 aria-labelledby="myModalLabel">
@@ -601,7 +622,7 @@
 							<i class="fa fa-arrows-alt"></i>
 							Split
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="#myModalcard">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalNoPost">
 							<i class="fa fa-times-circle"></i>
 							No Post
 						</a>
