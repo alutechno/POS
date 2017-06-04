@@ -342,16 +342,20 @@
 		}
 		function submit() {
 			$data=$this->input->post();
-			foreach ($data['id'] as $key ) {
-				$res=$this->db->query("select * from pos_order where id=".$key);
+			$orderId=explode(',', $data['order_id']);
+			if (!isset($data['card_no'])) {
+				$data['card_no'] = 'NULL';
+			}
+			foreach ($orderId as $key ) {
+				$res=$this->db->query("select * from pos_orders where id=".$key);
 				$res=$res->result();
-				$data = array(
+				$newData = array(
 			        'order_id' => $key,
 			        'payment_type_id' => $data['payment_type_id'],
 			        'card_no' => $data['card_no'],
-					'total_amount'=>$res[0]['due_amount']
+					'total_amount'=>floatval($res[0]->due_amount)
 				);
-				$this->db->insert('mytable', $data);
+				$this->db->insert('pos_card_payment_detail', $newData);
 			}
 		}
 		function include_room() {

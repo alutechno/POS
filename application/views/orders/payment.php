@@ -7,8 +7,9 @@
 						aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalCash-label">Cash Payment</h4>
 			</div>
-			<form class="modal-body">
-				<form id="subscribe-email-form" action="#" method="post">
+			<form id="subscribe-email-form" action="<?php echo base_url(); ?>main/submit"
+				  method="post">
+				<div class="modal-body">
 					<?php
 						$orderId = $this->uri->segment(3);
 						$orderId = explode('-', $orderId);
@@ -44,7 +45,7 @@
 						echo html('Total', $rows[0]->total);
 						foreach ($rows as $row) {
 							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' .
-								rupiah($row->tax_percent,2) .
+								rupiah($row->tax_percent, 2) .
 								'% </small>';
 							$v = $row->tax_amount;
 							echo html($l, $v);
@@ -56,6 +57,10 @@
 							<label for="usr">Cash with</label>
 						</div>
 						<div class="col-lg-6 text-right">
+							<input type="hidden" class="form-control" name="payment_type_id"
+								   value="11">
+							<input type="hidden" class="form-control" name="order_id"
+								   value="<? echo $orderId; ?>">
 							<input type="currency" class="form-control" name="payment_amount">
 						</div>
 					</div>
@@ -67,15 +72,17 @@
 							<label for="change" style="margin-right: 13px;"></label>
 						</div>
 					</div>
-				</form>
+				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close
 					</button>
 					<button type="submit" class="btn btn-primary"
-							onclick="print_payment('<?php echo $this->session->order_no; ?>')">
+							aonclick="print_payment('<?php echo $this->session->order_no; ?>')">
 						Submit
 					</button>
 				</div>
+
+			</form>
 		</div>
 	</div>
 </div>
@@ -181,7 +188,26 @@
 		</div>
 	</div>
 </div>
-<!-- modal -->
+<div class="modal fade" id="myModalMerge" tabindex="-1" role="dialog"
+	 aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Choose Tables</h4>
+			</div>
+			<div class="modal-body">
+				<!---->
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="submit" class="btn btn-primary" onclick="">Submit</button>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
 <div class="modal fade" id="myModalOpenMenu" tabindex="-1" role="dialog"
 	 aria-labelledby="myModalLabel">
 	<div class="modal-dialog modal-lg" role="document">
@@ -274,8 +300,6 @@
 		</div>
 	</div>
 </div>
-
-<!-- modal -->
 <div class="modal fade" id="myModalnote" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -305,8 +329,6 @@
 		</div>
 	</div>
 </div>
-
-<!-- modal room -->
 <div class="modal fade" id="myModalroom" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -348,7 +370,6 @@
 		</div>
 	</div>
 </div>
-
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
