@@ -10,9 +10,9 @@
 			<form class="modal-body">
 				<form id="subscribe-email-form" action="#" method="post">
 					<?php
-						$outletId = $this->session->userdata('outlet');
 						$orderId = $this->uri->segment(3);
-						$orderCode = $this->session->order_no;
+						$orderId=explode( '-', $orderId);
+						$orderId=implode(",",$orderId);
 						$q = $this->db->query("
 						select
 							a.sub_total_amount total,a.due_amount grandtotal,
@@ -20,7 +20,7 @@
 						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
 						where a.id=b.order_id
 						and b.tax_id=c.id
-						and a.id=" . $orderId
+						and a.id in(" . $orderId.")"
 						);
 						$rows = $q->result();
 						function html($label, $val, $id = '') {
