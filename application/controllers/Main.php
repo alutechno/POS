@@ -301,11 +301,32 @@
 			$order_id = $this->uri->segment(3);
 			$outlet_id = $this->session->userdata('outlet');
 			$message = shell_exec("ls");
-			$query = $this->db->query("select * from ref_outlet_menu_class");
+			$query = $this->db->query("select e.name outlet,d.name,c.name menu,b.order_qty
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e
+				where a.id=b.order_id
+				and b.outlet_menu_id=c.id
+				and a.waiter_user_id=d.id
+				and a.outlet_id=e.id
+				and b.serving_status=0
+				and a.id=".$order_id);
+			$i=1;
 			foreach ($query->result() as $row) {
-				echo json_encode($row);
+				if($i==1){
+					echo "Outlet : ".$row->outlet;
+					echo "</br>";
+					echo "Waiter : ".$row->name;
+					echo "</br>";
+				}
+				echo "</br>";
+				echo $row->menu."&emsp;";
+				echo $row->order_qty;
+				$i++;
 			}
-			echo $message;
+			echo "</br></br>";
+			$this->db->set('serving_status', '1');
+			$this->db->where('order_id', $order_id);
+			$this->db->where('serving_status', '0');
+			$this->db->update('pos_orders_line_item');
 			echo '<script language="javascript">';
 			echo 'alert("order successfully print");';
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
