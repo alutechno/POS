@@ -342,6 +342,7 @@
 			echo '<script language="javascript">';
 			echo 'window.open("'.REPORT_BIRT.'struk_order.rptdesign&no_bill='.$res.'&payment='.$pay.'&__action=print","_blank")';
 			echo '</script>';
+
 		}
 		function submit() {
 			$data=$this->input->post();
@@ -349,7 +350,7 @@
 				$data['card_no'] = 'NULL';
 				$payment_amount=str_replace(',','',$data['payment_amount']);
 			}else{
-				$payment_amount=0;
+				$payment_amount=$data['grandtotal'];
 			}
 
 			$orderId=explode(',', $data['order_id']);
@@ -357,12 +358,11 @@
 			foreach ($orderId as $key ) {
 				$res=$this->db->query("select * from pos_orders where id=".$key);
 				$res=$res->result();
-				$payment_amount=$payment_amount+$res[0]->due_amount;
 				$newData = array(
 			        'order_id' => $key,
 			        'payment_type_id' => $data['payment_type_id'],
 			        'card_no' => $data['card_no'],
-					'total_amount'=>floatval($res[0]->due_amount),
+					'total_amount'=>sizeof($orderId) > 1?floatval($res[0]->due_amount):$data['grandtotal'],
 					'created_by'=>$this->session->userdata('user_id')
 				);
 				$this->db->insert('pos_card_payment_detail', $newData);
@@ -372,8 +372,9 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
+			redirect(base_url() . "main");
 			$this->print_tes($data['order_id'],$payment_amount);
-			//redirect(base_url() . "main");
+
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
