@@ -218,7 +218,14 @@
 				<h4 class="modal-title" id="myModalLabel">Menu Note</h4>
 			</div>
 			<div class="modal-body">
-				<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">
+				<form id="subscribe-email-form" action="<?php echo base_url() ?>main/save_note/<?php echo $this->uri->segment(3) ?>" method="post">
+					<?php
+						$query = $this->db->query("select order_notes from pos_orders where id=".$this->uri->segment(3));
+						$row=$query->result();
+					?>
+					<textarea class="form-control" name="note"  id="note" ><?php echo $row[0]->order_notes ?></textarea>
+
+				<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">-->
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -553,7 +560,7 @@
 							<i class="fa fa-times-circle"></i>
 							No Post
 						</a>
-						<a class="btn btn-app btn-warning" data-toggle="modal" href="#myModalroom">
+						<a class="btn btn-app btn-warning" data-toggle="modal" href="<?php echo base_url() ?>main/open_cash/<?php echo $this->uri->segment(3) ?>">
 							<i class="fa fa-th-large"></i>
 							Cash draw
 						</a>
@@ -568,9 +575,7 @@
 							<i class="fa fa-times"></i>
 							Void Menu
 						</a>
-						<a class="btn btn-app bg-yellow"
-						   e="print('<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>')"
-						   href="<?php echo base_url() . "execute?data=" . $this->global_model->get_no_bill($this->uri->segment(3)) . "&base=" . $_SERVER['REQUEST_URI'] ?>"
+						<a class="btn btn-app bg-yellow" href="<?php echo base_url() ?>main/print_kitchen/<?php echo $this->uri->segment(3) ?>">
 						<i class="fa fa-print"></i>
 						Print Order
 						</a>
@@ -593,6 +598,7 @@
 
 <script type="text/javascript">
 	$('input[type="text"]').keyboard({layout: 'qwerty'});
+	$('textarea').keyboard({layout: 'qwerty'});
 	// $('#search_food').keyboard({layout: 'qwerty',autoAccept: true,enterNavigation:true});
 	$.keyboard.keyaction.enter = function(base){
 		// console.log(base);

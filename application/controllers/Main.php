@@ -286,23 +286,38 @@
 			redirect(base_url('main/payment/' . $parentId));
 		}
 		function save_note() {
-			//$bill=$this->session->userdata('no_bill');
-			$outlet_id = $this->session->userdata('outlet');
-			$table_id = $this->uri->segment(3);
-			// echo  $outlet_id;exit;
-			$this->db->set('outlet_id', $outlet_id);
-			$this->db->set('table_id', $table_id);
-			$this->db->set('note', $this->input->post('note'));
-			$this->db->where('closed_bill', 0);
-			$this->db->update('mytable');
-			redirect(base_url('main/payment/' . $table_id));
+			$order_id = $this->uri->segment(3);
+			$note=$this->input->post();
+			$this->db->set('order_notes', $note['note']);
+			$this->db->where('id', $order_id);
+			$this->db->update('pos_orders');
+			redirect(base_url() . "main/payment/" . $order_id);
 		}
 		function save_meal_time() {
 			redirect(base_url('main'));
 		}
 		function print_kitchen() {
-			echo "test";
-			printer_open();
+			$user_id = $this->session->userdata('user_id');
+			$order_id = $this->uri->segment(3);
+			$outlet_id = $this->session->userdata('outlet');
+			$message = shell_exec("ls");
+			$query = $this->db->query("select * from ref_outlet_menu_class");
+			foreach ($query->result() as $row) {
+				echo json_encode($row);
+			}
+			echo $message;
+			echo '<script language="javascript">';
+			echo 'alert("order successfully print");';
+			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
+			echo '</script>';
+		}
+		function open_cash() {
+			$order_id = $this->uri->segment(3);
+			$message = shell_exec("copy open.txt LPT3");
+			echo '<script language="javascript">';
+			echo 'alert("Cash draw open");';
+			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
+			echo '</script>';
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
