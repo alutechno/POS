@@ -28,26 +28,7 @@
 	<![endif]-->
 
 	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
-	<!-- still using jQuery v2.2.4 because Bootstrap doesn't support v3+ -->
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
-	<!-- <script src="docs/js/jquery-migrate-3.0.0.min.js"></script> -->
-	<!-- keyboard widget css & script (required) -->
 	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
-
-	<!-- keyboard extensions (optional) -->
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.mousewheel.js"></script>
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-typing.js"></script>
-	<script
-		src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-autocomplete.js"></script>
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-caret.js"></script>
-	<!-- demo only -->
-	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/demo.css" rel="stylesheet">
-	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/prettify.css" rel="stylesheet">
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/demo.js"></script>
-	<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery.tipsy.min.js"></script>
-
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
@@ -61,27 +42,15 @@
 		<form action="<?= base_url('login/proses') ?>" method="post">
 
 			<div class="form-group has-feedback">
-				<input id="text" type="text" name="userid" class="form-control" placeholder="UserID"
+				<input type="text" name="userid" class="form-control" placeholder="UserID"
 					   required>
 				<span class="glyphicon glyphicon-user form-control-feedback"></span>
 			</div>
 
 			<div class="form-group has-feedback">
-				<input id="colemak" type="password" name="password" class="form-control"
+				<input type="password" name="password" class="form-control"
 					   placeholder="Password" required>
 				<span class="glyphicon glyphicon-lock form-control-feedback"></span>
-			</div>
-
-			<div class="code ui-corner-all">
-			<pre class="prettyprint lang-js">
-				$('#text')
-					.keyboard({ layout: 'qwerty' })
-					.addTyping();</pre>
-
-				<pre class="prettyprint lang-js">
-				$('#colemak')
-					.keyboard({ layout: 'qwerty' })
-					.addTyping();</pre>
 			</div>
 
 			<div class="form-group has-feedback">
@@ -116,12 +85,21 @@
 	<!-- /.login-box-body -->
 </div>
 <!-- /.login-box -->
-
-<!-- jQuery 2.2.3 -->
-<script src="<?= MY_ASSETS2 ?>plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-latest.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
+<!-- keyboard extensions (optional) -->
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.mousewheel.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-typing.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-autocomplete.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.extension-caret.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 <!-- Bootstrap 3.3.6 -->
 <script src="<?= MY_ASSETS2 ?>bootstrap/js/bootstrap.min.js"></script>
 <!-- iCheck -->
-
+<script>
+	$('input').keyboard({ layout: 'qwerty' })
+</script>
 </body>
 </html>
