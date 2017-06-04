@@ -74,6 +74,8 @@
 			$query = $this->db->query("select a.code,b.table_no from pos_orders a,mst_pos_tables b
 				where a.table_id=b.id
 				and a.outlet_id=b.outlet_id and a.id=" . $table_id );
+			$order_no="";
+			$table="";
 			foreach ($query->result() as $row) {
 				$order_no = $row->code;
 				$table = $row->table_no;

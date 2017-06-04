@@ -340,6 +340,20 @@
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
 			echo '</script>';
 		}
+		function submit() {
+			$data=$this->input->post();
+			foreach ($data['id'] as $key ) {
+				$res=$this->db->query("select * from pos_order where id=".$key);
+				$res=$res->result();
+				$data = array(
+			        'order_id' => $key,
+			        'payment_type_id' => $data['payment_type_id'],
+			        'card_no' => $data['card_no'],
+					'total_amount'=>$res[0]['due_amount']
+				);
+				$this->db->insert('mytable', $data);
+			}
+		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
 			$outlet = $this->input->post('outlet');

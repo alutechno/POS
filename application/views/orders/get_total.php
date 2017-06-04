@@ -13,13 +13,15 @@
 		$amount = 0;
 		//$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from     pos_outlet_order_detil
         //    where is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . " group by menu_id ");
-
+		$order_id=$this->uri->segment(3);
+		$order_id=explode( '-', $order_id);
+		$order_id=implode(",",$order_id);
 		$query = $this->db->query("select c.name,sum(b.order_qty) qty,sum(b.price_amount) price
 			from pos_orders a,pos_orders_line_item b,inv_outlet_menus c
 			where a.id=b.order_id
 			and b.outlet_menu_id=c.id
 			and b.serving_status<>'4'
-			and a.id=".$this->uri->segment(3)."
+			and a.id in (".$order_id.")
 			group by c.name");
 		$i = 1;
 		//echo $query;
