@@ -4,7 +4,6 @@
 	class Main extends CI_Controller {
 		function __construct() {
 			parent::__construct();
-			//$this->load->library('datatables');
 			is_logged_in();
 		}
 		function compile($str) {
@@ -14,9 +13,6 @@
 			$this->session->unset_userdata('no_bill');
 			$this->session->unset_userdata('table');
 			$this->session->unset_userdata('order_no');
-			//echo $this->session->userdata('outlet');exit;
-			//echo $this->session->userdata('outlet');exit;
-			//$this->load->view('main/v_main');
 			$view = "content/main";
 			$data = "";
 			show($view, $data);
@@ -340,27 +336,44 @@
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
 			echo '</script>';
 		}
+		function print_tes($res,$pay) {
+			$this->log($res);
+			$this->log($pay);
+			echo '<script language="javascript">';
+			echo 'window.open("'.REPORT_BIRT.'struk_order.rptdesign&no_bill='.$res.'&payment='.$pay.'&__action=print","_blank")';
+			echo '</script>';
+		}
 		function submit() {
 			$data=$this->input->post();
-			$orderId=explode(',', $data['order_id']);
 			if (!isset($data['card_no'])) {
 				$data['card_no'] = 'NULL';
+				$payment_amount=str_replace(',','',$data['payment_amount']);
+			}else{
+				$payment_amount=0;
 			}
+
+			$orderId=explode(',', $data['order_id']);
+
 			foreach ($orderId as $key ) {
 				$res=$this->db->query("select * from pos_orders where id=".$key);
 				$res=$res->result();
+				$payment_amount=$payment_amount+$res[0]->due_amount;
 				$newData = array(
 			        'order_id' => $key,
 			        'payment_type_id' => $data['payment_type_id'],
 			        'card_no' => $data['card_no'],
-					'total_amount'=>floatval($res[0]->due_amount)
+					'total_amount'=>floatval($res[0]->due_amount),
+					'created_by'=>$this->session->userdata('user_id');
 				);
 				$this->db->insert('pos_card_payment_detail', $newData);
 				$this->db->set('status', '2', FALSE);
+				$this->db->set('modified_by', $this->session->userdata('user_id'), FALSE);
+				$this->db->set('modified_date', 'now()', FALSE);
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			redirect(base_url() . "main");
+			$this->print_tes($data['order_id'],$payment_amount);
+			//redirect(base_url() . "main");
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
