@@ -52,7 +52,7 @@
 
 		$query = $this->db->query("select b.name,sum(price_amount)price from pos_orders_line_item a,ref_outlet_menu_class b
 			where a.menu_class_id=b.id
-			and a.order_id in  (27,26)
+			and a.order_id in (".$order_id.")
 			group by b.name");
 		$class=[];
 		foreach ($query->result() as $row) {

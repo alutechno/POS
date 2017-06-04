@@ -356,7 +356,11 @@
 					'total_amount'=>floatval($res[0]->due_amount)
 				);
 				$this->db->insert('pos_card_payment_detail', $newData);
+				$this->db->set('status', '2', FALSE);
+				$this->db->where('id', $key);
+				$this->db->update('pos_orders');
 			}
+			redirect(base_url() . "main");
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');

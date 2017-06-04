@@ -69,16 +69,17 @@
 			return $closed_bill;
 		}
 		function get_no_bill($table_id) {
-			//select order_no  from pos_outlet_order_detil where table_id=1 and closed_bill=0 group by order_no
-			//$query = $this->db->query("select code  from pos_orders where table_id=" . $table_id . " and outlet_id=" . $this->session->userdata('outlet') . " group by code");
+
+			$table_id = explode('-', $table_id);
+			$table_id = implode(",", $table_id);
 			$query = $this->db->query("select a.code,b.table_no from pos_orders a,mst_pos_tables b
 				where a.table_id=b.id
-				and a.outlet_id=b.outlet_id and a.id=" . $table_id );
+				and a.outlet_id=b.outlet_id and a.id in(" . $table_id.")" );
 			$order_no="";
 			$table="";
 			foreach ($query->result() as $row) {
-				$order_no = $row->code;
-				$table = $row->table_no;
+				$order_no = $order_no."".$row->code." ";
+				$table = $table."".$row->table_no." ";
 			}
 			return $order_no.'/'.$table;
 		}
