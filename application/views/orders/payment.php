@@ -89,17 +89,19 @@
 			</div>
 			<div class="modal-body">
 				<?php
-					$outletId = $this->session->userdata('outlet');
 					$orderId = $this->uri->segment(3);
-					$orderCode = $this->session->order_no;
+					$orderId = explode('-', $orderId);
+					$orderId = implode(",", $orderId);
 					$q = $this->db->query("
-						select
-							a.sub_total_amount total,a.due_amount grandtotal,
-							c.name,b.tax_percent,b.tax_amount
-						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
-						where a.id=b.order_id
-						and b.tax_id=c.id
-						and a.id=" . $orderId
+							select
+							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
+							sum(sub_total_amount) total
+							from pos_orders
+							where id in(" . $orderId . ")) d
+							where b.tax_id=c.id
+							and b.order_id in(" . $orderId . ")
+							group by c.name;"
 					);
 					$rows = $q->result();
 					echo html('Total', $rows[0]->total);
