@@ -59,6 +59,8 @@
 						<div class="col-lg-6 text-right">
 							<input type="hidden" class="form-control" name="payment_type_id"
 								   value="11">
+							<input type="hidden" class="form-control" name="grandtotal"
+								   value="<? echo $rows[0]->grandtotal; ?>">
 							<input type="hidden" class="form-control" name="order_id"
 								   value="<? echo $orderId; ?>">
 							<input type="currency" class="form-control" name="payment_amount">
@@ -153,6 +155,8 @@
 							<hr/>
 							<input type="hidden" class="form-control" name="order_id"
 								   value="<? echo $orderId; ?>">
+							<input type="hidden" class="form-control" name="grandtotal"
+								   value="<? echo $rows[0]->grandtotal; ?>">
 							<input id="card_swiper" type="force-text" class="form-control"
 								   id="card_no"
 								   name="card_no" placeholder="Tap here, then swipe the card">

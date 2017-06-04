@@ -363,7 +363,7 @@
 			        'payment_type_id' => $data['payment_type_id'],
 			        'card_no' => $data['card_no'],
 					'total_amount'=>floatval($res[0]->due_amount),
-					'created_by'=>$this->session->userdata('user_id');
+					'created_by'=>$this->session->userdata('user_id')
 				);
 				$this->db->insert('pos_card_payment_detail', $newData);
 				$this->db->set('status', '2', FALSE);
