@@ -11,16 +11,18 @@
 				<form id="subscribe-email-form" action="#" method="post">
 					<?php
 						$orderId = $this->uri->segment(3);
-						$orderId=explode( '-', $orderId);
-						$orderId=implode(",",$orderId);
+						$orderId = explode('-', $orderId);
+						$orderId = implode(",", $orderId);
 						$q = $this->db->query("
-						select
-							a.sub_total_amount total,a.due_amount grandtotal,
-							c.name,b.tax_percent,b.tax_amount
-						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
-						where a.id=b.order_id
-						and b.tax_id=c.id
-						and a.id in(" . $orderId.")"
+							select
+							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
+							sum(sub_total_amount) total
+							from pos_orders
+							where id in(" . $orderId . ")) d
+							where b.tax_id=c.id
+							and b.order_id in(" . $orderId . ")
+							group by c.name;"
 						);
 						$rows = $q->result();
 						function html($label, $val, $id = '') {
@@ -41,8 +43,9 @@
 
 						echo html('Total', $rows[0]->total);
 						foreach ($rows as $row) {
-							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
-																							   2) . '% </small>';
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' .
+								rupiah($row->tax_percent,2) .
+								'% </small>';
 							$v = $row->tax_amount;
 							echo html($l, $v);
 						}
