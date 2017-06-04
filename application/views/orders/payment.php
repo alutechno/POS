@@ -76,10 +76,7 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close
 					</button>
-					<button type="submit" class="btn btn-primary"
-							aonclick="print_payment('<?php echo $this->session->order_no; ?>')">
-						Submit
-					</button>
+					<button type="submit" class="btn btn-primary">Submit</button>
 				</div>
 
 			</form>
@@ -94,34 +91,35 @@
 						aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalLabel">Debit/Credit Card Payment</h4>
 			</div>
-			<div class="modal-body">
-				<?php
-					$orderId = $this->uri->segment(3);
-					$orderId = explode('-', $orderId);
-					$orderId = implode(",", $orderId);
-					$q = $this->db->query("
-							select
-							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
-							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
-							sum(sub_total_amount) total
-							from pos_orders
-							where id in(" . $orderId . ")) d
-							where b.tax_id=c.id
-							and b.order_id in(" . $orderId . ")
-							group by c.name;"
-					);
-					$rows = $q->result();
-					echo html('Total', $rows[0]->total);
-					foreach ($rows as $row) {
-						$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
-																						   2) . '% </small>';
-						$v = $row->tax_amount;
-						echo html($l, $v);
-					}
-					echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
-				?>
-				<hr/>
-				<form id="subscribe-email-form" action="#" method="post">
+			<form id="subscribe-email-form" action="<?php echo base_url(); ?>main/submit"
+				  method="post">
+				<div class="modal-body">
+					<?php
+						$orderId = $this->uri->segment(3);
+						$orderId = explode('-', $orderId);
+						$orderId = implode(",", $orderId);
+						$q = $this->db->query("
+								select
+								c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+								from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
+								sum(sub_total_amount) total
+								from pos_orders
+								where id in(" . $orderId . ")) d
+								where b.tax_id=c.id
+								and b.order_id in(" . $orderId . ")
+								group by c.name;"
+						);
+						$rows = $q->result();
+						echo html('Total', $rows[0]->total);
+						foreach ($rows as $row) {
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																							   2) . '% </small>';
+							$v = $row->tax_amount;
+							echo html($l, $v);
+						}
+						echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+					?>
+					<hr/>
 					<div class="row">
 						<div class="col-lg-3">
 							<div class="form-group">
@@ -135,7 +133,7 @@
 						<div class="col-lg-9">
 							<div class="form-group">
 								<label>Bank</label>
-								<select class="form-control">
+								<select class="form-control" name="payment_type_id">
 									<?php
 										$query = $this->db->query("select id, code, name, description from ref_payment_method where category = 'CC' and status = '1'");
 										foreach ($query->result() as $row) {
@@ -153,6 +151,8 @@
 					<div class="row">
 						<div class="col-lg-12">
 							<hr/>
+							<input type="hidden" class="form-control" name="order_id"
+								   value="<? echo $orderId; ?>">
 							<input id="card_swiper" type="force-text" class="form-control"
 								   id="card_no"
 								   name="card_no" placeholder="Tap here, then swipe the card">
@@ -171,19 +171,15 @@
 							<div class="form-group">
 								<label for="usr">Name:</label>
 								<input id="card_name" type="text" class="form-control"
-									   id="cust_name"
 									   name="cust_name">
 							</div>
 						</div>
 					</div>
-				</form>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary"
-						onclick="print_payment(<?= $this->session->order_no; ?>)">Submit
-				</button>
-			</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
 			</form>
 		</div>
 	</div>
