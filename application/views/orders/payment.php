@@ -119,18 +119,28 @@
 						</div>
 					</div>
 					<div class="row">
+						<div class="col-lg-12">
+							<hr/>
+							<input id="card_swiper" type="force-text" class="form-control"
+								   id="card_no"
+								   name="card_no" placeholder="Tap here, then swipe the card">
+							<hr/>
+						</div>
+					</div>
+					<div class="row">
 						<div class="col-lg-7">
 							<div class="form-group">
 								<label for="usr">Number:</label>
-								<input id="card_no" type="force-text" class="form-control" id="card_no"
-									   name="card_no" placeholder="Swipe the card">
+								<input id="card_no" type="text" class="form-control" id="card_no"
+									   name="card_no">
 							</div>
 						</div>
 						<div class="col-lg-5">
 							<div class="form-group">
 								<label for="usr">Name:</label>
-								<input id="card_name" type="force-text" class="form-control" id="cust_name"
-									   name="cust_name" disabled>
+								<input id="card_name" type="text" class="form-control"
+									   id="cust_name"
+									   name="cust_name">
 							</div>
 						</div>
 					</div>
@@ -251,14 +261,17 @@
 				<h4 class="modal-title" id="myModalLabel">Menu Note</h4>
 			</div>
 			<div class="modal-body">
-				<form id="subscribe-email-form" action="<?php echo base_url() ?>main/save_note/<?php echo $this->uri->segment(3) ?>" method="post">
+				<form id="subscribe-email-form"
+					  action="<?php echo base_url() ?>main/save_note/<?php echo $this->uri->segment(3) ?>"
+					  method="post">
 					<?php
-						$query = $this->db->query("select order_notes from pos_orders where id=".$this->uri->segment(3));
-						$row=$query->result();
+						$query = $this->db->query("select order_notes from pos_orders where id=" . $this->uri->segment(3));
+						$row = $query->result();
 					?>
-					<textarea class="form-control" name="note"  id="note" ><?php echo $row[0]->order_notes ?></textarea>
+					<textarea class="form-control" name="note"
+							  id="note"><?php echo $row[0]->order_notes ?></textarea>
 
-				<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">-->
+					<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">-->
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -563,7 +576,7 @@
 							<i class="fa fa-edit"></i>
 							Charge room
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="#myModalcard">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalcard" id="btn-cc">
 							<i class="fa fa-credit-card"></i>
 							Card
 						</a>
@@ -592,7 +605,8 @@
 							<i class="fa fa-times-circle"></i>
 							No Post
 						</a>
-						<a class="btn btn-app btn-warning" data-toggle="modal" href="<?php echo base_url() ?>main/open_cash/<?php echo $this->uri->segment(3) ?>">
+						<a class="btn btn-app btn-warning" data-toggle="modal"
+						   href="<?php echo base_url() ?>main/open_cash/<?php echo $this->uri->segment(3) ?>">
 							<i class="fa fa-th-large"></i>
 							Cash draw
 						</a>
@@ -607,9 +621,10 @@
 							<i class="fa fa-times"></i>
 							Void Menu
 						</a>
-						<a class="btn btn-app bg-yellow" href="<?php echo base_url() ?>main/print_kitchen/<?php echo $this->uri->segment(3) ?>">
-						<i class="fa fa-print"></i>
-						Print Order
+						<a class="btn btn-app bg-yellow"
+						   href="<?php echo base_url() ?>main/print_kitchen/<?php echo $this->uri->segment(3) ?>">
+							<i class="fa fa-print"></i>
+							Print Order
 						</a>
 						<a class="btn btn-app bg-green">
 							<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
@@ -628,6 +643,13 @@
 </div><!-- /.row -->
 
 <script type="text/javascript">
+	var delay = (function () {
+		var timer = 0;
+		return function (callback, ms) {
+			clearTimeout(timer);
+			timer = setTimeout(callback, ms);
+		};
+	})();
 	var trim = function (str) {
 		return str.replace(/\t\t+|\n\n+|\s\s+/g, ' ').trim()
 	};
@@ -635,31 +657,8 @@
 		return trim(str)
 		.replace(/\/\s\^|\s\^/g, '/^')
 		.split(/\;|\%B|\^|\/\^|\?\;|\=|\?/g)
-		.slice(1,-1)
+		.slice(1, -1)
 	};
-	$('#cc_type').on('change', function() {
-	    var v = $(this).val();
-	   	 if (v == 'debit') {
-			 $('#card_name').parent().hide();
-			 $('#card_name').val('');
-		 } else {
-			 $('#card_name').parent().show();
-		 }
-	});
-	$('#card_no').on('keyup', function () {
-		var v = $(this).val();
-		var arr = swipeCard(v);
-		$('#card_name').val('');
-		if (arr.length) {
-			$(this).val(arr[0]);
-			if ($('#cc_type').val() == 'credit') {
-				$('#card_name').val(arr[1]);
-			} else {
-			}
-		}
-	});
-	$('input[type="text"]').keyboard({layout: 'qwerty'});
-	$('textarea').keyboard({layout: 'qwerty'});
 	// $('#search_food').keyboard({layout: 'qwerty',autoAccept: true,enterNavigation:true});
 	$.keyboard.keyaction.enter = function (base) {
 		// console.log(base);
@@ -743,6 +742,32 @@
 	}
 	//
 	$(document).ready(function () {
+		$('#cc_type').on('change', function () {
+			var v = $(this).val();
+			if (v == 'debit') {
+				$('#card_name').parent().hide();
+				$('#card_name').val('');
+			} else {
+				$('#card_name').parent().show();
+			}
+		});
+		$('#card_swiper').on('keyup', function () {
+			var el = $(this);
+			delay(function () {
+				var arr = swipeCard(el.val());
+				$('#card_name').val('');
+				if (arr.length) {
+					$('#card_no').val(arr[0]);
+					if ($('#cc_type').val() == 'credit') {
+						$('#card_name').val(arr[1]);
+					} else {
+					}
+				}
+				el.val('');
+			}, 1000);
+		});
+		$('input[type="text"]').keyboard({layout: 'qwerty'});
+		$('textarea').keyboard({layout: 'qwerty'});
 		$('input[type="currency"]').on('blur', function () {
 			var bayar = parseFloat($(this).data('value'));
 			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
