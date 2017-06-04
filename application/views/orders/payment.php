@@ -19,19 +19,20 @@
 						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
 						where a.id=b.order_id
 						and b.tax_id=c.id
-						and a.id=". $orderId
+						and a.id=" . $orderId
 					);
 					$rows = $q->result();
 					function html($label, $val, $id = '') {
 						$val = floatval($val);
 						if (!($val > 0)) $val = 0;
+
 						return '
 						<div class="row">
 							<div class="col-lg-6">
 								<label>' . $label . '</label>
 							</div>
 							<div class="col-lg-6 text-right">
-								<label for="'. $id .'" val="'. $val .'">
+								<label for="' . $id . '" val="' . $val . '">
 								' . rupiah($val, 2) . '</label>
 							</div>
 						</div>';
@@ -39,7 +40,8 @@
 
 					echo html('Total', $rows[0]->total);
 					foreach ($rows as $row) {
-						$l = '&nbsp&nbsp'.$row->name.'<small>&nbsp&nbsp&nbsp'.rupiah($row->tax_percent, 2).'% </small>';
+						$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																						   2) . '% </small>';
 						$v = $row->tax_amount;
 						echo html($l, $v);
 					}
@@ -82,33 +84,57 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 						aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Credit Card Payment</h4>
+				<h4 class="modal-title" id="myModalLabel">Debit/Credit Card Payment</h4>
 			</div>
 			<div class="modal-body">
 				<form id="subscribe-email-form" action="#" method="post">
-					<div class="form-group">
-						<div class="form-group">
-							<label>Payment Method</label>
-							<select class="form-control">
-								<?php
-									$query = $this->db->query("select id, code, name, description from ref_payment_method where category = 'CC' and status = '1'");
-									foreach ($query->result() as $row) {
-										?>
-										<option value="<?php echo $row->id ?>">
-											<?php echo $row->code . ' - ' . $row->name ?>
-										</option>
-										<?php
-									}
-								?>
-							</select>
+					<div class="row">
+						<div class="col-lg-3">
+							<div class="form-group">
+								<label>Type</label>
+								<select class="form-control" id="cc_type">
+									<option value="credit">Credit</option>
+									<option value="debit">Debit</option>
+								</select>
+							</div>
 						</div>
-						<div class="form-group">
-							<label for="usr">Card Number:</label>
-							<input type="text" class="vk-qwerty form-control" id="card_no"
-								   name="card_no">
-						</div>
-
 					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>Bank</label>
+								<select class="form-control">
+									<?php
+										$query = $this->db->query("select id, code, name, description from ref_payment_method where category = 'CC' and status = '1'");
+										foreach ($query->result() as $row) {
+											?>
+											<option value="<?php echo $row->id ?>">
+												<?php echo $row->code . ' - ' . $row->name ?>
+											</option>
+											<?php
+										}
+									?>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-7">
+							<div class="form-group">
+								<label for="usr">Number:</label>
+								<input id="card_no" type="force-text" class="form-control" id="card_no"
+									   name="card_no" placeholder="Swipe the card">
+							</div>
+						</div>
+						<div class="col-lg-5">
+							<div class="form-group">
+								<label for="usr">Name:</label>
+								<input id="card_name" type="force-text" class="form-control" id="cust_name"
+									   name="cust_name" disabled>
+							</div>
+						</div>
+					</div>
+				</form>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -132,7 +158,8 @@
 				<h4 class="modal-title" id="myModalLabel">Open Menu</h4>
 			</div>
 			<div class="modal-body">
-				<form id="subscribe-email-form" action="<?php echo base_url() ?>main/openmenu<?php echo ($this->uri->segment(3) ? "/".$this->uri->segment(3) : "") . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') ? "?search=".$this->input->get('search') : "") ?>"
+				<form id="subscribe-email-form"
+					  action="<?php echo base_url() ?>main/openmenu<?php echo ($this->uri->segment(3) ? "/" . $this->uri->segment(3) : "") . ($this->uri->segment(4) ? "/" . $this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/" . $this->uri->segment(5) : "") . ($this->input->get('search') ? "?search=" . $this->input->get('search') : "") ?>"
 					  method="post">
 					<input type="hidden" name="bill"
 						   value="<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>">
@@ -152,54 +179,60 @@
 						</tr>
 						</thead>
 						<tbody>
-							<tr>
-								<td>
-									<select class="form-control" name="meal_time_id" id="meal_time_id">
-										<?php
-											$query = $this->db->query("select * from ref_meal_time");
-											foreach ($query->result() as $row) {
-												?>
-												<option
-													value="<?php echo $row->id ?>" <?php echo $row->id == $this->global_model->get_meal_time() ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-												<?php
-											}
-										?>
-									</select>
-								</td>
-								<td>
-									<select class="form-control" name="menu_class_id" id="menu_class_id">
-										<?php
-											$query = $this->db->query("select * from ref_outlet_menu_class");
-											foreach ($query->result() as $row) {
-												?>
-												<option
-													value="<?php echo $row->id ?>" <?php echo $row->id == $this->uri->segment(4) ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-												<?php
-											}
-										?>
-									</select>
-								</td>
-								<td>
-									<select class="form-control" name="menu_group_id" id="menu_group_id">
-										<?php
-											$query = $this->db->query("select * from  ref_outlet_menu_group");
-											foreach ($query->result() as $row) {
-												?>
-												<option
-													value="<?php echo $row->id ?>" <?php echo $row->id == $this->uri->segment(5) ? 'selected' : ''; ?>><?php echo $row->name ?></option>
-												<?php
-											}
-										?>
-									</select>
-								</td>
-								<td><input type="text" class="form-control" name="menu_name"  id="menu_name" /></td>
-								<td><input type="text" class="form-control" name="menu_qty"  id="menu_qty" value="1"/></td>
-								<td><input type="text" class="form-control" name="menu_price"  id="menu_price" /></td>
-							</tr>
+						<tr>
+							<td>
+								<select class="form-control" name="meal_time_id" id="meal_time_id">
+									<?php
+										$query = $this->db->query("select * from ref_meal_time");
+										foreach ($query->result() as $row) {
+											?>
+											<option
+												value="<?php echo $row->id ?>" <?php echo $row->id == $this->global_model->get_meal_time() ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+											<?php
+										}
+									?>
+								</select>
+							</td>
+							<td>
+								<select class="form-control" name="menu_class_id"
+										id="menu_class_id">
+									<?php
+										$query = $this->db->query("select * from ref_outlet_menu_class");
+										foreach ($query->result() as $row) {
+											?>
+											<option
+												value="<?php echo $row->id ?>" <?php echo $row->id == $this->uri->segment(4) ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+											<?php
+										}
+									?>
+								</select>
+							</td>
+							<td>
+								<select class="form-control" name="menu_group_id"
+										id="menu_group_id">
+									<?php
+										$query = $this->db->query("select * from  ref_outlet_menu_group");
+										foreach ($query->result() as $row) {
+											?>
+											<option
+												value="<?php echo $row->id ?>" <?php echo $row->id == $this->uri->segment(5) ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+											<?php
+										}
+									?>
+								</select>
+							</td>
+							<td><input type="text" class="form-control" name="menu_name"
+									   id="menu_name"/></td>
+							<td><input type="text" class="form-control" name="menu_qty"
+									   id="menu_qty" value="1"/></td>
+							<td><input type="text" class="form-control" name="menu_price"
+									   id="menu_price"/></td>
+						</tr>
 						</tbody>
 					</table>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close
+						</button>
 						<button type="submit" class="btn btn-primary">Add Menu</button>
 					</div>
 				</form>
@@ -346,7 +379,6 @@
 <!-- START CUSTOM TABS -->
 <br/>
 <div class="row">
-
 	<div class="col-md-8">
 		<!-- Custom Tabs -->
 		<div class="nav-tabs-custom">
@@ -391,7 +423,7 @@
 									<!-- <label for="ex2">Menu Class</label>-->
 									<select class="form-control" name="select_menu" id="select_menu"
 											onchange="load()">
-												<option value="">All</option>
+										<option value="">All</option>
 										<?php
 											$query = $this->db->query("select * from ref_outlet_menu_class");
 											foreach ($query->result() as $row) {
@@ -405,15 +437,16 @@
 								</div>
 								<div class="col-xs-3">
 									<!-- <label for="ex2">Menu Class</label>-->
-									<select class="form-control" name="select_sub_menu" id="select_sub_menu"
+									<select class="form-control" name="select_sub_menu"
+											id="select_sub_menu"
 											onchange="load_sub()">
-												<option value="">All</option>
+										<option value="">All</option>
 										<?php
-											if($this->uri->segment(4) != ""){
+											if ($this->uri->segment(4) != "") {
 												$query = $this->db->query("select b.id class_id, b.code class_code, b.name class_name, a.id, a.code, a.name, a.description
 																		  from ref_outlet_menu_group a
 																		  left join ref_outlet_menu_class b on a.menu_class_id = b.id or a.menu_class_id = b.parent_class_id
-																		 where b.id = ".$this->uri->segment(4)."
+																		 where b.id = " . $this->uri->segment(4) . "
 																		   and a.status = '1'");
 												foreach ($query->result() as $row) {
 													?>
@@ -426,11 +459,13 @@
 									</select>
 								</div>
 								<div class="col-xs-3">
-									<input class="form-control" type="text" name="search_food" placeholder="search menu..." id="search_food" value="<?php echo $this->input->get('search') ?>" />
+									<input class="form-control" type="text" name="search_food"
+										   placeholder="search menu..." id="search_food"
+										   value="<?php echo $this->input->get('search') ?>"/>
 								</div>
-<!-- 								<div class="col-xs-3">
-                                    <button class="btn btn-info btn-flat" type="submit">Search</button>
-								</div> -->
+								<!-- 								<div class="col-xs-3">
+                                                                    <button class="btn btn-info btn-flat" type="submit">Search</button>
+                                                                </div> -->
 								<!--<div class="col-xs-4">
                                     <label for="ex3">&nbsp;</label><br/>
                                     <button class="btn btn-info btn-flat" type="submit">Search !</button>
@@ -452,22 +487,20 @@
 									$keyword = $this->input->get('search');
 									$search = " and (a.name like '%$keyword%' or a.short_name like '%$keyword%')";
 								}
-
 								if ($this->uri->segment(5) != "") {
 									$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . $search . " and a.menu_class_id ='" . $this->uri->segment(4) . "' and a.menu_group_id ='" . $this->uri->segment(5) . "'");
-								}elseif($this->uri->segment(4) != "") {
+								} else if ($this->uri->segment(4) != "") {
 									$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . $search . " and a.menu_class_id ='" . $this->uri->segment(4) . "'");
 									//$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=".$this->session->userdata('outlet')." and meal_time_id=".$this->global_model->get_meal_time()." ");
 								} else {
-									$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . $search );
-
+									$query = $this->db->query("select a.* from inv_outlet_menus a where a.outlet_id=" . $this->session->userdata('outlet') . $search);
 								}
-								 // echo $this->db->last_query();
+								// echo $this->db->last_query();
 								foreach ($query->result() as $row) {
 									?>
 									<div class="col-lg-3 col-xs-6">
 										<div class="small-box bg-aqua">
-											<a href="<?php echo base_url() ?>main/inputpesan/<?php echo $row->id ?>/<?php echo $row->menu_price ?>/<?php echo $row->menu_class_id ?>/<?php echo $this->uri->segment(3) . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') ? "?search=".$this->input->get('search') : "") ?>"
+											<a href="<?php echo base_url() ?>main/inputpesan/<?php echo $row->id ?>/<?php echo $row->menu_price ?>/<?php echo $row->menu_class_id ?>/<?php echo $this->uri->segment(3) . ($this->uri->segment(4) ? "/" . $this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/" . $this->uri->segment(5) : "") . ($this->input->get('search') ? "?search=" . $this->input->get('search') : "") ?>"
 											   class="small-box-footer">&nbsp;<center><img
 														src="<?php echo base_url() ?>menu/<?php echo $row->image <> '' ? $row->image : 'no_image.svg'; ?>"
 														width="130" height="80"></center>
@@ -508,7 +541,6 @@
 			</div><!-- /.tab-content -->
 		</div><!-- nav-tabs-custom -->
 	</div><!-- /.col -->
-
 	<div class="col-md-4">
 		<div class="box box-solid">
 
@@ -593,23 +625,51 @@
 
 		</div><!-- /.box -->
 	</div><!-- /.col (left) -->
-
 </div><!-- /.row -->
 
 <script type="text/javascript">
+	var trim = function (str) {
+		return str.replace(/\t\t+|\n\n+|\s\s+/g, ' ').trim()
+	};
+	var swipeCard = function (str) {
+		return trim(str)
+		.replace(/\/\s\^|\s\^/g, '/^')
+		.split(/\;|\%B|\^|\/\^|\?\;|\=|\?/g)
+		.slice(1,-1)
+	};
+	$('#cc_type').on('change', function() {
+	    var v = $(this).val();
+	   	 if (v == 'debit') {
+			 $('#card_name').parent().hide();
+			 $('#card_name').val('');
+		 } else {
+			 $('#card_name').parent().show();
+		 }
+	});
+	$('#card_no').on('keyup', function () {
+		var v = $(this).val();
+		var arr = swipeCard(v);
+		$('#card_name').val('');
+		if (arr.length) {
+			$(this).val(arr[0]);
+			if ($('#cc_type').val() == 'credit') {
+				$('#card_name').val(arr[1]);
+			} else {
+			}
+		}
+	});
 	$('input[type="text"]').keyboard({layout: 'qwerty'});
 	$('textarea').keyboard({layout: 'qwerty'});
 	// $('#search_food').keyboard({layout: 'qwerty',autoAccept: true,enterNavigation:true});
-	$.keyboard.keyaction.enter = function(base){
+	$.keyboard.keyaction.enter = function (base) {
 		// console.log(base);
-	  if (base.el.id === "search_food") {
-	    base.accept();      // accept the content
-	    $('form').submit(); // submit form on enter
-	  // } else {
-	  //   base.insertText('\r\n'); // textarea
-	  }
+		if (base.el.id === "search_food") {
+			base.accept();      // accept the content
+			$('form').submit(); // submit form on enter
+			// } else {
+			//   base.insertText('\r\n'); // textarea
+		}
 	};
-
 
 	// autoAccept option to true and leave the enterNavigation option set as true
 	function print(order) {
@@ -688,7 +748,7 @@
 			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
 			var change = bayar - grandtotal;
 			var displayChange = (parseFloat(change.toString().replace(/\,/g, "")).toFixed(2)
-				.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
 			$('label[for="change"]').html(displayChange);
 		});
 		$("#search_food").keypress(function (e) {
