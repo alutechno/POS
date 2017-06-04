@@ -421,6 +421,9 @@
 								<div class="col-xs-3">
 									<input class="form-control" type="text" name="search_food" placeholder="search menu..." id="search_food" value="<?php echo $this->input->get('search') ?>" />
 								</div>
+<!-- 								<div class="col-xs-3">
+                                    <button class="btn btn-info btn-flat" type="submit">Search</button>
+								</div> -->
 								<!--<div class="col-xs-4">
                                     <label for="ex3">&nbsp;</label><br/>
                                     <button class="btn btn-info btn-flat" type="submit">Search !</button>
@@ -590,6 +593,19 @@
 
 <script type="text/javascript">
 	$('input[type="text"]').keyboard({layout: 'qwerty'});
+	// $('#search_food').keyboard({layout: 'qwerty',autoAccept: true,enterNavigation:true});
+	$.keyboard.keyaction.enter = function(base){
+		// console.log(base);
+	  if (base.el.id === "search_food") {
+	    base.accept();      // accept the content
+	    $('form').submit(); // submit form on enter
+	  // } else {
+	  //   base.insertText('\r\n'); // textarea
+	  }
+	};
+
+
+	// autoAccept option to true and leave the enterNavigation option set as true
 	function print(order) {
 		//alert('sss');
 		//__action=print

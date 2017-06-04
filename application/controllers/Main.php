@@ -375,9 +375,12 @@
 			$insert_id = $this->db->insert_id();
 			$row = $inv_outlet_menus->get_by_id($insert_id);
 
-			$menuId = $row->id;
-			$outletId = $row->outlet_id;
-			$price = $row->menu_price;
+			$user_id = $this->session->userdata('user_id');
+			$menuClassId = $post['menu_class_id'];
+			$orderId = $this->uri->segment(3);
+			$menuId = $insert_id;
+			$outletId = $post['outlet'];
+			$price = $post['menu_price'];
 			$taxVal = 0;
 			$serviceVal = 0;
 			$isTaxes = $this->compile("
@@ -408,20 +411,36 @@
 					}
 				}
 			}
-			//select * where is_tax_included = 'N'
 			$data = array(
-				'menu_id' => $row->id,
-				'amount' => $post['menu_price'],
-				'qty' => $post['menu_qty'],
-				'tax' => $taxVal,
-				'service' => $serviceVal,
-				'order_no' => $this->session->userdata('order_no'),
-				'menu_class_id' => $post['menu_class_id'],
-				'table_id' => $post['table'],
-				'outlet_id' => $post['outlet']
-			);
-			//order_no
-			$this->db->insert('pos_order', $data);
+                "order_id" => $orderId,
+                "menu_class_id" => $menuClassId,
+                "outlet_menu_id" => $menuId,
+                "modifier_id" => null,
+                "kitchen_id" => null,
+                "serving_status" => 0,
+                "order_qty" => 1,
+                "price_amount" => $price,
+                "total_amount" => $price,
+				"created_by" => $user_id,
+                "created_date" => date('Y-m-d H:i:s')
+            );
+
+			// updating phase #1
+			$this->db->set('tax_amount', 'tax_amount+('. $price .'*tax_percent/100)', FALSE);
+			$this->db->where('order_id', $orderId);
+			$this->db->update('pos_order_taxes');
+
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$orderId);
+			$sum = $sum[0]->tax;
+			// updating phase #2
+			$this->db->set('sub_total_amount', 'sub_total_amount+'. $price, FALSE);
+			$this->db->set('tax_total_amount', $sum, FALSE);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->where('id', $orderId);
+			$this->db->update('pos_orders');
+
+			// real inserting
+			$this->db->insert('pos_orders_line_item', $data);
 
 			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(3) . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
 		}
