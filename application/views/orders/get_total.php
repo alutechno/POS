@@ -18,6 +18,7 @@
 			from pos_orders a,pos_orders_line_item b,inv_outlet_menus c
 			where a.id=b.order_id
 			and b.outlet_menu_id=c.id
+			and b.serving_status<>'4'
 			and a.id=".$this->uri->segment(3)."
 			group by c.name");
 		$i = 1;

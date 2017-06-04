@@ -13,7 +13,7 @@
 					$orderId = $this->uri->segment(3);
 					$orderCode = $this->session->order_no;
 					$q = $this->db->query("
-						select 
+						select
 							a.sub_total_amount total,a.due_amount grandtotal,
 							c.name,b.tax_percent,b.tax_amount
 						from pos_orders a,pos_order_taxes b,mst_pos_taxes c
@@ -295,29 +295,28 @@
 						$tax = 0;
 						$amount = 0;
 						$service = 0;
-						$query = $this->db->query("select menu_id,sum(amount) as amount,order_no,sum(qty) as qty,tax,service from pos_outlet_order_detil
-                                        where is_void=0 and table_id=" . $this->uri->segment(3) . " and outlet_id=" . $this->session->userdata('outlet') . " group by menu_id ");
+						$query = $this->db->query("select b.id,b.name,sum(a.order_qty) qty,sum(price_amount) price
+							from pos_orders_line_item a,inv_outlet_menus b
+							where a.outlet_menu_id=b.id
+							and a.order_id=" . $this->uri->segment(3) . "
+							group by id");
 						$i = 1;
 						foreach ($query->result() as $row) {
 							?>
 							<tr>
 								<td> <?php echo $i ?></td>
-								<td> <?php echo $this->global_model->get_menu_name($row->menu_id) ?></td>
+								<td> <?php echo $row->name ?></td>
 								<td> <?php echo $row->qty ?></td>
 								<td align="right">
-									<?php echo number_format($row->amount) ?>
+									<?php echo number_format($row->price) ?>
 								</td>
 
 								<td align="center"><a
-										href="<?php echo base_url() ?>main/void_item/<?php echo $this->session->userdata('table') ?>/<?php echo $this->session->userdata('outlet') ?>/<?php echo $row->menu_id ?>">
+										href="<?php echo base_url() ?>main/void_item/<?php echo $this->uri->segment(3) ?>/<?php echo $row->id ?>/<?php echo $row->price ?>">
 										<button type="button" class="btn btn-danger">Delete</button>
 									</a></td>
 							</tr>
 							<?php
-							$tax += $row->tax;
-							$amount += $row->amount;
-							$service += $row->service;
-							$i++;
 						}
 					?>
 					<tr>
@@ -357,7 +356,7 @@
 							<th>:</th>
 							<th>
 								<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>
-								
+
 							</th>
 							<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
 							<th>Meal Time</th>

@@ -206,18 +206,40 @@
 			//echo $keyword;exit;
 		}
 		function void_item() {
-			// echo "sss";
-			$table_id = $this->uri->segment(3);
-			$outlet_id = $this->uri->segment(4);
-			$menu_id = $this->uri->segment(5);
-			$this->db->set('is_void', '1');
-			$this->db->where('outlet_id', $outlet_id);
-			$this->db->where('menu_id', $menu_id);
-			$this->db->where('table_id', $table_id);
-			$this->db->where('is_void', 0);
-			$this->db->limit(1);
-			$this->db->update('pos_outlet_order_detil');
-			redirect(base_url() . "main/payment/" . $this->session->userdata('table'));
+			$order_id = $this->uri->segment(3);
+			$menu_id = $this->uri->segment(4);
+			$price = $this->uri->segment(5);
+			$res=$this->db->query("select * from pos_orders_line_item WHERE order_id = ".$order_id." AND outlet_menu_id = ".$menu_id." AND serving_status = '0' LIMIT 1");
+			$arr=$res->result();
+			if (sizeof($arr) > 0) {
+				$this->db->where('order_id', $order_id);
+				$this->db->where('outlet_menu_id', $menu_id);
+				$this->db->where('serving_status', '0');
+				$this->db->order_by('id');
+				$this->db->limit(1);
+				$this->db->delete('pos_orders_line_item');
+			}else{
+				$this->db->set('serving_status', '4');
+				$this->db->where('order_id', $order_id);
+				$this->db->where('outlet_menu_id', $menu_id);
+				$this->db->where('serving_status', '1');
+				$this->db->order_by('id');
+				$this->db->limit(1);
+				$this->db->update('pos_orders_line_item');
+			}
+			$this->db->set('tax_amount', 'tax_amount-('. $price .'*tax_percent/100)', FALSE);
+			$this->db->where('order_id', $order_id);
+			$this->db->update('pos_order_taxes');
+
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$order_id);
+			$sum = $sum[0]->tax;
+			// updating phase #2
+			$this->db->set('sub_total_amount', 'sub_total_amount-'. $price, FALSE);
+			$this->db->set('tax_total_amount', $sum, FALSE);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->where('id', $order_id);
+			$this->db->update('pos_orders');
+			redirect(base_url() . "main/payment/" . $order_id);
 		}
 		function input_guest() {
 			$user_id = $this->session->userdata('user_id');
