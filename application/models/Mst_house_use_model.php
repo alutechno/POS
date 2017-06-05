@@ -12,6 +12,7 @@
 		function json() {
 			$this->datatables->select('id,code,name,short_name,description,status,pos_cost_center_id,max_spent_monthly,created_date,modified_date,created_by,modified_by');
 			$this->datatables->from('mst_house_use');
+			$this->datatables->where('status','1');
 			//add this line for join
 			//$this->datatables->join('table2', 'mst_house_use.field = table2.field');
 			$this->datatables->add_column('action', anchor(site_url('mst_house_use/read/$1'),

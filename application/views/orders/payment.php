@@ -80,7 +80,6 @@
 					</button>
 					<button type="submit" class="btn btn-primary">Submit</button>
 				</div>
-
 			</form>
 		</div>
 	</div>
@@ -114,7 +113,8 @@
 						$rows = $q->result();
 						echo html('Total', $rows[0]->total);
 						foreach ($rows as $row) {
-							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,2) . '% </small>';
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																							   2) . '% </small>';
 							$v = $row->tax_amount;
 							echo html($l, $v);
 						}
@@ -180,7 +180,8 @@
 					</div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close
+					</button>
 					<button type="submit" class="btn btn-primary">Submit</button>
 				</div>
 			</form>
@@ -334,38 +335,251 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 						aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Include Room</h4>
+				<h4 class="modal-title" id="myModalLabel">Charge to Room</h4>
 			</div>
-			<div class="modal-body">
-				<form id="subscribe-email-form" action="<?php echo base_url() ?>main/include_room"
-					  method="post">
-
-					<div class="col-xs-8">
-						<input type="hidden" name="bill"
-							   value="<?php echo $this->global_model->get_no_bill($this->uri->segment(3)) ?>">
-						<input type="hidden" name="outlet"
-							   value="<?php echo $this->session->userdata('outlet') ?>">
-						<input type="hidden" name="table"
-							   value="<?php echo $this->uri->segment(3) ?>">
-						<select class="form-control" name="room" id="room">
-							<?php
-								foreach ($this->global_model->guest()->result() as $row) {
-									?>
-									<option value="<?php echo $row->folio_id ?>">
-										[<?php echo $row->folio_id ?>
-										]&nbsp;<?php echo $row->guest_name ?></option>
+			<form id="subscribe-email-form" action="<?php echo base_url() ?>main/submit"
+				  method="post">
+				<div class="modal-body">
+					<?php
+						$orderId = $this->uri->segment(3);
+						$orderId = explode('-', $orderId);
+						$orderId = implode(",", $orderId);
+						$q = $this->db->query("
+								select
+								c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+								from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
+								sum(sub_total_amount) total
+								from pos_orders
+								where id in(" . $orderId . ")) d
+								where b.tax_id=c.id
+								and b.order_id in(" . $orderId . ")
+								group by c.name;"
+						);
+						$rows = $q->result();
+						echo html('Total', $rows[0]->total);
+						foreach ($rows as $row) {
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																							   2) . '% </small>';
+							$v = $row->tax_amount;
+							echo html($l, $v);
+						}
+						echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+					?>
+					<hr/>
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label>Customer</label>
+								<select class="form-control" name="charge_to_room" id="charge_to_room">
+									<option>- Choose -</option>
 									<?php
-								}
-							?>
-						</select>
+										$rows = $this->db->query("select * from v_in_house_guest");
+										foreach ($rows->result() as $row) {
+											?>
+											<script>
+												window.Charge2Room = window.Charge2Room || {};
+												Charge2Room[<?php echo $row->folio_id ?>] =
+												<?php echo json_encode($row) ?>;
+											</script>
+											<option value="<?php echo $row->folio_id ?>">
+												[<?php echo $row->room_type . ' / ' . $row->room_no?>]
+												&nbsp;
+												<?php echo $row->cust_firt_name . ' '.$row->cust_last_name
+												?>
+											</option>
+											<?php
+										}
+									?>
+								</select>
+							</div>
+						</div>
 					</div>
-
+					<div class="row">
+						<div class="col-lg-6">
+							<label>Check In</label>
+							<span> : </span>
+							<span id="check_in_date"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Departure</label>
+							<span> : </span>
+							<span id="departure_date"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Cash Bases</label>
+							<span> : </span>
+							<span id="is_cash_bases"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Room Only</label>
+							<span> : </span>
+							<span id="is_room_only"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Reservation Type</label>
+							<span> : </span>
+							<span id="reservation_type"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Room No</label>
+							<span> : </span>
+							<span id="room_no"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Room Rate</label>
+							<span> : </span>
+							<span id="room_rate_code"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>Room Type</label>
+							<span> : </span>
+							<span id="room_type"></span>
+						</div>
+						<div class="col-lg-6">
+							<label>VIP Type</label>
+							<span> : </span>
+							<span id="vip_type"></span>
+						</div>
+					</div>
+					<hr/>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>Notes</label>
+								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close
 					</button>
-					<button type="submit" class="btn btn-primary">Save changes</button>
-
-				</form>
+					<button id="submitChargeToRoom" type="submit" class="btn btn-primary"
+							disabled>Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="myModalGuestUse" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Guest Use</h4>
 			</div>
+			<form id="subscribe-email-form" action="<?php echo base_url() ?>main/submit"
+				  method="post">
+				<div class="modal-body">
+					<?php
+						$orderId = $this->uri->segment(3);
+						$orderId = explode('-', $orderId);
+						$orderId = implode(",", $orderId);
+						$q = $this->db->query("
+								select
+								c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+								from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
+								sum(sub_total_amount) total
+								from pos_orders
+								where id in(" . $orderId . ")) d
+								where b.tax_id=c.id
+								and b.order_id in(" . $orderId . ")
+								group by c.name;"
+						);
+						$rows = $q->result();
+						echo html('Total', $rows[0]->total);
+						foreach ($rows as $row) {
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
+																							   2) . '% </small>';
+							$v = $row->tax_amount;
+							echo html($l, $v);
+						}
+						echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+					?>
+					<hr/>
+					<div class="row">
+						<div class="col-lg-6">
+							<div class="form-group">
+								<label>Guest</label>
+								<select class="form-control" name="guest_use" id="guest_use">
+									<option>- Choose -</option>
+									<?php
+										$rows = $this->db->query("select * from v_house_use_spent_monthly");
+										foreach ($rows->result() as $row) {
+											?>
+											<script>
+												window.GuestUse = window.GuestUse || {};
+												GuestUse[<?php echo $row->house_use_id ?>] =
+												<?php echo json_encode($row) ?>;
+											</script>
+											<option value="<?php echo $row->house_use_id ?>">
+												[<?php echo $row->period?>]
+												&nbsp;
+												<?php echo $row->cost_center . ' / ' .
+													$row->house_use?>
+											</option>
+											<?php
+										}
+									?>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-lg-12">
+							<label>Period</label>
+							<span> : </span>
+							<span id="period"></span>
+						</div>
+						<div class="col-lg-12">
+							<label>House use</label>
+							<span> : </span>
+							<span id="house_use"></span>
+						</div>
+						<div class="col-lg-12">
+							<label>Cost Center</label>
+							<span> : </span>
+							<span id="cost_center"></span>
+						</div>
+						<div class="col-lg-12">
+							<div class="row">
+								<div class="col-lg-6">
+									<label>Monthly Spent</label>
+								</div>
+								<div class="col-lg-6 pull-right">
+									<span class="pull-right" id="max_spent_monthly"></span>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-12">
+							<div class="row">
+								<div class="col-lg-6">
+									<label>Current Transaction Amount</label>
+								</div>
+								<div class="col-lg-6 pull-right">
+									<span class="pull-right" id="current_transc_amount"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<hr/>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="form-group">
+								<label>Notes</label>
+								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close
+					</button>
+					<button id="submitGuestUse" type="submit" class="btn btn-primary"
+							disabled>Submit</button>
+				</div>
+			</form>
 		</div>
 	</div>
 </div>
@@ -609,32 +823,39 @@
 							<i class="fa fa-home"></i>
 							Home
 						</a>
+					</div>
+					<div class="col-lg-12">
 						<a class="btn btn-app"
 						   data-toggle="modal" href="#myModalCash">
 							<i class="fa fa-money"></i>
 							Cash
 						</a>
-					</div>
-					<div class="col-lg-12">
-						<a class="btn btn-app" data-toggle="modal" href="#myModalroom">
-							<i class="fa fa-edit"></i>
-							Charge room
-						</a>
 						<a class="btn btn-app" data-toggle="modal" href="#myModalcard" id="btn-cc">
 							<i class="fa fa-credit-card"></i>
 							Card
 						</a>
+						<a class="btn btn-app" data-toggle="modal" href="#myModalroom">
+							<i class="fa fa-edit"></i>
+							Charge room
+						</a>
+						<a class="btn btn-app" data-toggle="modal" href="#myModalGuestUse">
+							<i class="fa fa-tags"></i>
+							House use
+						</a>
+					</div>
+					<!--<div class="col-lg-12">
+
 						<a class="btn btn-app" data-toggle="modal"
-						   href="<?php echo base_url() ?>main">
+						   href="<?php /*echo base_url() */ ?>main">
 							<i class="fa fa-code"></i>
 							Voucher
 						</a>
 						<a class="btn btn-app" data-toggle="modal"
-						   href="<?php echo base_url() ?>main">
+						   href="<?php /*echo base_url() */ ?>main">
 							<i class="fa fa-building-o"></i>
 							City Ledger
 						</a>
-					</div>
+					</div>-->
 					<hr>
 					<div class="col-lg-12">
 						<a class="btn btn-app" data-toggle="modal" href="">
@@ -795,7 +1016,12 @@
 				$('#card_name').parent().show();
 			}
 		});
-		$("#card_swiper").keydown(function (e) { if (e.keyCode == 13) { e.preventDefault(); } return });
+		$("#card_swiper").keydown(function (e) {
+			if (e.keyCode == 13) {
+				e.preventDefault();
+			}
+			return
+		});
 		$('#card_swiper').on('keyup', function () {
 			var el = $(this);
 			delay(function () {
@@ -817,8 +1043,7 @@
 			var bayar = parseFloat($(this).data('value'));
 			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
 			var change = bayar - grandtotal;
-			var displayChange = (parseFloat(change.toString().replace(/\,/g, "")).toFixed(2)
-			.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			var displayChange = rupiahJS(change);
 			$('label[for="change"]').html(displayChange);
 		});
 		$("#search_food").keypress(function (e) {
@@ -826,6 +1051,56 @@
 				document.forms["myform"].submit();
 				return false;    //<---- Add this line
 			}
+		});
+		//
+		var rupiahJS = function (val) {
+			return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
+			.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+		};
+		var showCharge2RoomInfo = function (i) {
+			var d = Charge2Room[i];
+			$('#submitChargeToRoom').attr('disabled', 1);
+			if (d) {
+				$('#check_in_date').html(d.check_in_date);
+				$('#departure_date').html(d.departure_date);
+				$('#is_cash_bases').html(d.is_cash_bases);
+				$('#is_room_only').html(d.is_room_only);
+				$('#reservation_type').html(d.reservation_type);
+				$('#room_no').html(d.room_no);
+				$('#room_rate_code').html(d.room_rate_code + '/' + d.room_rate_name);
+				$('#room_type').html(d.room_type + '/' + d.room_type_name);
+				$('#vip_type').html(d.vip_type);
+				if (d.is_cash_bases.toLowerCase() === 'n') {
+					$('#submitChargeToRoom').removeAttr('disabled');
+				}
+			}
+		};
+		var showGuestUseInfo = function (i) {
+			var d = GuestUse[i];
+			$('#submitGuestUse').attr('disabled', 1);
+			if (d) {
+				$('#cost_center').html(d.cost_center);
+				$('#house_use').html(d.house_use);
+				$('#current_transc_amount').html(rupiahJS(d.current_transc_amount));
+				$('#max_spent_monthly').html(rupiahJS(d.max_spent_monthly));
+				$('#period').html(d.period);
+				var balance = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
+				var grandtotal = $('#period').closest('.modal-body').find
+				('label[for="grandtot"]').attr('val');
+				if (balance > 0) {
+				    if (balance - parseFloat(grandtotal) >= 0) {
+						$('#submitGuestUse').removeAttr('disabled');
+					}
+				}
+			}
+		};
+		$('#charge_to_room').on('change', function () {
+			Charge2Room.current = $(this).val();
+			showCharge2RoomInfo(Charge2Room.current);
+		});
+		$('#guest_use').on('change', function () {
+			GuestUse.current = $(this).val();
+			showGuestUseInfo(GuestUse.current);
 		});
 	});
 </script>
