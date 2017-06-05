@@ -354,7 +354,6 @@
 			}
 
 			$orderId=explode(',', $data['order_id']);
-
 			foreach ($orderId as $key ) {
 				$res=$this->db->query("select * from pos_orders where id=".$key);
 				$res=$res->result();
