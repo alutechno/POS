@@ -297,7 +297,7 @@
 			$order_id = $this->uri->segment(3);
 			$outlet_id = $this->session->userdata('outlet');
 
-			$query = $this->db->query("select e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
+			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
 				where a.id=b.order_id
 				and b.outlet_menu_id=c.id
@@ -310,6 +310,7 @@
 			$res=$query->result();
 			foreach ($res as $row) {
 				if($i==1){
+					shell_exec('echo Date : '.$row->date.' >'.$row->printer);
 					shell_exec('echo Outlet : '.$row->outlet.' >'.$row->printer);
 					shell_exec('echo Waiter : '.$row->name.' >'.$row->printer);
 				}
