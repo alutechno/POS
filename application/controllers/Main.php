@@ -307,11 +307,14 @@
 				and c.print_kitchen_section_id=f.id
 				and a.id=".$order_id);
 			$i=1;
-			shell_exec('echo "Outlet : "'.$row[0]->outlet.' >'.$row[0]->printer);
-			shell_exec('echo "Waiter : "'.$row[0]->name.' >'.$row[0]->printer);
+
 			foreach ($query->result() as $row) {
-				shell_exec('echo "" >'.$row[0]->printer);
-				shell_exec('echo "'.$row->menu.'	'.$row->order_qty.'>'.$row[0]->printer);
+				if($i==1){
+					shell_exec('echo "Outlet : "'.$row->outlet.' >'.$row->printer);
+					shell_exec('echo "Waiter : "'.$row->name.' >'.$row->printer);
+				}
+				shell_exec('echo "" >'.$row->printer);
+				shell_exec('echo "'.$row->menu.'	'.$row->order_qty.'>'.$row->printer);
 				$i++;
 			}
 			echo "</br></br>";
