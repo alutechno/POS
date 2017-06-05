@@ -795,6 +795,7 @@
 				$('#card_name').parent().show();
 			}
 		});
+		$("#card_swiper").keydown(function (e) { if (e.keyCode == 13) { e.preventDefault(); } return });
 		$('#card_swiper').on('keyup', function () {
 			var el = $(this);
 			delay(function () {
