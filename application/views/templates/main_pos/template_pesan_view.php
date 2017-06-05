@@ -29,7 +29,7 @@
 
 </head>
 <body class="skin-black">
-<script src="<?= base_url() ?>assets/js/jquery.min.js"></script>
+<script src="<?php echo base_url() ?>assets/js/jquery.min.js"></script>
 <script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
 <script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 
