@@ -307,8 +307,8 @@
 				and c.print_kitchen_section_id=f.id
 				and a.id=".$order_id);
 			$i=1;
-
-			foreach ($query->result() as $row) {
+			$res=$query->result();
+			foreach ($res as $row) {
 				if($i==1){
 					shell_exec('echo "Outlet : "'.$row->outlet.' >'.$row->printer);
 					shell_exec('echo "Waiter : "'.$row->name.' >'.$row->printer);
@@ -317,7 +317,10 @@
 				shell_exec('echo "'.$row->menu.'	'.$row->order_qty.'>'.$row->printer);
 				$i++;
 			}
-			echo "</br></br>";
+			shell_exec('echo "" >'.$res[0]->printer);
+			shell_exec('echo "" >'.$res[0]->printer);
+			shell_exec('echo "" >'.$res[0]->printer);
+			shell_exec('echo "" >'.$res[0]->printer);
 			/*$this->db->set('serving_status', '1');
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
