@@ -25,17 +25,17 @@
 			   value="<?php echo $name; ?>"/>
 	</div>
 	<div class="form-group">
-		<label for="varchar">Short Name <?php echo form_error('short_name') ?></label>
+		<label for="varchar">Short Name </label>
 		<input type="text" class="form-control" name="short_name" id="short_name"
 			   placeholder="Short Name" value="<?php echo $short_name; ?>"/>
 	</div>
 	<div class="form-group">
-		<label for="varchar">Description <?php echo form_error('description') ?></label>
+		<label for="varchar">Description </label>
 		<input type="text" class="form-control" name="description" id="description"
 			   placeholder="Description" value="<?php echo $description; ?>"/>
 	</div>
 	<div class="form-group">
-		<label for="varchar">Status <?php echo form_error('status') ?></label>
+		<label for="varchar">Status </label>
 		<input type="text" class="form-control" name="status" id="status" placeholder="Status"
 			   value="<?php echo $status; ?>"/>
 	</div>

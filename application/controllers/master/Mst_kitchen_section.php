@@ -116,14 +116,6 @@
 			$this->form_validation->set_rules('kitchen_id', 'kitchen id', 'trim|required');
 			$this->form_validation->set_rules('code', 'code', 'trim|required');
 			$this->form_validation->set_rules('name', 'name', 'trim|required');
-			$this->form_validation->set_rules('short_name', 'short name', 'trim|required');
-			$this->form_validation->set_rules('description', 'description', 'trim|required');
-			$this->form_validation->set_rules('status', 'status', 'trim|required');
-			$this->form_validation->set_rules('created_date', 'created date', 'trim|required');
-			$this->form_validation->set_rules('modified_date', 'modified date', 'trim|required');
-			$this->form_validation->set_rules('created_by', 'created by', 'trim|required');
-			$this->form_validation->set_rules('modified_by', 'modified by', 'trim|required');
-			$this->form_validation->set_rules('id', 'id', 'trim');
 			$this->form_validation->set_error_delimiters('<span class="text-danger">', '</span>');
 		}
 	}
