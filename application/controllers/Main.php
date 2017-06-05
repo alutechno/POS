@@ -325,12 +325,12 @@
 			$this->db->update('pos_orders_line_item');
 			echo '<script language="javascript">';
 			echo 'alert("order successfully print");';
-			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
+			//echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
 			echo '</script>';
 		}
 		function open_cash() {
 			$order_id = $this->uri->segment(3);
-			$message = shell_exec("copy open.txt LPT3");
+			$message = shell_exec("copy open.txt LPT2");
 			echo '<script language="javascript">';
 			echo 'alert("Cash draw open");';
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
@@ -343,6 +343,28 @@
 			echo 'window.open("'.REPORT_BIRT.'struk_order.rptdesign&no_bill='.$res.'&payment='.$pay.'&__action=print","_blank")';
 			echo '</script>';
 
+		}
+		function no_pos() {
+			$data=$this->input->post();
+			if (!isset($data['card_no'])) {
+				$data['card_no'] = 'NULL';
+				$payment_amount=str_replace(',','',$data['payment_amount']);
+			}else{
+				$payment_amount=$data['grandtotal'];
+			}
+
+			$orderId=explode(',', $data['order_id']);
+			foreach ($orderId as $key ) {
+				$res=$this->db->query("select * from pos_orders where id=".$key);
+				$res=$res->result();
+				$this->db->set('status', '4', FALSE);
+				$this->db->set('modified_by', $this->session->userdata('user_id'), FALSE);
+				$this->db->set('modified_date', 'now()', FALSE);
+				$this->db->where('id', $key);
+				$this->db->update('pos_orders');
+			}
+			redirect(base_url() . "main");
+			$this->print_tes($data['order_id'],$payment_amount);
 		}
 		function submit() {
 			$data=$this->input->post();
@@ -373,7 +395,6 @@
 			}
 			redirect(base_url() . "main");
 			$this->print_tes($data['order_id'],$payment_amount);
-
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');

@@ -7,7 +7,7 @@
 				$query = $this->db->query("select * from mst_kitchen");
 				foreach ($query->result() as $row) {
 					?>
-					<option value='<?= $row->id ?>'><?= $row->name ?></option>
+					<option value='<?php $row->id ?>'><?php $row->name ?></option>
 					<?
 				}
 			?>

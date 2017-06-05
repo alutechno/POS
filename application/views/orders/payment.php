@@ -114,8 +114,7 @@
 						$rows = $q->result();
 						echo html('Total', $rows[0]->total);
 						foreach ($rows as $row) {
-							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,
-																							   2) . '% </small>';
+							$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' . rupiah($row->tax_percent,2) . '% </small>';
 							$v = $row->tax_amount;
 							echo html($l, $v);
 						}
