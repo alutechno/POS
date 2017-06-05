@@ -223,7 +223,7 @@
 				foreach ($query->result() as $row) {
 					?>
 					<option
-						value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
+						value='<?php echo $row->id ?>' <?php echo $row->id == $print_kitchen_section_id ? 'selected' : ''; ?>><?php echo $row->name ?></option>
 					<?php
 				}
 			?>
