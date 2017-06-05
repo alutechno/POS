@@ -17,7 +17,7 @@
 						$q = $this->db->query("
 							select
 							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
-							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
+							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
 							sum(sub_total_amount) total
 							from pos_orders
 							where id in(" . $orderId . ")) d
@@ -60,9 +60,9 @@
 							<input type="hidden" class="form-control" name="payment_type_id"
 								   value="11">
 							<input type="hidden" class="form-control" name="grandtotal"
-								   value="<? echo $rows[0]->grandtotal; ?>">
+								   value="<?php echo $rows[0]->grandtotal; ?>">
 							<input type="hidden" class="form-control" name="order_id"
-								   value="<? echo $orderId; ?>">
+								   value="<?php echo $orderId; ?>">
 							<input type="currency" class="form-control" name="payment_amount">
 						</div>
 					</div>
@@ -103,7 +103,7 @@
 						$q = $this->db->query("
 								select
 								c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
-								from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal, 
+								from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
 								sum(sub_total_amount) total
 								from pos_orders
 								where id in(" . $orderId . ")) d
@@ -154,9 +154,9 @@
 						<div class="col-lg-12">
 							<hr/>
 							<input type="hidden" class="form-control" name="order_id"
-								   value="<? echo $orderId; ?>">
+								   value="<?php echo $orderId; ?>">
 							<input type="hidden" class="form-control" name="grandtotal"
-								   value="<? echo $rows[0]->grandtotal; ?>">
+								   value="<?php echo $rows[0]->grandtotal; ?>">
 							<input id="card_swiper" type="force-text" class="form-control"
 								   id="card_no"
 								   name="card_no" placeholder="Tap here, then swipe the card">
