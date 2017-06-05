@@ -1,22 +1,3 @@
-<script type="text/javascript">
-	/*$(window).on('load',function(){
-        $('#myModal').modal('show');
-    });*/
-	function load_guest(table, guest) {
-		document.getElementById('table').value = table;
-		if (guest == "") {
-			document.getElementById('test').value = '';
-		} else {
-			document.getElementById('test').value = guest;
-		}
-
-		$('#myModalguest').modal('show');
-		// document.getElementById("guest").focus();
-		$('#test').keyboard({layout: 'qwerty', usePreview: false});
-	}
-
-</script>
-
 <div class="modal fade" id="myModalguest" tabindex="-1" role="dialog"
 	 aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
@@ -27,16 +8,17 @@
 				<h4 class="modal-title" id="myModalLabel">Guest</h4>
 			</div>
 			<div class="modal-body">
-				<form id="subscribe-email-form" action="<?= base_url() ?>main/input_guest"
+				<form action="<?= base_url() ?>main/input_guest"
 					  method="post">
 					<div class="form-group">
 						<label for="usr">Table:</label>
-						<input type="text" class="form-control" id="table" name="table">
+						<input type="text" class="form-control" id="table" name="table" readonly>
 					</div>
 
 					<div class="form-group">
 						<label for="usr">Guest:</label>
-						<input type="text" class="form-control" id="test" name="guest" required="">
+						<input type="number" class="form-control" id="guest" name="guest"
+							   required="">
 					</div>
 			</div>
 			<div class="modal-footer">
