@@ -373,8 +373,8 @@
 								<select class="form-control" name="charge_to_room" id="charge_to_room">
 									<option>- Choose -</option>
 									<?php
-										$rows = $this->db->query("select * from v_in_house_guest");
-										foreach ($rows->result() as $row) {
+										$dddd = $this->db->query("select * from v_in_house_guest");
+										foreach ($dddd->result() as $row) {
 											?>
 											<script>
 												window.Charge2Room = window.Charge2Room || {};
@@ -447,6 +447,15 @@
 							<div class="form-group">
 								<label>Notes</label>
 								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
+								<input type="hidden" class="form-control" name="folio_id">
+								<input type="hidden" class="form-control" name="order_id"
+									   value="<?php echo $orderId; ?>">
+								<input type="hidden" class="form-control" name="grandtotal"
+									   value="<?php echo $rows[0]->grandtotal; ?>">
+								<input type="hidden" class="form-control" name="payment_type_id"
+									   value="1">
+								<input type="hidden" class="form-control" name="payment_amount"
+									   value="<?php echo $rows[0]->grandtotal; ?>">
 							</div>
 						</div>
 					</div>
@@ -505,8 +514,8 @@
 								<select class="form-control" name="guest_use" id="guest_use">
 									<option>- Choose -</option>
 									<?php
-										$rows = $this->db->query("select * from v_house_use_spent_monthly");
-										foreach ($rows->result() as $row) {
+										$dddd = $this->db->query("select * from v_house_use_spent_monthly");
+										foreach ($dddd->result() as $row) {
 											?>
 											<script>
 												window.GuestUse = window.GuestUse || {};
@@ -548,7 +557,7 @@
 									<label>Monthly Spent</label>
 								</div>
 								<div class="col-lg-6 pull-right">
-									<span class="pull-right" id="max_spent_monthly"></span>
+									<span id="max_spent_monthly" class="pull-right"></span>
 								</div>
 							</div>
 						</div>
@@ -558,7 +567,7 @@
 									<label>Current Transaction Amount</label>
 								</div>
 								<div class="col-lg-6 pull-right">
-									<span class="pull-right" id="current_transc_amount"></span>
+									<span id="current_transc_amount" class="pull-right"></span>
 								</div>
 							</div>
 						</div>
@@ -569,6 +578,15 @@
 							<div class="form-group">
 								<label>Notes</label>
 								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
+								<input type="hidden" class="form-control" name="house_use_id">
+								<input type="hidden" class="form-control" name="order_id"
+									   value="<?php echo $orderId; ?>">
+								<input type="hidden" class="form-control" name="grandtotal"
+									   value="<?php echo $rows[0]->grandtotal; ?>">
+								<input type="hidden" class="form-control" name="payment_type_id"
+									   value="1">
+								<input type="hidden" class="form-control" name="payment_amount"
+									   value="<?php echo $rows[0]->grandtotal; ?>">
 							</div>
 						</div>
 					</div>
@@ -840,7 +858,7 @@
 						</a>
 						<a class="btn btn-app" data-toggle="modal" href="#myModalGuestUse">
 							<i class="fa fa-tags"></i>
-							House use
+							Guest use
 						</a>
 					</div>
 					<!--<div class="col-lg-12">
@@ -1061,6 +1079,7 @@
 			var d = Charge2Room[i];
 			$('#submitChargeToRoom').attr('disabled', 1);
 			if (d) {
+				$('input[name="folio_id"]').val(d.folio_id);
 				$('#check_in_date').html(d.check_in_date);
 				$('#departure_date').html(d.departure_date);
 				$('#is_cash_bases').html(d.is_cash_bases);
@@ -1079,6 +1098,7 @@
 			var d = GuestUse[i];
 			$('#submitGuestUse').attr('disabled', 1);
 			if (d) {
+				$('input[name="house_use_id"]').val(d.house_use_id);
 				$('#cost_center').html(d.cost_center);
 				$('#house_use').html(d.house_use);
 				$('#current_transc_amount').html(rupiahJS(d.current_transc_amount));
