@@ -30,6 +30,8 @@
 		  rel="stylesheet" type="text/css"/>
 	<!-- Theme style -->
 	<link href=" <?php echo MY_ASSETS ?>css/AdminLTE.css" rel="stylesheet" type="text/css"/>
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>css/keyboard.css" rel="stylesheet">
+	<link href="<?php echo VIRTUAL_KEYBOARD ?>docs/css/jquery-ui.min.css" rel="stylesheet">
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -53,7 +55,9 @@
 </div><!-- ./wrapper -->
 
 <!-- add new calendar event modal -->
-<script src=" <?php echo base_url() ?>assets/js/jquery.min.js"></script>
+<script src="<?php echo base_url() ?>assets/js/jquery.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>docs/js/jquery-ui.min.js"></script>
+<script src="<?php echo VIRTUAL_KEYBOARD ?>js/jquery.keyboard.js"></script>
 <!-- jQuery 2.0.2 -->
 <!-- jQuery UI 1.10.3 -->
 <script src=" <?php echo MY_ASSETS ?>js/jquery-ui-1.10.3.min.js" type="text/javascript"></script>
@@ -93,5 +97,19 @@
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
 <script src=" <?php echo MY_ASSETS ?>js/AdminLTE/dashboard.js" type="text/javascript"></script>
 
+<script type="text/javascript">
+	function load_guest(table, guest) {
+		$('input#table').val(table);
+		if (!guest) {
+			$('input#guest').val('');
+		} else {
+			$('input#guest').val(guest);
+		}
+
+		$('#myModalguest').modal('show');
+		$('input#guest').focus();
+		$('input#guest').keyboard({layout: 'num', usePreview: false});
+	}
+</script>
 </body>
 </html>
