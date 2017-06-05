@@ -321,10 +321,10 @@
 				$i++;
 			}
 			echo "</br></br>";
-			$this->db->set('serving_status', '1');
+			/*$this->db->set('serving_status', '1');
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
-			$this->db->update('pos_orders_line_item');
+			$this->db->update('pos_orders_line_item');*/
 			echo '<script language="javascript">';
 			echo 'alert("order successfully print");';
 			//echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
