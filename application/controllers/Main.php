@@ -296,19 +296,21 @@
 			$user_id = $this->session->userdata('user_id');
 			$order_id = $this->uri->segment(3);
 			$outlet_id = $this->session->userdata('outlet');
-			$message = shell_exec("ls");
-			$query = $this->db->query("select e.name outlet,d.name,c.name menu,b.order_qty
-				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e
+
+			$query = $this->db->query("select e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
 				where a.id=b.order_id
 				and b.outlet_menu_id=c.id
 				and a.waiter_user_id=d.id
 				and a.outlet_id=e.id
 				and b.serving_status=0
+				and c.print_kitchen_section_id=f.id
 				and a.id=".$order_id);
 			$i=1;
 			foreach ($query->result() as $row) {
 				if($i==1){
-					echo "Outlet : ".$row->outlet;
+					shell_exec('echo "Outlet : "'.$row->outlet.' >'.$row->printer);
+					shell_exec('echo "" >'.$row->printer);
 					echo "</br>";
 					echo "Waiter : ".$row->name;
 					echo "</br>";
