@@ -216,8 +216,7 @@
 	</div>
 
 	<div class="form-group">
-		<label for="varchar">Print Kitchen
-			Id <?php echo form_error('print_kitchen_section_id') ?></label>
+		<label for="varchar">Print Kitchen section Id <?php echo form_error('print_kitchen_section_id') ?></label>
 		<select class="form-control" name="print_kitchen_section_id" id="print_kitchen_section_id">
 			<?php
 				$query = $this->db->query("select * from mst_kitchen_section");

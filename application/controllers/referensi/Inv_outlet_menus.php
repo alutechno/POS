@@ -65,8 +65,7 @@
 						'is_disable_change_price' => $this->input->post('is_disable_change_price',
 																		true),
 						'print_kitchen_id' => $this->input->post('print_kitchen_id', true),
-						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',
-																		 true),);
+						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',true),);
 				} else {
 					$data = array('code' => $this->input->post('code', true),
 						'name' => $this->input->post('name', true),
@@ -84,11 +83,9 @@
 						'is_promo_enabled' => $this->input->post('is_promo_enabled', true),
 						'is_export_cost' => $this->input->post('is_export_cost', true),
 						'is_print_after_total' => $this->input->post('is_print_after_total', true),
-						'is_disable_change_price' => $this->input->post('is_disable_change_price',
-																		true),
+						'is_disable_change_price' => $this->input->post('is_disable_change_price',true),
 						'print_kitchen_id' => $this->input->post('print_kitchen_id', true),
-						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',
-																		 true),);
+						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',true),);
 				}
 				$this->Inv_outlet_menus_model->insert($data);
 				$this->session->set_flashdata('message', 'Create Record Success');
@@ -117,13 +114,10 @@
 					'recipe_qty' => set_value('recipe_qty', $row->recipe_qty),
 					'is_promo_enabled' => set_value('is_promo_enabled', $row->is_promo_enabled),
 					'is_export_cost' => set_value('is_export_cost', $row->is_export_cost),
-					'is_print_after_total' => set_value('is_print_after_total',
-														$row->is_print_after_total),
-					'is_disable_change_price' => set_value('is_disable_change_price',
-														   $row->is_disable_change_price),
+					'is_print_after_total' => set_value('is_print_after_total',$row->is_print_after_total),
+					'is_disable_change_price' => set_value('is_disable_change_price',$row->is_disable_change_price),
 					'print_kitchen_id' => set_value('print_kitchen_id', $row->print_kitchen_id),
-					'print_kitchen_section_id' => set_value('print_kitchen_section_id',
-															$row->print_kitchen_section_id),);
+					'print_kitchen_section_id' => set_value('print_kitchen_section_id',$row->print_kitchen_section_id),);
 				form('referensi/inv_outlet_menus/inv_outlet_menus_form', $data);
 			} else {
 				$this->session->set_flashdata('message', 'Record Not Found');
@@ -158,11 +152,9 @@
 						'is_promo_enabled' => $this->input->post('is_promo_enabled', true),
 						'is_export_cost' => $this->input->post('is_export_cost', true),
 						'is_print_after_total' => $this->input->post('is_print_after_total', true),
-						'is_disable_change_price' => $this->input->post('is_disable_change_price',
-																		true),
+						'is_disable_change_price' => $this->input->post('is_disable_change_price',true),
 						'print_kitchen_id' => $this->input->post('print_kitchen_id', true),
-						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',
-																		 true),);
+						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',true),);
 				} else {
 					$data = array('code' => $this->input->post('code', true),
 						'name' => $this->input->post('name', true),
@@ -180,11 +172,9 @@
 						'is_promo_enabled' => $this->input->post('is_promo_enabled', true),
 						'is_export_cost' => $this->input->post('is_export_cost', true),
 						'is_print_after_total' => $this->input->post('is_print_after_total', true),
-						'is_disable_change_price' => $this->input->post('is_disable_change_price',
-																		true),
+						'is_disable_change_price' => $this->input->post('is_disable_change_price',true),
 						'print_kitchen_id' => $this->input->post('print_kitchen_id', true),
-						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',
-																		 true),);
+						'print_kitchen_section_id' => $this->input->post('print_kitchen_section_id',true),);
 				}
 				$this->Inv_outlet_menus_model->update($this->input->post('id', true), $data);
 				// echo $this->db->last_query();exit;
@@ -207,6 +197,8 @@
 			$this->form_validation->set_rules('code', 'code', 'trim|required');
 			$this->form_validation->set_rules('name', 'name', 'trim|required');
 			$this->form_validation->set_rules('short_name', 'short name', 'trim|required');
+			$this->form_validation->set_rules('print_kitchen_id', 'print kitchen id', 'trim|required');
+            $this->form_validation->set_rules('print_kitchen_section_id', 'print kitchen section id', 'trim|required');
 			/*$this->form_validation->set_rules('description', 'description', 'trim|required');
             $this->form_validation->set_rules('outlet_id', 'outlet id', 'trim|required');
             $this->form_validation->set_rules('status', 'status', 'trim|required');
