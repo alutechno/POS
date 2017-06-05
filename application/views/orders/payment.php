@@ -197,13 +197,98 @@
 						aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalLabel">Choose Tables</h4>
 			</div>
-			<div class="modal-body">
-				<!---->
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary" onclick="">Submit</button>
-			</div>
+			<form id="mergeTable">
+				<div class="modal-body">
+					<?php
+						$orderId = $this->uri->segment(3);
+						$orderId = explode('-', $orderId);
+						$orderId = implode(",", $orderId);
+						$q = $this->db->query("
+							select
+							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
+							sum(sub_total_amount) total
+							from pos_orders
+							where id in(" . $orderId . ")) d
+							where b.tax_id=c.id
+							and b.order_id in(" . $orderId . ")
+							group by c.name;"
+						);
+						$rows = $q->result();
+						echo html('This Table', $rows[0]->grandtotal, 'grantotal-merge-me');
+					?>
+					<br/>
+					<div class="row">
+						<style>
+							.state-icon {
+								left: -5px;
+							}
+							.list-group-item-primary {
+								color: rgb(255, 255, 255);
+								background-color: rgb(66, 139, 202);
+							}
+						</style>
+						<div class="col-lg-12">
+							<div style="max-height: 500px;overflow: auto;">
+								<ul id="check-list-box" class="list-group checked-list-box">
+									<?php
+										$query = $this->db->query("
+											select * from (
+												select
+													a.id,a.table_no,a.cover, b.id order_id, b.num_of_cover guest,
+													b.sub_total_amount, b.discount_total_amount, b.tax_total_amount, 
+													b.payment_amount, b.due_amount
+												from mst_pos_tables a
+												left join pos_orders b on a.id=b.table_id and b.status in (0,1)
+												where a.outlet_id=". $this->session->userdata('outlet') ."
+												group by a.id order by b.id DESC
+											) x 
+											where order_id is not null and order_id != ". $this->session->userdata('table') ."
+											order by table_no, id;
+										");
+										foreach ($query->result() as $row) {
+											$oid = $row->order_id;
+											$tno = $row->table_no;
+											$due = $row->due_amount;
+											$attr = ' id="merge-w-'.$oid.'" class="list-group-item" data-color="info"';
+											$badge = "<span class='badge badge-default badge-pill'>".
+												rupiah($due,2)."</span>";
+											echo "<li".$attr.">Table #".$tno.$badge."</li>";
+											echo "<script>
+												window.mergeWith = window.mergeWith || {};
+												mergeWith['merge-w-$oid'] = ".json_encode($row)."
+											</script>";
+										}
+									?>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<hr/>
+					<div class="row">
+						<div class="col-lg-12">
+							<div class="row">
+								<div class="col-lg-6">
+									<label>Grand Total</label>
+								</div>
+								<div class="col-lg-6 pull-right">
+									<span id="grantotal-merge"
+										  order_id="<?php echo $this->session->userdata('table'); ?>"
+										  class="pull-right"
+										  style="margin-right: 20px;">
+										<?php echo rupiah($rows[0]->grandtotal,2); ?>
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary" id="mergeTableBtn" disabled>
+						Submit
+					</button>
+				</div>
 			</form>
 		</div>
 	</div>
@@ -876,9 +961,9 @@
 					</div>-->
 					<hr>
 					<div class="col-lg-12">
-						<a class="btn btn-app" data-toggle="modal" href="">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalMerge">
 							<i class="fa fa-arrow-down" aria-hidden="true"></i>
-							Join
+							Merge
 						</a>
 						<a class="btn btn-app" data-toggle="modal" href="">
 							<i class="fa fa-arrows-alt"></i>
@@ -1121,6 +1206,98 @@
 		$('#guest_use').on('change', function () {
 			GuestUse.current = $(this).val();
 			showGuestUseInfo(GuestUse.current);
+		});
+
+		$('.list-group.checked-list-box .list-group-item').each(function () {
+			// Settings
+			var $widget = $(this),
+				$checkbox = $('<input type="checkbox" class="hidden" />'),
+				color = ($widget.data('color') ? $widget.data('color') : "primary"),
+				style = (
+				    !$widget.data('style') || $widget.data('style') == "button" ? "btn-" : "list-group-item-"
+				),
+				settings = {
+					on: {
+						icon: 'glyphicon glyphicon-check'
+					},
+					off: {
+						icon: 'glyphicon glyphicon-unchecked'
+					}
+				};
+
+			console.log($widget.data('style'));
+			$widget.css('cursor', 'pointer')
+			$widget.append($checkbox);
+
+			// Event Handlers
+			$widget.on('click', function () {
+				$checkbox.prop('checked', !$checkbox.is(':checked'));
+				$checkbox.triggerHandler('change');
+				updateDisplay();
+			});
+			$checkbox.on('change', function () {
+				updateDisplay();
+			});
+
+
+			// Actions
+			function updateDisplay() {
+				var isChecked = $checkbox.is(':checked');
+
+				// Set the button's state
+				$widget.data('state', (isChecked) ? "on" : "off");
+
+				// Set the button's icon
+				$widget.find('.state-icon')
+				.removeClass()
+				.addClass('state-icon ' + settings[$widget.data('state')].icon);
+
+				// Update the button's color
+				if (isChecked) {
+					$widget.addClass(style + color + ' active');
+				} else {
+					$widget.removeClass(style + color + ' active');
+				}
+			}
+
+			// Initialization
+			function init() {
+
+				if ($widget.data('checked') == true) {
+					$checkbox.prop('checked', !$checkbox.is(':checked'));
+				}
+
+				updateDisplay();
+
+				// Inject the icon if applicable
+				if ($widget.find('.state-icon').length == 0) {
+					$widget.prepend('<span class="state-icon ' + settings[$widget.data('state')].icon + '"></span>');
+				}
+			}
+			init();
+		});
+		$('label[for="grantotal-merge-me"]').css('margin-right', '20px');
+		var nextLocation;
+		var paths = [window.location.href];
+		$("#check-list-box li").on('click', function(event){
+			event.preventDefault();
+			var me = parseFloat($('label[for="grantotal-merge-me"]').attr('val'));
+			var oth = 0;
+			var paths_ = [];
+			$("#check-list-box li.active").each(function(idx, li) {
+			    oth += parseFloat(mergeWith[li.id].due_amount);
+			    paths_.push(mergeWith[li.id].order_id)
+			});
+			$('#grantotal-merge').html(rupiahJS(me + oth));
+			if (oth > 0) {
+				nextLocation = paths.concat(paths_).join('-');
+				$('#mergeTable').attr("action", nextLocation);
+				$('#mergeTableBtn').removeAttr('disabled')
+			} else {
+				nextLocation = "";
+				$('#mergeTable').attr("action", "#");
+				$('#mergeTableBtn').attr('disabled', 1);
+			}
 		});
 	});
 </script>
