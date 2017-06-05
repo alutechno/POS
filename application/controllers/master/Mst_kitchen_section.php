@@ -98,7 +98,7 @@
 					'modified_by' => $this->input->post('modified_by', true),);
 				$this->Mst_kitchen_section_model->update($this->input->post('id', true), $data);
 				$this->session->set_flashdata('message', 'Update Record Success');
-				redirect(site_url('mst_kitchen_section'));
+				redirect(base_url('master/mst_kitchen_section'));
 			}
 		}
 		public function delete($id) {
