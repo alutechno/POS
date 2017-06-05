@@ -377,7 +377,7 @@
 		function submit() {
 			$data=$this->input->post();
 			if (!isset($data['card_no'])) {
-				$data['card_no'] = 'NULL';
+				$data['card_no'] = '';
 				$payment_amount=str_replace(',','',$data['payment_amount']);
 			}else{
 				$payment_amount=$data['grandtotal'];
@@ -396,8 +396,15 @@
 				);
 				$this->db->insert('pos_card_payment_detail', $newData);
 				$this->db->set('status', '2', FALSE);
+				$this->db->set('payment_method_id', $data['payment_type_id'], FALSE);
 				$this->db->set('modified_by', $this->session->userdata('user_id'), FALSE);
 				$this->db->set('modified_date', 'now()', FALSE);
+				if (isset($data['folio_id'])) {
+					$this->db->set('folio_id', $data['folio_id'], FALSE);
+				}
+				if (isset($data['house_use_id'])) {
+					$this->db->set('house_use_id', $data['house_use_id'], FALSE);
+				}
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
