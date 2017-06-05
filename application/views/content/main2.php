@@ -1,16 +1,3 @@
-<script type="text/javascript">
-	/*$(window).on('load',function(){
-        $('#myModal').modal('show');
-    });*/
-	function load_guest(table) {
-		document.getElementById('table').value = table;
-
-		$('#myModalguest').modal('show');
-		document.getElementById("guest").focus();
-	}
-
-</script>
-
 <div class="modal fade" id="myModalguest" tabindex="-1" role="dialog"
 	 aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
@@ -23,7 +10,6 @@
 			<div class="modal-body">
 				<form id="subscribe-email-form" action="<?= base_url() ?>main/input_guest"
 					  method="post">
-
 					<div class="form-group">
 						<label for="usr">Table:</label>
 						<input type="text" class="form-control" id="table" name="table">
