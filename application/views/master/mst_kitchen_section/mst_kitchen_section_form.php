@@ -3,12 +3,12 @@
 	<div class="form-group">
 		<label for="int">Kitchen Id <?php echo form_error('kitchen_id') ?></label>
 		<select class="form-control" name="kitchen_id" id="kitchen_id">
-			<?
+			<?php
 				$query = $this->db->query("select * from mst_kitchen");
 				foreach ($query->result() as $row) {
 					?>
-					<option value="<?php echo $row ?>"><?php echo $row ?></option>
-					<?
+					<option value="<?php echo $row->id ?>"><?php echo $row->name ?></option>
+					<?php
 				}
 			?>
 		</select>
