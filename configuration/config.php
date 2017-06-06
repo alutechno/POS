@@ -16,6 +16,7 @@ define('APP_VERSION', '0.1');
 define('APP_YEAR'   , '2017');
 define('LICENSE_TO' , 'THE MEDIA HOTEL AND TOWERS');
 define('REPORT_BIRT','http://103.43.47.115:8888/birt/frameset?__report=report/pos/');
+define('BIRT','http://103.43.47.115:8888/birt/output?__report=report/pos/struk_order.rptdesign&__format=pdf');
 // -- Module
 define('DEF_MODULE'     , 1); // 1. perencanaan 2.etc  ref => apps table
 define('SELECT_MODULE'  , TRUE);

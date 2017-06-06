@@ -339,7 +339,7 @@
 		}
 		function print_tes($res, $pay) {
 			echo '<script language="javascript">';
-			echo 'window.open("' . REPORT_BIRT . 'struk_order.rptdesign&no_bill=' . $res . '&payment=' . $pay . '&__action=print","_blank")';
+			echo 'window.open("' . BIRT .'&no_bill='.  $res . '&payment=' . $pay.'","_blank")';
 			echo '</script>';
 		}
 		function merge() {
@@ -390,7 +390,7 @@
 			$payment_amount = isset($P['payment_amount']) ? $P['payment_amount'] : 0;
 			$change_amount = isset($P['change_amount']) ? $P['change_amount'] : 0;
 			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
-			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : '';
+			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
 
 			if (!$card_no) {
@@ -410,6 +410,7 @@
 						'change_amount' => $change_amount,
 						'folio_id' => $folio_id,
 						'card_no' => $card_no,
+						'house_use_Id'=>$house_use_id,
 						'total_amount' => floatval($grandtotal),
 						'created_by' => $user_id
 					);
@@ -427,6 +428,13 @@
 			}
 			redirect(base_url() . "main");
 			$this->print_tes($order_id, $payment_amount);
+		}
+		function test(){
+			$data = array(
+				'test'=>1
+			);
+			header('Content-Type: application/json');
+			echo json_encode($data);
 		}
 		function submit_split() {
 			$P = $this->input->post();
@@ -447,24 +455,21 @@
 			} else {
 				$payment_amount = $grandtotal;
 			}
-			$i=0;
 			foreach ($order_id as $key) {
 				$res = $this->db->query("select * from pos_orders where id=" . $key);
 				$res = $res->result();
-				if($i==0){
-					$newData = array(
-						'order_id' => $key,
-						'payment_type_id' => $payment_type_id,
-						'payment_amount' => $payment_amount,
-						'change_amount' => $change_amount,
-						'folio_id' => $folio_id,
-						'card_no' => $card_no,
-						'total_amount' => floatval($grandtotal),
-						'created_by' => $user_id
-					);
-					$ee = $this->db->insert('pos_payment_detail', $newData);
-				}
-				$i++;
+				$newData = array(
+					'order_id' => $key,
+					'payment_type_id' => $payment_type_id,
+					'payment_amount' => $payment_amount,
+					'change_amount' => $change_amount,
+					'folio_id' => $folio_id,
+					'card_no' => $card_no,
+					'house_use_Id'=>$house_use_id,
+					'total_amount' => floatval($grandtotal),
+					'created_by' => $user_id
+				);
+				$ee = $this->db->insert('pos_payment_detail', $newData);
 				$this->db->set('status', '2', false);
 				$this->db->set('modified_by', $user_id, false);
 				$this->db->set('modified_date', 'now()', false);
@@ -474,6 +479,13 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
+			header('Content-Type: application/json');
+			$order_id=implode('-',$order_id);
+			$data = array(
+				'result'=>$ee,
+				'url'=> BIRT .'&no_bill='.  $order_id . '&payment=' . $payment_amount
+				http://103.43.47.115:8888/birt/output?__report=report/pos/struk_order.rptdesign&no_bill=29&payment=100000&&__dpi=96&__format=pdf&__pageoverflow=0&__overwrite=false
+			);
 			//redirect(base_url() . "main");
 			//$this->print_tes($order_id, $payment_amount);
 		}
