@@ -58,12 +58,13 @@
 						</div>
 						<div class="col-lg-6 text-right">
 							<input type="hidden" class="form-control" name="payment_type_id"
-								   value="11">
+								   value="1">
 							<input type="hidden" class="form-control" name="grandtotal"
 								   value="<?php echo $rows[0]->grandtotal; ?>">
 							<input type="hidden" class="form-control" name="order_id"
 								   value="<?php echo $orderId; ?>">
 							<input type="currency" class="form-control" name="payment_amount">
+							<input type="hidden" class="form-control" name="change_amount">
 						</div>
 					</div>
 					<div class="row">
@@ -237,7 +238,7 @@
 												select
 													a.id,a.table_no,a.cover, b.id order_id, b.num_of_cover guest,
 													b.sub_total_amount, b.discount_total_amount, b.tax_total_amount, 
-													b.payment_amount, b.due_amount
+													b.due_amount
 												from mst_pos_tables a
 												left join pos_orders b on a.id=b.table_id and b.status in (0,1)
 												where a.outlet_id=". $this->session->userdata('outlet') ."
@@ -385,6 +386,71 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade" id="myModalNoPost" tabindex="-1" role="dialog"
+	 aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+						aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">No Post</h4>
+			</div>
+			<div class="modal-body">
+				<?php
+					$orderId = $this->uri->segment(3);
+					$orderId = explode('-', $orderId);
+					$orderId = implode(",", $orderId);
+					$q = $this->db->query("
+							select
+							c.name,b.tax_percent,sum(b.tax_amount) tax_amount,d.total, d.grandtotal
+							from pos_order_taxes b,mst_pos_taxes c,(select sum(due_amount) grandtotal,
+							sum(sub_total_amount) total
+							from pos_orders
+							where id in(" . $orderId . ")) d
+							where b.tax_id=c.id
+							and b.order_id in(" . $orderId . ")
+							group by c.name;"
+					);
+					$rows = $q->result();
+					echo html('Total', $rows[0]->total);
+					foreach ($rows as $row) {
+						$l = '&nbsp&nbsp' . $row->name . '<small>&nbsp&nbsp&nbsp' .
+							rupiah($row->tax_percent, 2) .
+							'% </small>';
+						$v = $row->tax_amount;
+						echo html($l, $v);
+					}
+					echo html('Grand Total', $rows[0]->grandtotal, 'grandtot');
+				?>
+				<hr/>
+				<form id="subscribe-email-form"
+					  action="<?php echo base_url().'main/no_pos/'.$this->uri->segment(3)?>"
+					  method="post">
+					<?php
+						$oid = $this->uri->segment(3);
+						$oid = explode('-', $oid);
+						$query = $this->db->query(
+							"select * from pos_orders where id=". $oid[0]
+						);
+						$ddddd = $query->result();
+						$note = isset($ddddd[0]->order_notes) ? $ddddd[0]->order_notes : '';
+					?>
+					<label>Notes</label>
+					<input type="hidden" class="form-control" name="payment_amount"
+						   value="<?php echo $rows[0]->grandtotal; ?>">
+					<input type="hidden" class="form-control" name="grandtotal"
+						   value="<?php echo $rows[0]->grandtotal; ?>">
+					<textarea class="form-control" name="note"
+							  id="note"><?php echo $note ?></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
 <div class="modal fade" id="myModalnote" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -398,12 +464,16 @@
 					  action="<?php echo base_url() ?>main/save_note/<?php echo $this->uri->segment(3) ?>"
 					  method="post">
 					<?php
-						$query = $this->db->query("select order_notes from pos_orders where id=" . $this->uri->segment(3));
-						$row = $query->result();
+						$oid = $this->uri->segment(3);
+						$oid = explode('-', $oid);
+						$query = $this->db->query(
+							"select order_notes from pos_orders where id=". $oid[0]
+						);
+						$rows = $query->result();
+						$note = isset($rows[0]->order_notes) ? $rows[0]->order_notes : '';
 					?>
 					<textarea class="form-control" name="note"
-							  id="note"><?php echo $row[0]->order_notes ?></textarea>
-
+							  id="note"><?php echo $note ?></textarea>
 					<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">-->
 			</div>
 			<div class="modal-footer">
@@ -538,7 +608,7 @@
 								<input type="hidden" class="form-control" name="grandtotal"
 									   value="<?php echo $rows[0]->grandtotal; ?>">
 								<input type="hidden" class="form-control" name="payment_type_id"
-									   value="1">
+									   value="16">
 								<input type="hidden" class="form-control" name="payment_amount"
 									   value="<?php echo $rows[0]->grandtotal; ?>">
 							</div>
@@ -561,7 +631,7 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 						aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Guest Use</h4>
+				<h4 class="modal-title" id="myModalLabel">House Use</h4>
 			</div>
 			<form id="subscribe-email-form" action="<?php echo base_url() ?>main/submit"
 				  method="post">
@@ -595,11 +665,20 @@
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="form-group">
-								<label>Guest</label>
+								<label>House use</label>
 								<select class="form-control" name="guest_use" id="guest_use">
 									<option>- Choose -</option>
 									<?php
-										$dddd = $this->db->query("select * from v_house_use_spent_monthly");
+										$dddd = $this->db->query(
+											"select 
+												a.*, b.current_transc_amount, b.house_use,
+												a.id house_use_id, b.period, b.cost_center,
+												c.name pos_cost_center_name
+											from mst_house_use a
+											left join v_house_use_spent_monthly b on a.id = b.house_use_id and b.period = DATE_FORMAT(NOW(), '%Y%m')
+											left join mst_pos_cost_center c on c.id = a.pos_cost_center_id
+											where a.status = 1"
+										);
 										foreach ($dddd->result() as $row) {
 											?>
 											<script>
@@ -608,10 +687,10 @@
 												<?php echo json_encode($row) ?>;
 											</script>
 											<option value="<?php echo $row->house_use_id ?>">
-												[<?php echo $row->period?>]
+												[<?php echo $row->code?>]
 												&nbsp;
-												<?php echo $row->cost_center . ' / ' .
-													$row->house_use?>
+												<?php echo $row->pos_cost_center_name . ' / ' .
+													$row->name?>
 											</option>
 											<?php
 										}
@@ -669,7 +748,7 @@
 								<input type="hidden" class="form-control" name="grandtotal"
 									   value="<?php echo $rows[0]->grandtotal; ?>">
 								<input type="hidden" class="form-control" name="payment_type_id"
-									   value="1">
+									   value="17">
 								<input type="hidden" class="form-control" name="payment_amount"
 									   value="<?php echo $rows[0]->grandtotal; ?>">
 							</div>
@@ -917,7 +996,6 @@
 	</div><!-- /.col -->
 	<div class="col-md-4">
 		<div class="box box-solid">
-
 			<div class="box-body">
 				<div class="row">
 					<div class="col-lg-12">
@@ -943,7 +1021,7 @@
 						</a>
 						<a class="btn btn-app" data-toggle="modal" href="#myModalGuestUse">
 							<i class="fa fa-tags"></i>
-							Guest use
+							House use
 						</a>
 					</div>
 					<!--<div class="col-lg-12">
@@ -965,7 +1043,7 @@
 							<i class="fa fa-arrow-down" aria-hidden="true"></i>
 							Merge
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="">
+						<a class="btn btn-app" data-toggle="modal" href="#">
 							<i class="fa fa-arrows-alt"></i>
 							Split
 						</a>
@@ -1026,6 +1104,10 @@
 		.replace(/\/\s\^|\s\^/g, '/^')
 		.split(/\;|\%B|\^|\/\^|\?\;|\=|\?/g)
 		.slice(1, -1)
+	};
+	var rupiahJS = function (val) {
+		return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
+		.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 	};
 	// $('#search_food').keyboard({layout: 'qwerty',autoAccept: true,enterNavigation:true});
 	$.keyboard.keyaction.enter = function (base) {
@@ -1110,56 +1192,8 @@
 	}
 	//
 	$(document).ready(function () {
-		$('#cc_type').on('change', function () {
-			var v = $(this).val();
-			if (v == 'debit') {
-				$('#card_name').parent().hide();
-				$('#card_name').val('');
-			} else {
-				$('#card_name').parent().show();
-			}
-		});
-		$("#card_swiper").keydown(function (e) {
-			if (e.keyCode == 13) {
-				e.preventDefault();
-			}
-			return
-		});
-		$('#card_swiper').on('keyup', function () {
-			var el = $(this);
-			delay(function () {
-				var arr = swipeCard(el.val());
-				$('#card_name').val('');
-				if (arr.length) {
-					$('#card_no').val(arr[0]);
-					if ($('#cc_type').val() == 'credit') {
-						$('#card_name').val(arr[1]);
-					} else {
-					}
-				}
-				el.val('');
-			}, 1000);
-		});
-		$('input[type="text"]').keyboard({layout: 'qwerty'});
-		$('textarea').keyboard({layout: 'qwerty'});
-		$('input[type="currency"]').on('blur', function () {
-			var bayar = parseFloat($(this).data('value'));
-			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
-			var change = bayar - grandtotal;
-			var displayChange = rupiahJS(change);
-			$('label[for="change"]').html(displayChange);
-		});
-		$("#search_food").keypress(function (e) {
-			if (e.which == 13) {
-				document.forms["myform"].submit();
-				return false;    //<---- Add this line
-			}
-		});
-		//
-		var rupiahJS = function (val) {
-			return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
-			.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-		};
+		var nextLocation;
+		var paths = [window.location.href];
 		var showCharge2RoomInfo = function (i) {
 			var d = Charge2Room[i];
 			$('#submitChargeToRoom').attr('disabled', 1);
@@ -1193,12 +1227,60 @@
 				var grandtotal = $('#period').closest('.modal-body').find
 				('label[for="grandtot"]').attr('val');
 				if (balance > 0) {
-				    if (balance - parseFloat(grandtotal) >= 0) {
+					if (balance - parseFloat(grandtotal) >= 0) {
 						$('#submitGuestUse').removeAttr('disabled');
 					}
 				}
 			}
 		};
+		//
+		$('input[type="text"]').keyboard({layout: 'qwerty'});
+		$('textarea').keyboard({layout: 'qwerty'});
+		//
+		$('#cc_type').on('change', function () {
+			var v = $(this).val();
+			if (v == 'debit') {
+				$('#card_name').parent().hide();
+				$('#card_name').val('');
+			} else {
+				$('#card_name').parent().show();
+			}
+		});
+		$("#card_swiper").keydown(function (e) {
+			if (e.keyCode == 13) {
+				e.preventDefault();
+			}
+			return
+		});
+		$('#card_swiper').on('keyup', function () {
+			var el = $(this);
+			delay(function () {
+				var arr = swipeCard(el.val());
+				$('#card_name').val('');
+				if (arr.length) {
+					$('#card_no').val(arr[0]);
+					if ($('#cc_type').val() == 'credit') {
+						$('#card_name').val(arr[1]);
+					} else {
+					}
+				}
+				el.val('');
+			}, 1000);
+		});
+		$('input[type="currency"]').on('blur', function () {
+			var bayar = parseFloat($(this).data('value'));
+			var grandtotal = parseFloat($('label[for="grandtot"]').attr('val'));
+			var change = bayar - grandtotal;
+			var displayChange = rupiahJS(change);
+			$('label[for="change"]').html(displayChange);
+			$('input[name="change_amount"]').val(change);
+		});
+		$("#search_food").keypress(function (e) {
+			if (e.which == 13) {
+				document.forms["myform"].submit();
+				return false;    //<---- Add this line
+			}
+		});
 		$('#charge_to_room').on('change', function () {
 			Charge2Room.current = $(this).val();
 			showCharge2RoomInfo(Charge2Room.current);
@@ -1207,7 +1289,6 @@
 			GuestUse.current = $(this).val();
 			showGuestUseInfo(GuestUse.current);
 		});
-
 		$('.list-group.checked-list-box .list-group-item').each(function () {
 			// Settings
 			var $widget = $(this),
@@ -1277,8 +1358,6 @@
 			init();
 		});
 		$('label[for="grantotal-merge-me"]').css('margin-right', '20px');
-		var nextLocation;
-		var paths = [window.location.href];
 		$("#check-list-box li").on('click', function(event){
 			event.preventDefault();
 			var me = parseFloat($('label[for="grantotal-merge-me"]').attr('val'));

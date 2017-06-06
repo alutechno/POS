@@ -99,6 +99,7 @@
 
 <script type="text/javascript">
 	function load_guest(table, guest) {
+	    console.log(arguments)
 		$('input#table').val(table);
 		if (!guest) {
 			$('input#guest').val('');

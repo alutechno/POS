@@ -22,8 +22,7 @@
 				$el = json_encode($el);
 			}
 			if ($stringy) $el = "JSON.stringify($el)";
-
-			echo '<script language="javascript">console.info(`PHP`, '.$el.');</script>';
+			echo '<script language="javascript">console.info(`PHP`, ' . $el . ');</script>';
 		}
 		function payment() {
 			/*$query = $this->db->query("select order_no from pos_outlet_order_header where table_no=".$this->uri->segment(3)." and status_closed=0");
@@ -104,36 +103,33 @@
 				}
 			}
 			$data = array(
-                "order_id" => $orderId,
-                "menu_class_id" => $menuClassId,
-                "outlet_menu_id" => $menuId,
-                "modifier_id" => null,
-                "kitchen_id" => null,
-                "serving_status" => 0,
-                "order_qty" => 1,
-                "price_amount" => $price,
-                "total_amount" => $price,
+				"order_id" => $orderId,
+				"menu_class_id" => $menuClassId,
+				"outlet_menu_id" => $menuId,
+				"modifier_id" => null,
+				"kitchen_id" => null,
+				"serving_status" => 0,
+				"order_qty" => 1,
+				"price_amount" => $price,
+				"total_amount" => $price,
 				"created_by" => $user_id,
-                "created_date" => date('Y-m-d H:i:s')
-            );
-
+				"created_date" => date('Y-m-d H:i:s')
+			);
 			// updating phase #1
-			$this->db->set('tax_amount', 'tax_amount+('. $price .'*tax_percent/100)', FALSE);
+			$this->db->set('tax_amount', 'tax_amount+(' . $price . '*tax_percent/100)', false);
 			$this->db->where('order_id', $orderId);
 			$this->db->update('pos_order_taxes');
-
-			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$orderId);
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $orderId);
 			$sum = $sum[0]->tax;
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount+'. $price, FALSE);
-			$this->db->set('tax_total_amount', $sum, FALSE);
-			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price, false);
+			$this->db->set('tax_total_amount', $sum, false);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $orderId);
 			$this->db->update('pos_orders');
-
 			// real inserting
 			$this->db->insert('pos_orders_line_item', $data);
-			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(6) . ($this->uri->segment(7) ? "/".$this->uri->segment(7) : "") . ($this->uri->segment(8) ? "/".$this->uri->segment(8) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
+			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(6) . ($this->uri->segment(7) ? "/" . $this->uri->segment(7) : "") . ($this->uri->segment(8) ? "/" . $this->uri->segment(8) : "") . ($this->input->get('search') != "" ? "?search=" . $this->input->get('search') : ""));
 		}
 		function cancel_order() {
 			// echo "sss";exit;
@@ -182,10 +178,10 @@
 			//$data['filter']=$this->input->post('select_menu');
 			//$data['keyword']=$this->input->post('select_menu');
 			//pesan('orders/pesan',$data);
-			if($this->input->post('select_menu') || $this->input->post('search_food')){
-				redirect(base_url() . "main/payment/" . $this->session->userdata('table') . "/" . $this->input->post('select_menu') . ($this->input->post('select_sub_menu') != "" ? "/".$this->input->post('select_sub_menu') : "") . ($this->input->post('search_food') != "" ? "?search=".$this->input->post('search_food') : ""));
-			}else{
-				redirect(base_url() . "main/payment/" . $this->session->userdata('table') . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
+			if ($this->input->post('select_menu') || $this->input->post('search_food')) {
+				redirect(base_url() . "main/payment/" . $this->session->userdata('table') . "/" . $this->input->post('select_menu') . ($this->input->post('select_sub_menu') != "" ? "/" . $this->input->post('select_sub_menu') : "") . ($this->input->post('search_food') != "" ? "?search=" . $this->input->post('search_food') : ""));
+			} else {
+				redirect(base_url() . "main/payment/" . $this->session->userdata('table') . ($this->uri->segment(4) ? "/" . $this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/" . $this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=" . $this->input->get('search') : ""));
 			}
 		}
 		function get_total() {
@@ -205,8 +201,8 @@
 			$order_id = $this->uri->segment(3);
 			$menu_id = $this->uri->segment(4);
 			$price = $this->uri->segment(5);
-			$res=$this->db->query("select * from pos_orders_line_item WHERE order_id = ".$order_id." AND outlet_menu_id = ".$menu_id." AND serving_status = '0' LIMIT 1");
-			$arr=$res->result();
+			$res = $this->db->query("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '0' LIMIT 1");
+			$arr = $res->result();
 			if (sizeof($arr) > 0) {
 				$this->db->where('order_id', $order_id);
 				$this->db->where('outlet_menu_id', $menu_id);
@@ -214,7 +210,7 @@
 				$this->db->order_by('id');
 				$this->db->limit(1);
 				$this->db->delete('pos_orders_line_item');
-			}else{
+			} else {
 				$this->db->set('serving_status', '4');
 				$this->db->where('order_id', $order_id);
 				$this->db->where('outlet_menu_id', $menu_id);
@@ -223,16 +219,15 @@
 				$this->db->limit(1);
 				$this->db->update('pos_orders_line_item');
 			}
-			$this->db->set('tax_amount', 'tax_amount-('. $price .'*tax_percent/100)', FALSE);
+			$this->db->set('tax_amount', 'tax_amount-(' . $price . '*tax_percent/100)', false);
 			$this->db->where('order_id', $order_id);
 			$this->db->update('pos_order_taxes');
-
-			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$order_id);
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $order_id);
 			$sum = $sum[0]->tax;
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount-'. $price, FALSE);
-			$this->db->set('tax_total_amount', $sum, FALSE);
-			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->set('sub_total_amount', 'sub_total_amount-' . $price, false);
+			$this->db->set('tax_total_amount', $sum, false);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $order_id);
 			$this->db->update('pos_orders');
 			redirect(base_url() . "main/payment/" . $order_id);
@@ -254,7 +249,6 @@
 				'sub_total_amount' => 0,
 				'discount_total_amount' => 0,
 				'tax_total_amount' => 0,
-				'payment_amount' => 0,
 				'due_amount' => 0,
 				'segment_id' => 1,
 				'status' => 0,
@@ -267,7 +261,7 @@
 				select b.*
 				from pos_outlet_tax a
 				left join mst_pos_taxes b on b.id = a.pos_tax_id
-				where outlet_id  = ". $outlet_id ."
+				where outlet_id  = " . $outlet_id . "
 			");
 			foreach ($taxes as $tax) {
 				$this->db->insert('pos_order_taxes', array(
@@ -283,11 +277,11 @@
 		}
 		function save_note() {
 			$order_id = $this->uri->segment(3);
-			$note=$this->input->post();
-			$this->db->set('order_notes', $note['note']);
+			$data = $this->input->post();
+			$this->db->set('order_notes', $data['note']);
 			$this->db->where('id', $order_id);
 			$this->db->update('pos_orders');
-			redirect(base_url() . "main/payment/" . $order_id);
+			//redirect(base_url() . "main/payment/" . $order_id);
 		}
 		function save_meal_time() {
 			redirect(base_url('main'));
@@ -296,7 +290,6 @@
 			$user_id = $this->session->userdata('user_id');
 			$order_id = $this->uri->segment(3);
 			$outlet_id = $this->session->userdata('outlet');
-
 			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
 				where a.id=b.order_id
@@ -305,35 +298,35 @@
 				and a.outlet_id=e.id
 				and b.serving_status=0
 				and c.print_kitchen_section_id=f.id
-				and a.id=".$order_id);
-			$i=1;
-			$res=$query->result();
+				and a.id=" . $order_id);
+			$i = 1;
+			$res = $query->result();
 			foreach ($res as $row) {
-				if($i==1){
-					shell_exec('echo Date : '.$row->date.' >'.$row->printer);
-					shell_exec('echo Outlet : '.$row->outlet.' >'.$row->printer);
-					shell_exec('echo Waiter : '.$row->name.' >'.$row->printer);
+				if ($i == 1) {
+					shell_exec('echo Date : ' . $row->date . ' >' . $row->printer);
+					shell_exec('echo Outlet : ' . $row->outlet . ' >' . $row->printer);
+					shell_exec('echo Waiter : ' . $row->name . ' >' . $row->printer);
 				}
-				shell_exec('echo.  >'.$row->printer);
-				shell_exec('echo "'.$row->menu.'	'.$row->order_qty.'">'.$row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $row->printer);
 				$i++;
 			}
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
-			shell_exec('echo.  >'.$res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
+			shell_exec('echo.  >' . $res[0]->printer);
 			$this->db->set('serving_status', '1');
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
 			$this->db->update('pos_orders_line_item');
 			echo '<script language="javascript">';
 			echo 'alert("order successfully print");';
-			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
+			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
 			echo '</script>';
 		}
 		function open_cash() {
@@ -341,75 +334,94 @@
 			$message = shell_exec("copy open.txt LPT2");
 			echo '<script language="javascript">';
 			echo 'alert("Cash draw open");';
-			echo 'location.href = "' . base_url() . "main/payment/" . $order_id.'"';
+			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
 			echo '</script>';
 		}
-		function print_tes($res,$pay) {
+		function print_tes($res, $pay) {
 			$this->log($res);
 			$this->log($pay);
 			echo '<script language="javascript">';
-			echo 'window.open("'.REPORT_BIRT.'struk_order.rptdesign&no_bill='.$res.'&payment='.$pay.'&__action=print","_blank")';
+			echo 'window.open("' . REPORT_BIRT . 'struk_order.rptdesign&no_bill=' . $res . '&payment=' . $pay . '&__action=print","_blank")';
 			echo '</script>';
-
 		}
 		function no_pos() {
-			$data=$this->input->post();
-			if (!isset($data['card_no'])) {
-				$data['card_no'] = 'NULL';
-				$payment_amount=str_replace(',','',$data['payment_amount']);
-			}else{
-				$payment_amount=$data['grandtotal'];
-			}
-
-			$orderId=explode(',', $data['order_id']);
-			foreach ($orderId as $key ) {
-				$res=$this->db->query("select * from pos_orders where id=".$key);
-				$res=$res->result();
-				$this->db->set('status', '4', FALSE);
-				$this->db->set('modified_by', $this->session->userdata('user_id'), FALSE);
-				$this->db->set('modified_date', 'now()', FALSE);
-				$this->db->where('id', $key);
-				$this->db->update('pos_orders');
-			}
-			redirect(base_url() . "main");
-			$this->print_tes($data['order_id'],$payment_amount);
-		}
-		function submit() {
-			$data=$this->input->post();
+			$data = $this->input->post();
 			if (!isset($data['card_no'])) {
 				$data['card_no'] = '';
-				$payment_amount=str_replace(',','',$data['payment_amount']);
-			}else{
-				$payment_amount=$data['grandtotal'];
+				$payment_amount = str_replace(',', '', $data['payment_amount']);
+			} else {
+				$payment_amount = $data['grandtotal'];
 			}
-
-			$orderId=explode(',', $data['order_id']);
-			foreach ($orderId as $key ) {
-				$res=$this->db->query("select * from pos_orders where id=".$key);
-				$res=$res->result();
-				$newData = array(
-			        'order_id' => $key,
-			        'payment_type_id' => $data['payment_type_id'],
-			        'card_no' => $data['card_no'],
-					'total_amount'=>sizeof($orderId) > 1?floatval($res[0]->due_amount):$data['grandtotal'],
-					'created_by'=>$this->session->userdata('user_id')
-				);
-				$this->db->insert('pos_card_payment_detail', $newData);
-				$this->db->set('status', '2', FALSE);
-				$this->db->set('payment_method_id', $data['payment_type_id'], FALSE);
-				$this->db->set('modified_by', $this->session->userdata('user_id'), FALSE);
-				$this->db->set('modified_date', 'now()', FALSE);
-				if (isset($data['folio_id'])) {
-					$this->db->set('folio_id', $data['folio_id'], FALSE);
-				}
-				if (isset($data['house_use_id'])) {
-					$this->db->set('house_use_id', $data['house_use_id'], FALSE);
-				}
+			$orderId = explode('-', $this->uri->segment(3));
+			foreach ($orderId as $key) {
+				$this->db->set('order_notes', $data['note']);
+				$this->db->set('status', '4', false);
+				$this->db->set('modified_by', $this->session->userdata('user_id'), false);
+				$this->db->set('modified_date', 'now()', false);
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
 			redirect(base_url() . "main");
-			$this->print_tes($data['order_id'],$payment_amount);
+			$this->print_tes($data['order_id'], $payment_amount);
+		}
+		function submit() {
+			$P = $this->input->post();
+			$user_id = $this->session->userdata('user_id');
+			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
+			$order_id = explode(',', $order_id);
+			$card_no = isset($P['card_no']) ? $P['card_no'] : '';
+			$grandtotal = isset($P['grandtotal']) ? $P['grandtotal'] : 0;
+			$payment_type_id = isset($P['payment_type_id']) ? $P['payment_type_id'] : '';
+			$payment_amount = isset($P['payment_amount']) ? $P['payment_amount'] : 0;
+			$change_amount = isset($P['change_amount']) ? $P['change_amount'] : 0;
+			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : '';
+			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : '';
+			$note = isset($P['note']) ? $P['note'] : '';
+			//
+			if (!$card_no) {
+				$payment_amount = str_replace(',', '', $payment_amount);
+			} else {
+				$payment_amount = $grandtotal;
+			}
+			//
+			foreach ($order_id as $key) {
+				$res = $this->db->query("select * from pos_orders where id=" . $key);
+				$res = $res->result();
+				$due_amount = $res[0]->due_amount;
+				$newData = array(
+					'order_id' => $key,
+					'payment_type_id' => $payment_type_id,
+					'payment_amount' => $payment_amount,
+					'change_amount' => $change_amount,
+					'folio_id' => $folio_id,
+					'card_no' => $card_no,
+					'total_amount' => sizeof(implode(',', $order_id)) > 1 ? floatval($due_amount) : floatval($grandtotal),
+					'created_by' => $user_id
+				);
+				echo json_encode($newData);
+				echo '<br/>';
+				$ee = $this->db->insert('pos_payment_detail', $newData);
+				echo json_encode($ee);
+				echo '<br/>';
+				echo '---';
+				echo '<br/>';
+				$this->db->set('status', '2', false);
+				$this->db->set('modified_by', $user_id, false);
+				$this->db->set('modified_date', 'now()', false);
+				if ($folio_id) {
+					$this->db->set('folio_id', $folio_id, false);
+				}
+				if ($house_use_id) {
+					$this->db->set('house_use_id', $house_use_id, false);
+				}
+				if ($note) {
+					$this->db->set('order_notes', $note);
+				}
+				$this->db->where('id', $key);
+				$this->db->update('pos_orders');
+			}
+			//redirect(base_url() . "main");
+			//$this->print_tes($order_id, $payment_amount);
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
@@ -455,17 +467,14 @@
 			$this->db->where('outlet_id', $outlet);
 			$this->db->update('pos_outlet_order_detil', $data);
 		}
-
 		function openmenu() {
 			$this->load->model('Inv_outlet_menus_model');
 			$inv_outlet_menus = new Inv_outlet_menus_model();
 			$inv_outlet_menus->getNextCode();
-
 			$post = $this->input->post();
 			// echo "<pre>";
 			// print_r($post);
 			// exit;
-
 			$data = array();
 			$data['outlet_id'] = $post['outlet'];
 			$data['menu_class_id'] = $post['menu_class_id'];
@@ -477,11 +486,9 @@
 			$data['short_name'] = $post['menu_name'];
 			$data['description'] = "";
 			$data['menu_price'] = $post['menu_price'];
-
 			$this->db->insert('inv_outlet_menus', $data);
 			$insert_id = $this->db->insert_id();
 			$row = $inv_outlet_menus->get_by_id($insert_id);
-
 			$user_id = $this->session->userdata('user_id');
 			$menuClassId = $post['menu_class_id'];
 			$orderId = $this->uri->segment(3);
@@ -519,36 +526,32 @@
 				}
 			}
 			$data = array(
-                "order_id" => $orderId,
-                "menu_class_id" => $menuClassId,
-                "outlet_menu_id" => $menuId,
-                "modifier_id" => null,
-                "kitchen_id" => null,
-                "serving_status" => 0,
-                "order_qty" => 1,
-                "price_amount" => $price,
-                "total_amount" => $price,
+				"order_id" => $orderId,
+				"menu_class_id" => $menuClassId,
+				"outlet_menu_id" => $menuId,
+				"modifier_id" => null,
+				"kitchen_id" => null,
+				"serving_status" => 0,
+				"order_qty" => 1,
+				"price_amount" => $price,
+				"total_amount" => $price,
 				"created_by" => $user_id,
-                "created_date" => date('Y-m-d H:i:s')
-            );
-
+				"created_date" => date('Y-m-d H:i:s')
+			);
 			// updating phase #1
-			$this->db->set('tax_amount', 'tax_amount+('. $price .'*tax_percent/100)', FALSE);
+			$this->db->set('tax_amount', 'tax_amount+(' . $price . '*tax_percent/100)', false);
 			$this->db->where('order_id', $orderId);
 			$this->db->update('pos_order_taxes');
-
-			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=".$orderId);
+			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $orderId);
 			$sum = $sum[0]->tax;
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount+'. $price, FALSE);
-			$this->db->set('tax_total_amount', $sum, FALSE);
-			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', FALSE);
+			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price, false);
+			$this->db->set('tax_total_amount', $sum, false);
+			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $orderId);
 			$this->db->update('pos_orders');
-
 			// real inserting
 			$this->db->insert('pos_orders_line_item', $data);
-
-			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(3) . ($this->uri->segment(4) ? "/".$this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/".$this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=".$this->input->get('search') : ""));
+			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(3) . ($this->uri->segment(4) ? "/" . $this->uri->segment(4) : "") . ($this->uri->segment(5) ? "/" . $this->uri->segment(5) : "") . ($this->input->get('search') != "" ? "?search=" . $this->input->get('search') : ""));
 		}
 	}

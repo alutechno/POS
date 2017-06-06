@@ -47,15 +47,10 @@
 					group by a.id order by b.id DESC
 				) x order by table_no, id;
 			");
-			//echo $this->db->last_query();exit;
-//			Main::log($query->result());
 			foreach ($query->result() as $row) {
 				?>
 				<div class="col-lg-3 col-xs-6">
-					<!-- small box -->
-
 					<?php
-						//  if($this->global_model->get_table_available($row->id,$this->session->userdata('outlet'))==1){
 						if (!($row->is)) {
 							?>
 							<a data-toggle="modal" href="#" onclick="load_guest(<?=$row->table_no?>, 0)">
@@ -73,14 +68,12 @@
 						}
 					?>
 
-				</div><!-- ./col -->
-
-				<?php
+				</div>
+		<?php
 			}
 		?>
 
-	</div><!-- /.row -->
-
+	</div>
 	<!-- top row -->
 	<div class="row">
 		<div class="col-xs-12 connectedSortable">
