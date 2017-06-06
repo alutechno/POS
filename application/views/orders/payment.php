@@ -237,13 +237,13 @@
 											select * from (
 												select
 													a.id,a.table_no,a.cover, b.id order_id, b.num_of_cover guest,
-													b.sub_total_amount, b.discount_total_amount, b.tax_total_amount, 
+													b.sub_total_amount, b.discount_total_amount, b.tax_total_amount,
 													b.due_amount
 												from mst_pos_tables a
 												left join pos_orders b on a.id=b.table_id and b.status in (0,1)
 												where a.outlet_id=". $this->session->userdata('outlet') ."
 												group by a.id order by b.id DESC
-											) x 
+											) x
 											where order_id is not null and order_id != ". $this->session->userdata('table') ."
 											order by table_no, id;
 										");
@@ -670,7 +670,7 @@
 									<option>- Choose -</option>
 									<?php
 										$dddd = $this->db->query(
-											"select 
+											"select
 												a.*, b.current_transc_amount, b.house_use,
 												a.id house_use_id, b.period, b.cost_center,
 												c.name pos_cost_center_name
@@ -1194,6 +1194,7 @@
 	$(document).ready(function () {
 		var nextLocation;
 		var paths = [window.location.href];
+		var paths = ["<?php echo base_url(); ?>main/merge/<?php echo $this->uri->segment(3); ?>"];
 		var showCharge2RoomInfo = function (i) {
 			var d = Charge2Room[i];
 			$('#submitChargeToRoom').attr('disabled', 1);

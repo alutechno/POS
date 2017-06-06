@@ -344,6 +344,26 @@
 			echo 'window.open("' . REPORT_BIRT . 'struk_order.rptdesign&no_bill=' . $res . '&payment=' . $pay . '&__action=print","_blank")';
 			echo '</script>';
 		}
+		function merge() {
+			$orderId = $this->uri->segment(3);
+			$orderId = explode('-', $orderId);
+			//$orderId = implode(",", $orderId);
+			$i=0;
+			$this->log($this->uri->segment(3));
+			foreach ($orderId as $key) {
+				if($i>0){
+					$newData = array(
+						'order_id' => $orderId[0],
+						'included_order_id' => $key,
+						'created_by' => $this->session->userdata('user_id')
+					);
+					$ee = $this->db->insert('pos_included_orders', $newData);
+				}
+				$i++;
+			}
+			$this->log(base_url() . "main/payment/".$this->uri->segment(3));
+			redirect(base_url() . "main/payment/".$this->uri->segment(3));
+		}
 		function no_pos() {
 			$data = $this->input->post();
 			if (!isset($data['card_no'])) {
@@ -374,16 +394,15 @@
 			$payment_type_id = isset($P['payment_type_id']) ? $P['payment_type_id'] : '';
 			$payment_amount = isset($P['payment_amount']) ? $P['payment_amount'] : 0;
 			$change_amount = isset($P['change_amount']) ? $P['change_amount'] : 0;
-			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : '';
+			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : '';
 			$note = isset($P['note']) ? $P['note'] : '';
-			//
+
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
 			} else {
 				$payment_amount = $grandtotal;
 			}
-			//
 			foreach ($order_id as $key) {
 				$res = $this->db->query("select * from pos_orders where id=" . $key);
 				$res = $res->result();
