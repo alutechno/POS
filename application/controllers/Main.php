@@ -477,10 +477,8 @@
 			$data = array(
 				'result'=>$ee,
 				'url'=> BIRT .'&no_bill='.  $order_id . '&payment=' . $payment_amount
-				http://103.43.47.115:8888/birt/output?__report=report/pos/struk_order.rptdesign&no_bill=29&payment=100000&&__dpi=96&__format=pdf&__pageoverflow=0&__overwrite=false
 			);
-			//redirect(base_url() . "main");
-			//$this->print_tes($order_id, $payment_amount);
+			echo json_encode($data);
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
