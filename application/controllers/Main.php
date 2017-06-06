@@ -338,8 +338,6 @@
 			echo '</script>';
 		}
 		function print_tes($res, $pay) {
-			$this->log($res);
-			$this->log($pay);
 			echo '<script language="javascript">';
 			echo 'window.open("' . REPORT_BIRT . 'struk_order.rptdesign&no_bill=' . $res . '&payment=' . $pay . '&__action=print","_blank")';
 			echo '</script>';
@@ -347,9 +345,7 @@
 		function merge() {
 			$orderId = $this->uri->segment(3);
 			$orderId = explode('-', $orderId);
-			//$orderId = implode(",", $orderId);
 			$i=0;
-			$this->log($this->uri->segment(3));
 			foreach ($orderId as $key) {
 				if($i>0){
 					$newData = array(
@@ -361,7 +357,6 @@
 				}
 				$i++;
 			}
-			$this->log(base_url() . "main/payment/".$this->uri->segment(3));
 			redirect(base_url() . "main/payment/".$this->uri->segment(3));
 		}
 		function no_pos() {
@@ -403,27 +398,24 @@
 			} else {
 				$payment_amount = $grandtotal;
 			}
+			$i=0;
 			foreach ($order_id as $key) {
 				$res = $this->db->query("select * from pos_orders where id=" . $key);
 				$res = $res->result();
-				$due_amount = $res[0]->due_amount;
-				$newData = array(
-					'order_id' => $key,
-					'payment_type_id' => $payment_type_id,
-					'payment_amount' => $payment_amount,
-					'change_amount' => $change_amount,
-					'folio_id' => $folio_id,
-					'card_no' => $card_no,
-					'total_amount' => sizeof(implode(',', $order_id)) > 1 ? floatval($due_amount) : floatval($grandtotal),
-					'created_by' => $user_id
-				);
-				echo json_encode($newData);
-				echo '<br/>';
-				$ee = $this->db->insert('pos_payment_detail', $newData);
-				echo json_encode($ee);
-				echo '<br/>';
-				echo '---';
-				echo '<br/>';
+				if($i==0){
+					$newData = array(
+						'order_id' => $key,
+						'payment_type_id' => $payment_type_id,
+						'payment_amount' => $payment_amount,
+						'change_amount' => $change_amount,
+						'folio_id' => $folio_id,
+						'card_no' => $card_no,
+						'total_amount' => floatval($grandtotal),
+						'created_by' => $user_id
+					);
+					$ee = $this->db->insert('pos_payment_detail', $newData);
+				}
+				$i++;
 				$this->db->set('status', '2', false);
 				$this->db->set('modified_by', $user_id, false);
 				$this->db->set('modified_date', 'now()', false);
@@ -439,7 +431,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			//redirect(base_url() . "main");
+			redirect(base_url() . "main");
 			//$this->print_tes($order_id, $payment_amount);
 		}
 		function include_room() {
