@@ -419,12 +419,6 @@
 				$this->db->set('status', '2', false);
 				$this->db->set('modified_by', $user_id, false);
 				$this->db->set('modified_date', 'now()', false);
-				if ($folio_id) {
-					$this->db->set('folio_id', $folio_id, false);
-				}
-				if ($house_use_id) {
-					$this->db->set('house_use_id', $house_use_id, false);
-				}
 				if ($note) {
 					$this->db->set('order_notes', $note);
 				}
@@ -432,6 +426,55 @@
 				$this->db->update('pos_orders');
 			}
 			redirect(base_url() . "main");
+			$this->print_tes($order_id, $payment_amount);
+		}
+		function submit_split() {
+			$P = $this->input->post();
+			$user_id = $this->session->userdata('user_id');
+			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
+			$order_id = explode(',', $order_id);
+			$card_no = isset($P['card_no']) ? $P['card_no'] : '';
+			$grandtotal = isset($P['grandtotal']) ? $P['grandtotal'] : 0;
+			$payment_type_id = isset($P['payment_type_id']) ? $P['payment_type_id'] : '';
+			$payment_amount = isset($P['payment_amount']) ? $P['payment_amount'] : 0;
+			$change_amount = isset($P['change_amount']) ? $P['change_amount'] : 0;
+			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
+			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : '';
+			$note = isset($P['note']) ? $P['note'] : '';
+
+			if (!$card_no) {
+				$payment_amount = str_replace(',', '', $payment_amount);
+			} else {
+				$payment_amount = $grandtotal;
+			}
+			$i=0;
+			foreach ($order_id as $key) {
+				$res = $this->db->query("select * from pos_orders where id=" . $key);
+				$res = $res->result();
+				if($i==0){
+					$newData = array(
+						'order_id' => $key,
+						'payment_type_id' => $payment_type_id,
+						'payment_amount' => $payment_amount,
+						'change_amount' => $change_amount,
+						'folio_id' => $folio_id,
+						'card_no' => $card_no,
+						'total_amount' => floatval($grandtotal),
+						'created_by' => $user_id
+					);
+					$ee = $this->db->insert('pos_payment_detail', $newData);
+				}
+				$i++;
+				$this->db->set('status', '2', false);
+				$this->db->set('modified_by', $user_id, false);
+				$this->db->set('modified_date', 'now()', false);
+				if ($note) {
+					$this->db->set('order_notes', $note);
+				}
+				$this->db->where('id', $key);
+				$this->db->update('pos_orders');
+			}
+			//redirect(base_url() . "main");
 			//$this->print_tes($order_id, $payment_amount);
 		}
 		function include_room() {
