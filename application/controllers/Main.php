@@ -429,13 +429,6 @@
 			redirect(base_url() . "main");
 			$this->print_tes($order_id, $payment_amount);
 		}
-		function test(){
-			$data = array(
-				'test'=>1
-			);
-			header('Content-Type: application/json');
-			echo json_encode($data);
-		}
 		function submit_split() {
 			$P = $this->input->post();
 			$user_id = $this->session->userdata('user_id');
