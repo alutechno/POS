@@ -44,7 +44,7 @@ define('MY_BASE_URL', $BASE_URL);
 define('MY_ASSETS', $BASE_URL.'themes/');
 define('MY_ASSETS2', $BASE_URL.'themes2/');
 define('VIRTUAL_KEYBOARD', $BASE_URL.'keyboard/');
-
+define('PRINT_BIRT', $BASE_URL.'Print/');
 
 
 
