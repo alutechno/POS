@@ -337,17 +337,10 @@
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
 			echo '</script>';
 		}
-		//function print_tes($res, $pay) {
-		function print_tes() {
-			echo '<body>';
-			echo '<script src="'.PRINT_BIRT.'dist/print.min.js"></script>';
-			echo '<script language="javascript">';
-			echo 'printJS({printable:"http://103.43.47.115:8888/birt/output?__report=report/pos/struk_order.rptdesign&no_bill=69&payment=100000&&__dpi=96&__format=pdf&__pageoverflow=0&__overwrite=false",type:"pdf", showModal:false})';
-			//echo 'printJS({printable:"http://localhost:1000/pos_online/Print/struk_order.pdf",type:"pdf", showModal:false})';
-			//echo 'printJS({printable:{a:"ricky"},properties:["a"],type:"json", showModal:false})';
-			//echo 'window.open("' . BIRT .'&no_bill='.  $res . '&payment=' . $pay.'","_blank")';
-			echo '</script>';
-			echo '</body>';
+		function print_tes($res, $pay) {
+			file_put_contents("bill.pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
+			shell_exec("");
+			redirect(base_url() . "main");
 		}
 		function merge() {
 			$orderId = $this->uri->segment(3);
@@ -433,7 +426,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			redirect(base_url() . "main");
+			//redirect(base_url() . "main");
 			$this->print_tes($order_id, $payment_amount);
 		}
 		function submit_split() {
