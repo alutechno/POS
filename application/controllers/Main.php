@@ -337,10 +337,14 @@
 			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
 			echo '</script>';
 		}
-		function print_tes($res, $pay) {
-			file_put_contents("bill.pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
-			shell_exec("");
+		function print_bill($res, $pay) {
+			file_put_contents("bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
+			shell_exec('"C:\\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bill_'.$res.'.pdf"');
 			redirect(base_url() . "main");
+		}
+		function print_split($res, $pay) {
+			file_put_contents("split_bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
+			shell_exec('"C:\\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "split_bill_'.$res.'.pdf"');
 		}
 		function merge() {
 			$orderId = $this->uri->segment(3);
@@ -361,12 +365,6 @@
 		}
 		function no_pos() {
 			$data = $this->input->post();
-			if (!isset($data['card_no'])) {
-				$data['card_no'] = '';
-				$payment_amount = str_replace(',', '', $data['payment_amount']);
-			} else {
-				$payment_amount = $data['grandtotal'];
-			}
 			$orderId = explode('-', $this->uri->segment(3));
 			foreach ($orderId as $key) {
 				$this->db->set('order_notes', $data['note']);
@@ -376,8 +374,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			redirect(base_url() . "main");
-			$this->print_tes($data['order_id'], $payment_amount);
+			$this->print_bill(implode(',', $orderId), $payment_amount);
 		}
 		function submit() {
 			$P = $this->input->post();
@@ -426,8 +423,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			//redirect(base_url() . "main");
-			$this->print_tes($order_id, $payment_amount);
+			$this->print_bill(implode(',', $order_id), $payment_amount);
 		}
 		function submit_split() {
 			$P = $this->input->post();
@@ -461,7 +457,6 @@
 				}
 				$this->db->where('id', $id);
 				$this->db->update('pos_orders');
-				//
 				$newData = array(
 					'order_id' => $id,
 					'payment_type_id' => $payment_type_id,
@@ -482,6 +477,7 @@
 				'url' => BIRT .'&no_bill='.  implode('-', $order_id) . '&payment=' . $payment_amount
 			);
 			echo json_encode($data);
+			$this->print_split(implode(',', $order_id), $payment_amount);
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
