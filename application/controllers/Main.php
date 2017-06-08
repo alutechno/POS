@@ -393,13 +393,13 @@
 			echo '</script>';
 		}
 		function print_bill($res, $pay) {
-			file_put_contents("bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
-			shell_exec('"C:\\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bill_'.$res.'.pdf"');
+			file_put_contents("bills\bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
+			shell_exec('"C:\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bill_'.$res.'.pdf"');
 			redirect(base_url() . "main");
 		}
 		function print_split($res, $pay) {
-			file_put_contents("split_bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
-			shell_exec('"C:\\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "split_bill_'.$res.'.pdf"');
+			file_put_contents("bills\split_bill_".$res.".pdf", fopen(BIRT."&no_bill=".$res."&payment=".$pay."&__dpi=96&__pageoverflow=0&__overwrite=false", 'r'));
+			shell_exec('"C:\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "split_bill_'.$res.'.pdf"');
 		}
 		function merge() {
 			$orderId = $this->uri->segment(3);
