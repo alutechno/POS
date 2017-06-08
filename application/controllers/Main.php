@@ -287,10 +287,9 @@
 			redirect(base_url('main'));
 		}
 		function print_kitchen() {
-			$user_id = $this->session->userdata('user_id');
-			$order_id = $this->uri->segment(3);
-			$status = $this->uri->segment(4);
-			$outlet_id = $this->session->userdata('outlet');
+			$data = $this->input->post();
+			$order_id = $data['order_id'];
+			$status = $data['status'];
 			$kitchen=$this->db->query("select now() date,e.name outlet,f.name printer,d.name
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
 				where a.id=b.order_id
@@ -320,12 +319,10 @@
 				and b.serving_status=". $status ."
 				and c.print_kitchen_section_id=f.id
 				and a.id=" . $order_id);
-			$i = 1;
 			$res = $query->result();
 			foreach ($res as $row) {
 				shell_exec('echo.  >' . $row->printer);
 				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $row->printer);
-				$i++;
 			}
 			shell_exec('echo.  >' . $res[0]->printer);
 			shell_exec('echo.  >' . $res[0]->printer);
@@ -340,6 +337,55 @@
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
 			$this->db->update('pos_orders_line_item');
+			echo json_encode([
+				'result'=>1
+			]);
+		}
+		function print_manual() {
+			$data = $this->input->post();
+			$order_id = $data['order_id'];
+			$status = $data['status'];
+			$printer = $data['printer'];
+			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
+				where a.id=b.order_id
+				and b.outlet_menu_id=c.id
+				and a.waiter_user_id=d.id
+				and a.outlet_id=e.id
+				and c.print_kitchen_section_id=f.id
+				and a.id=" . $order_id);
+			$i = 1;
+			$res = $query->result();
+			foreach ($res as $row) {
+				if($i==1){
+					shell_exec('echo Date : ' . $row->date . ' >' . $printer);
+					shell_exec('echo Outlet : ' . $row->outlet . ' >' . $printer);
+					shell_exec('echo Waiter : ' . $row->name . ' >' . $printer);
+					if($status==0)
+						shell_exec('echo Status : New Order >' . $printer);
+					else
+						shell_exec('echo Status : Re-print Order >' . $printer);
+				}
+				shell_exec('echo.  >' . $printer);
+				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $printer);
+				$i++;
+			}
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			shell_exec('echo.  >' . $printer);
+			$this->db->set('serving_status', '1');
+			$this->db->where('order_id', $order_id);
+			$this->db->where('serving_status', '0');
+			$this->db->update('pos_orders_line_item');
+			echo json_encode([
+				'result'=>1
+			]);
 		}
 		function open_cash() {
 			$order_id = $this->uri->segment(3);
