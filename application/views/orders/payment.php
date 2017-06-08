@@ -1869,7 +1869,7 @@
 						//
 						var spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
 						var paywith = parseFloat(amount.data('value'));
-						if (/*d.period && */paywith && (spent >= paywith)) {//todo: delete
+						if (d.period && paywith && (spent >= paywith)) {
 							if (limit == count) {
 								if (paywith >= parseFloat(balance.val())) {
 									next.enable();
@@ -1899,7 +1899,7 @@
 				var d = HouseUse.current || {};
 				var spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
 				var paywith = parseFloat(el.data('value'));
-				if (/*d.period && */paywith && (spent >= paywith)) {//todo: delete
+				if (d.period && paywith && (spent >= paywith)) {
 					if (limit == count) {
 						if (paywith >= parseFloat(balance.val())) {
 							next.enable();
@@ -1946,63 +1946,32 @@
 				var nextBalance = balance.val() - parseFloat(bayar);
 				var an = activePayment.find('[id*="-mode"]').find('select').val();
 				var d = {};
-				d.order_id = <?php echo $this->uri->segment(3); ?>;
+				d.order_id = <?php echo $this->uri->segment(3); ?> + '-123';
 				if (an == 'cash') {
-				    /*{
-						"order_id": 69,
-						"payment_type_id": 1,
-						"payment_amount": "250000.00",
-						"grandtotal": "230000.00",
-						"change_amount": "20000"
-					}*/
 				    d.payment_type_id = 1;
 				    d.payment_amount = activePayment.find('[id*="-cash-paywith"]').data('value');
 				    d.grandtotal = activePayment.find('[id*="-cash-amount"]').data('value');
 				    d.change_amount = activePayment.find('[id*="-cash-change"]').attr('val');
 				} else if (an == 'card') {
-					/*{
-						"order_id": 69,
-						"payment_type_id": "7",
-						"payment_amount": "450000.00",
-						"grandtotal": "450000.00",
-						"change_amount": 0,
-						"card_no": "aaa"
-                    }*/
 					d.payment_type_id = activePayment.find('[id*="-card-card_type"]').val();
 					d.payment_amount = activePayment.find('[id*="-card-amount"]').data('value');
 					d.grandtotal = d.payment_amount;
 					d.change_amount = 0;
 					d.card_no = activePayment.find('[id*="-cardno"]').val();
 				} else if (an == 'charge2room') {
-					/*{
-						"order_id": 69,
-						"payment_type_id": 16,
-						"payment_amount": "210000.00",
-						"grandtotal": "210000.00",
-						"change_amount": 0,
-						"folio_id": "6"
-                    }*/
 					d.payment_type_id = 16;
 					d.payment_amount = activePayment.find('[id*="-charge-amount"]').data('value');
 					d.grandtotal = d.payment_amount;
 					d.change_amount = 0;
 					d.folio_id = activePayment.find('[id*="-charge-select"]').val();
 				} else if (an == 'houseuse') {
-					/*{
-						"order_id": 69,
-						"payment_type_id": 17,
-						"payment_amount": 566544.76,
-						"grandtotal": 566544.76,
-						"change_amount": 0,
-						"house_use_id": "2"
-                    }*/
 					d.payment_type_id = 17;
 					d.payment_amount = activePayment.find('[id*="-amount"]').data('value');
 					d.grandtotal = d.payment_amount;
 					d.change_amount = 0;
 					d.house_use_id = activePayment.find('[id*="-house-select"]').val();
 				}
-				console.log(JSON.stringify(d,0,2));
+
 				if (nextBalance > 0) {
 					next.disable();
 					balance.val(nextBalance);
@@ -2010,11 +1979,24 @@
 					recordList.append(recordPayment(count, bayar));
 
 					console.log('saving & printing start #' + count);
-					sendData(d, function(){
-						activePayment.hide();
-						next.enable();
-						next.click();
-						console.log('saving & printing done #' + count);
+					sendData(d, function(xhr, is){
+						var res = xhr.responseJSON;
+						if (res && is == 'success') {
+							if (res.result == true) {
+								activePayment.hide();
+								next.enable();
+								next.click();
+								console.log('saving & printing done #' + count);
+								//
+								var title = '<?php echo $this->global_model->get_no_bill($this->uri->segment(3)); ?>';
+								var printPop = window.open(res.url, title, 'resizable,scrollbars,status');
+								printPop.focus();
+							} else {
+								alert(`Error occurrence, result : ${JSON.stringify(res.result)}`);
+							}
+						} else {
+							alert(`Error occurrence, result : ${JSON.stringify(is)}`);
+						}
 					})
 				} else if ((nextBalance <= 0) || (count == limit)) {
 					next.disable();
@@ -2023,14 +2005,27 @@
 					recordList.append(recordPayment(count, bayar));
 
 					console.log('saving & printing start #' + count);
-					sendData(d, function(){
-						activePayment.hide();
-						mode.val('')
-						close.enable();
-						state.hide();
-						noState.hide();
-						console.log('saving & printing done #' + count);
-						console.log('finish splitting bills!');
+					sendData(d, function(res, is){
+						var res = xhr.responseJSON;
+						if (res && is == 'success') {
+							if (res.result == true) {
+								activePayment.hide();
+								mode.val('')
+								close.enable();
+								state.hide();
+								noState.hide();
+								console.log('saving & printing done #' + count);
+								console.log('finish splitting bills!');
+								//
+								var title = '<?php echo $this->global_model->get_no_bill($this->uri->segment(3)); ?>';
+								var printPop = window.open(res.url, title, 'resizable,scrollbars,status');
+								printPop.focus();
+							} else {
+								alert(`Error occurrence, result : ${JSON.stringify(res.result)}`);
+							}
+						} else {
+							alert(`Error occurrence, result : ${JSON.stringify(is)}`);
+						}
 					})
 				}
 			} else {
