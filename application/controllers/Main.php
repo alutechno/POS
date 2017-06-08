@@ -291,6 +291,26 @@
 			$order_id = $this->uri->segment(3);
 			$status = $this->uri->segment(4);
 			$outlet_id = $this->session->userdata('outlet');
+			$kitchen=$this->db->query("select now() date,e.name outlet,f.name printer,d.name
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
+				where a.id=b.order_id
+				and b.outlet_menu_id=c.id
+				and a.waiter_user_id=d.id
+				and a.outlet_id=e.id
+				and b.serving_status=". $status ."
+				and c.print_kitchen_section_id=f.id
+				and a.id=" . $order_id"
+				group by e.name ,f.name");
+			$kitchen = $kitchen->result();
+			foreach ($kitchen as $row) {
+				shell_exec('echo Date : ' . $row->date . ' >' . $row->printer);
+				shell_exec('echo Outlet : ' . $row->outlet . ' >' . $row->printer);
+				shell_exec('echo Waiter : ' . $row->name . ' >' . $row->printer);
+				if($status==0)
+					shell_exec('echo Status : New Order >' . $row->printer);
+				else
+					shell_exec('echo Status : Re-print Order >' . $row->printer);
+			}
 			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
 				where a.id=b.order_id
@@ -303,11 +323,6 @@
 			$i = 1;
 			$res = $query->result();
 			foreach ($res as $row) {
-				if ($i == 1) {
-					shell_exec('echo Date : ' . $row->date . ' >' . $row->printer);
-					shell_exec('echo Outlet : ' . $row->outlet . ' >' . $row->printer);
-					shell_exec('echo Waiter : ' . $row->name . ' >' . $row->printer);
-				}
 				shell_exec('echo.  >' . $row->printer);
 				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $row->printer);
 				$i++;
@@ -325,10 +340,6 @@
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
 			$this->db->update('pos_orders_line_item');
-//			echo '<script language="javascript">';
-//			echo 'alert("order successfully print");';
-//			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
-//			echo '</script>';
 		}
 		function open_cash() {
 			$order_id = $this->uri->segment(3);
@@ -472,7 +483,7 @@
 							'total_amount' => floatval($grandtotal),
 							'created_by' => $user_id
 						);
-						$res = $this->db->insert('pos_payment_detail', $newData);	
+						$res = $this->db->insert('pos_payment_detail', $newData);
 					}
 				}
 				$i++;
