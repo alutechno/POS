@@ -931,12 +931,21 @@
 			<div class="modal-body" style="padding-bottom: 0px;">
 				<div class="row">
 					<div class="col-sm-12">
-						<?php
-							$orderId = $this->uri->segment(3);
-							$orderId = explode('-', $orderId);
-							$orderId = implode(",", $orderId);
-							//mst_kitchen_section
-							$q = $this->db->query("
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>Qty</th>
+									<th>Menu</th>
+									<th>Printer</th>
+								</tr>
+							</thead>
+							<tbody>
+							<?php
+								$orderId = $this->uri->segment(3);
+								$orderId = explode('-', $orderId);
+								$orderId = implode(",", $orderId);
+								//mst_kitchen_section
+								$q = $this->db->query("
 								select c.name menu,b.order_qty,f.name printer
 								from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c left join mst_kitchen_section f on
 								c.print_kitchen_section_id=f.id
@@ -945,16 +954,34 @@
 								and a.waiter_user_id=d.id
 								and a.outlet_id=e.id
 								and order_id in (" . $orderId . ");"
-							);
-							$rows = $q->result();
-							echo json_encode($rows)
-						?>
+								);
+								$rows = $q->result();
+								foreach ($rows as $row) {
+									echo "<tr>";
+									echo "<td>$row->order_qty</td>";
+									echo "<td>$row->menu</td>";
+									echo "<td>$row->printer</td>";
+									echo "</tr>";
+								}
+							?>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="next" class="btn btn-primary" disabled>Next</button>
+				<div class="row">
+					<div class="col-sm-8">
+						<div class="pull-left">
+							<button class="btn btn-default" id="print">Print</button>
+							<button class="btn btn-primary" id="reprint">Reprint</button>
+							<button class="btn btn-warning" id="manualprint">Manual Print</button>
+						</div>
+					</div>
+					<div class="col-sm-4 pull-right">
+						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -2327,6 +2354,25 @@
 				$('#mergeTable').attr("action", "#");
 				$('#mergeTableBtn').attr('disabled', 1);
 			}
+		});
+		$('#print').on('click', function(){
+			$.ajax({
+				method: 'post',
+				url: '<?php echo base_url(); ?>main/print_kitchen',
+				data: {
+					status: 0,
+					order_id: '<?php echo $this->uri->segment(3); ?>',
+				},
+				complete: function(xhr, success){
+					console.log(success, xhr)
+				}
+			})
+		});
+		$('#reprint').on('click', function(){
+
+		});
+		$('#manualprint').on('click', function(){
+
 		});
 	});
 </script>

@@ -298,7 +298,7 @@
 				and a.outlet_id=e.id
 				and b.serving_status=". $status ."
 				and c.print_kitchen_section_id=f.id
-				and a.id=" . $order_id"
+				and a.id=" . $order_id ."
 				group by e.name ,f.name");
 			$kitchen = $kitchen->result();
 			foreach ($kitchen as $row) {
@@ -337,9 +337,8 @@
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
 			$this->db->update('pos_orders_line_item');
-			echo json_encode([
-				'result'=>1
-			]);
+			header('Content-Type: application/json');
+			echo json_encode(array('result'=>1));
 		}
 		function print_manual() {
 			$data = $this->input->post();
