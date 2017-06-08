@@ -1946,7 +1946,7 @@
 				var nextBalance = balance.val() - parseFloat(bayar);
 				var an = activePayment.find('[id*="-mode"]').find('select').val();
 				var d = {};
-				d.order_id = <?php echo $this->uri->segment(3); ?> + '-123';
+				d.order_id = '<?php echo $this->uri->segment(3); ?>';
 				if (an == 'cash') {
 				    d.payment_type_id = 1;
 				    d.payment_amount = activePayment.find('[id*="-cash-paywith"]').data('value');
