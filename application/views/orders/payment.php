@@ -2066,7 +2066,7 @@
 		})
 		//
 		m.on('show.bs.modal', function() {
-			modeCounter.val(0);
+			modeCounter.val('');
 			recordList.html('');
 			modeCounter.parent().prev().hide()
 			modeCounter.hide();
