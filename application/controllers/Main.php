@@ -431,9 +431,11 @@
 		}
 		function submit_split() {
 			$P = $this->input->post();
+			$counter = isset($P['counter']) ? $P['counter'] : '';
 			$user_id = $this->session->userdata('user_id');
 			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
 			$order_id = explode('-', $order_id);
+			$id = $order_id[0];
 			$card_no = isset($P['card_no']) ? $P['card_no'] : '';
 			$grandtotal = isset($P['grandtotal']) ? $P['grandtotal'] : 0;
 			$payment_type_id = isset($P['payment_type_id']) ? $P['payment_type_id'] : NULL;
@@ -442,6 +444,7 @@
 			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
+			$newData = array();
 			$res = false;
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
@@ -449,18 +452,18 @@
 				$payment_amount = $grandtotal;
 			}
 			//
-			if ($order_id[0] && intval($order_id)) {
+			if ($id && intval($id)) {
 				$this->db->set('status', '2', false);
 				$this->db->set('modified_by', $user_id, false);
 				$this->db->set('modified_date', 'now()', false);
 				if ($note) {
 					$this->db->set('order_notes', $note);
 				}
-				$this->db->where('id', $order_id[0]);
+				$this->db->where('id', $id);
 				$this->db->update('pos_orders');
 				//
 				$newData = array(
-					'order_id' => $order_id[0],
+					'order_id' => $id,
 					'payment_type_id' => $payment_type_id,
 					'payment_amount' => floatval($payment_amount),
 					'change_amount' => floatval($change_amount),
@@ -475,6 +478,7 @@
 			header('Content-Type: application/json');
 			$data = array(
 				'result' => $res,
+				'newData' => $newData,
 				'url' => BIRT .'&no_bill='.  implode('-', $order_id) . '&payment=' . $payment_amount
 			);
 			echo json_encode($data);
