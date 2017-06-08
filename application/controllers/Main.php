@@ -289,6 +289,7 @@
 		function print_kitchen() {
 			$user_id = $this->session->userdata('user_id');
 			$order_id = $this->uri->segment(3);
+			$status = $this->uri->segment(4);
 			$outlet_id = $this->session->userdata('outlet');
 			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
@@ -296,7 +297,7 @@
 				and b.outlet_menu_id=c.id
 				and a.waiter_user_id=d.id
 				and a.outlet_id=e.id
-				and b.serving_status=0
+				and b.serving_status=". $status ."
 				and c.print_kitchen_section_id=f.id
 				and a.id=" . $order_id);
 			$i = 1;
@@ -324,10 +325,10 @@
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
 			$this->db->update('pos_orders_line_item');
-			echo '<script language="javascript">';
-			echo 'alert("order successfully print");';
-			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
-			echo '</script>';
+//			echo '<script language="javascript">';
+//			echo 'alert("order successfully print");';
+//			echo 'location.href = "' . base_url() . "main/payment/" . $order_id . '"';
+//			echo '</script>';
 		}
 		function open_cash() {
 			$order_id = $this->uri->segment(3);

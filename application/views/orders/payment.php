@@ -922,11 +922,47 @@
 		</div>
 	</div>
 </div>
+<div class="modal fade" id="myModalPrint" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Print Order</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div class="row">
+					<div class="col-sm-12">
+						<?php
+							$orderId = $this->uri->segment(3);
+							$orderId = explode('-', $orderId);
+							$orderId = implode(",", $orderId);
+							//mst_kitchen_section
+							$q = $this->db->query("
+								select c.name menu,b.order_qty,f.name printer
+								from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c left join mst_kitchen_section f on
+								c.print_kitchen_section_id=f.id
+								where a.id=b.order_id
+								and b.outlet_menu_id=c.id
+								and a.waiter_user_id=d.id
+								and a.outlet_id=e.id
+								and order_id in (" . $orderId . ");"
+							);
+							$rows = $q->result();
+							echo json_encode($rows)
+						?>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="next" class="btn btn-primary" disabled>Next</button>
+			</div>
+		</div>
+	</div>
+</div>
 <div class="row">
 	<div class="col-md-8">
 		<!-- Custom Tabs -->
 		<div class="nav-tabs-custom">
-
 			<?php
 				date_default_timezone_set('Asia/Jakarta');
 			?>
@@ -1159,7 +1195,9 @@
 							Void Menu
 						</a>
 						<a class="btn btn-app bg-yellow"
-						   href="<?php echo base_url() ?>main/print_kitchen/<?php echo $this->uri->segment(3) ?>">
+						   data-toggle="modal" href="#myModalPrint"
+						   xhref="<?php echo base_url() ?>main/print_kitchen/<?php echo $this->uri->segment(3) ?>"
+						>
 							<i class="fa fa-print"></i>
 							Print Order
 						</a>
