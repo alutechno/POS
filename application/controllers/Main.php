@@ -324,15 +324,17 @@
 				shell_exec('echo.  >' . $row->printer);
 				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $row->printer);
 			}
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
-			shell_exec('echo.  >' . $res[0]->printer);
+			foreach ($kitchen as $row) {
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+				shell_exec('echo.  >' . $row->printer);
+			}
 			$this->db->set('serving_status', '1');
 			$this->db->where('order_id', $order_id);
 			$this->db->where('serving_status', '0');
