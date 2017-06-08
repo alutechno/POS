@@ -929,7 +929,7 @@
 				<h4 class="modal-title">Print Order</h4>
 			</div>
 			<div class="modal-body" style="padding-bottom: 0px;">
-				<div class="row">
+				<div class="row" id="printContentDefault">
 					<div class="col-sm-12">
 						<table class="table table-bordered">
 							<thead>
@@ -968,17 +968,34 @@
 						</table>
 					</div>
 				</div>
+				<div class="row" id="printContentManual">
+					<div class="col-sm-12">
+						<ul id="check-list-box" class="list-group checked-list-box">
+							<?php
+								$q = $this->db->query("select id, kitchen_id, code, name from mst_kitchen_section;");
+								$rows = $q->result();
+								foreach ($rows as $row) {
+									$code = strtoupper($row->code);
+									echo "<li id='printer-$row->id' class='list-group-item' data-color='info' name='$row->name' code='$row->code'>";
+									echo "&nbsp&nbsp&nbsp$code <span class='badge badge-default badge-pill'>$row->name</span>";
+									echo "</li>";
+								}
+							?>
+						</ul>
+					</div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<div class="row">
-					<div class="col-sm-8">
+					<div class="col-sm-6">
 						<div class="pull-left">
+							<button class="btn btn-primary" id="manualprint">Print</button>
 							<button class="btn btn-default" id="print">Print</button>
 							<button class="btn btn-primary" id="reprint">Reprint</button>
-							<button class="btn btn-warning" id="manualprint">Manual Print</button>
 						</div>
 					</div>
-					<div class="col-sm-4 pull-right">
+					<div class="col-sm-6 pull-right">
+						<button type="button" class="btn btn-danger" id="printtoogle" state="default">Manual Print</button>
 						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					</div>
 				</div>
@@ -2335,12 +2352,12 @@
 			init();
 		});
 		$('label[for="grantotal-merge-me"]').css('margin-right', '20px');
-		$("#check-list-box li").on('click', function (event) {
+		$("#mergeTable #check-list-box li").on('click', function (event) {
 			event.preventDefault();
 			var me = parseFloat($('label[for="grantotal-merge-me"]').attr('val'));
 			var oth = 0;
 			var paths_ = [];
-			$("#check-list-box li.active").each(function (idx, li) {
+			$("#mergeTable #check-list-box li.active").each(function (idx, li) {
 				oth += parseFloat(mergeWith[li.id].due_amount);
 				paths_.push(mergeWith[li.id].order_id)
 			});
@@ -2355,7 +2372,38 @@
 				$('#mergeTableBtn').attr('disabled', 1);
 			}
 		});
+		$('#myModalPrint').on('show.bs.modal', function() {
+			$('#print').show();
+			$('#reprint').show();
+			$('#manualprint').hide();
+			$('#printtoogle').html('Manual Print');
+			$('#printContentManual').hide();
+			$('#printContentDefault').show();
+			$('#print').removeAttr('disabled');
+			$('#reprint').removeAttr('disabled');
+			$('#manualprint').removeAttr('disabled');
+		});
+		$('#printtoogle').on('click', function () {
+		    if ($('#printtoogle').attr('state') == 'default') {
+				$('#manualprint').show();
+				$('#print').hide();
+				$('#reprint').hide();
+				$('#printtoogle').html('Back');
+				$('#printtoogle').attr('state', 'manual');
+				$('#printContentManual').show();
+				$('#printContentDefault').hide();
+			} else {
+				$('#print').show();
+				$('#reprint').show();
+				$('#manualprint').hide();
+				$('#printtoogle').html('Manual Print');
+				$('#printtoogle').attr('state', 'default');
+				$('#printContentManual').hide();
+				$('#printContentDefault').show();
+			}
+		})
 		$('#print').on('click', function(){
+			$('#print').attr('disabled', 1);
 			$.ajax({
 				method: 'post',
 				url: '<?php echo base_url(); ?>main/print_kitchen',
@@ -2364,15 +2412,45 @@
 					order_id: '<?php echo $this->uri->segment(3); ?>',
 				},
 				complete: function(xhr, success){
-					console.log(success, xhr)
+					$('#myModalPrint').modal('hide');
 				}
 			})
 		});
 		$('#reprint').on('click', function(){
-
+			$('#reprint').attr('disabled', 1);
+			$.ajax({
+				method: 'post',
+				url: '<?php echo base_url(); ?>main/print_kitchen',
+				data: {
+					status: 1,
+					order_id: '<?php echo $this->uri->segment(3); ?>',
+				},
+				complete: function(xhr, success){
+					$('#myModalPrint').modal('hide');
+				}
+			})
 		});
 		$('#manualprint').on('click', function(){
-
+			var active = $("#myModalPrint #check-list-box li.active");
+			if (active.length) {
+				$('#manualprint').attr('disabled', 1);
+			}
+			active.each(function (idx, li) {
+			    var id = $('li').attr('id').replace('printer-', '');
+			    var code = $('li').attr('code');
+			    var printer = $('li').attr('name');
+				$.ajax({
+					method: 'post',
+					url: '<?php echo base_url(); ?>main/print_manual',
+					data: {
+						order_id: '<?php echo $this->uri->segment(3); ?>',
+						printer
+					},
+					complete: function(xhr, success){
+						$('#myModalPrint').modal('hide');
+					}
+				})
+			});
 		});
 	});
 </script>

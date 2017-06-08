@@ -345,7 +345,6 @@
 		function print_manual() {
 			$data = $this->input->post();
 			$order_id = $data['order_id'];
-			$status = $data['status'];
 			$printer = $data['printer'];
 			$query = $this->db->query("select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
 				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
@@ -362,10 +361,7 @@
 					shell_exec('echo Date : ' . $row->date . ' >' . $printer);
 					shell_exec('echo Outlet : ' . $row->outlet . ' >' . $printer);
 					shell_exec('echo Waiter : ' . $row->name . ' >' . $printer);
-					if($status==0)
-						shell_exec('echo Status : New Order >' . $printer);
-					else
-						shell_exec('echo Status : Re-print Order >' . $printer);
+					shell_exec('echo Status : Manual >' . $printer);
 				}
 				shell_exec('echo.  >' . $printer);
 				shell_exec('echo "' . $row->menu . '	' . $row->order_qty . '">' . $printer);
