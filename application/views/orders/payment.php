@@ -85,7 +85,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalcard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModalCard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -164,8 +164,7 @@
 							<input type="hidden" class="form-control" name="grandtotal"
 								   value="<?php echo $rows[0]->grandtotal; ?>">
 							<input id="card_swiper" type="force-text" class="form-control"
-								   id="card_no"
-								   name="card_no" placeholder="Tap here, then swipe the card">
+								   placeholder="Tap here, then swipe the card">
 							<hr/>
 						</div>
 					</div>
@@ -459,7 +458,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalnote" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModalAddNotes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -492,7 +491,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalroom" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModalCharge2Room" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -636,7 +635,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalGuestUse" tabindex="-1" role="dialog"
+<div class="modal fade" id="myModalHouseUse" tabindex="-1" role="dialog"
 	 aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
@@ -694,8 +693,8 @@
 										foreach ($dddd->result() as $row) {
 											?>
 											<script>
-												window.GuestUse = window.GuestUse || {};
-												GuestUse[<?php echo $row->house_use_id ?>] =
+												window.HouseUse = window.HouseUse || {};
+												HouseUse[<?php echo $row->house_use_id ?>] =
 												<?php echo json_encode($row) ?>;
 											</script>
 											<option value="<?php echo $row->house_use_id ?>">
@@ -778,7 +777,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalVOid" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModalVoid" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -1103,15 +1102,15 @@
 							<i class="fa fa-money"></i>
 							Cash
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="#myModalcard" id="btn-cc">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalCard" id="btn-cc">
 							<i class="fa fa-credit-card"></i>
 							Card
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="#myModalroom">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalCharge2Room">
 							<i class="fa fa-edit"></i>
 							Charge room
 						</a>
-						<a class="btn btn-app" data-toggle="modal" href="#myModalGuestUse">
+						<a class="btn btn-app" data-toggle="modal" href="#myModalHouseUse">
 							<i class="fa fa-tags"></i>
 							House use
 						</a>
@@ -1155,7 +1154,7 @@
 								allowfullscreen></iframe>
 					</div>
 					<div class="col-lg-12">
-						<a class="btn btn-app bg-red" data-toggle="modal" href="#myModalVOid">
+						<a class="btn btn-app bg-red" data-toggle="modal" href="#myModalVoid">
 							<i class="fa fa-times"></i>
 							Void Menu
 						</a>
@@ -1168,7 +1167,7 @@
 							<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
 							Open Menu
 						</a>
-						<a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalnote">
+						<a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalAddNotes">
 							<i class="fa fa-edit"></i>
 							Note
 						</a>
@@ -1303,6 +1302,13 @@
 		var manualState = m.find('#manualState');
 		var eventState = m.find('#eventState');
 		var itemState = m.find('#itemState');
+		var sendData = function(data, cb) {
+		    $.ajax({
+				method: 'post',
+				url: '<?php echo base_url(); ?>main/submit_split',
+				data, complete: cb
+			});
+		}
 		var payment = function (i) {
 			var pay = $(`
 			<div id="split-${i}" class=col-sm-12>
@@ -1455,8 +1461,10 @@
 			var limit = parseInt(modeCounter.val());
 			var options = '';
 			for (var c in window.CardMethod) {
-				var el = window.CardMethod[c];
-				options += `<option value="${c}">${el.code} - ${el.name}</option>`
+			    if (parseInt(c)) {
+					var el = window.CardMethod[c];
+					options += `<option value="${c}">${el.code} - ${el.name}</option>`
+				}
 			}
 			var pay = $(`
 				<div class="row">
@@ -1472,7 +1480,7 @@
 					<div class="col-sm-9">
 						<div class="form-group">
 							<label>Bank</label>
-							<select class="form-control">
+							<select class="form-control" id="${id}-card_type">
 								<option>- Choose -</option>
 								${options}
 							</select>
@@ -1511,9 +1519,42 @@
 			`);
 			var amount = pay.find(`#${id}-amount`);
 			var select = pay.find(`#${id}-select`);
+			var cardType = pay.find(`#${id}-card_type`);
 			var cardNo = pay.find(`#${id}-cardno`);
 			var customer = pay.find(`#${id}-customer`);
 			var swiper = pay.find(`#${id}-swiper`);
+			var validate = function(){
+				var typeVal = select.val();
+				var customerVal = customer.val();
+				var cardNoVal = cardNo.val();
+				var cardTypeVal = parseInt(cardType.val());
+				var amountVal = parseInt(amount.data('value'));
+				next.disable();
+				if (typeVal == 'credit') {
+					customer.parent().show();
+					if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+						if (limit == count) {
+							if (amountVal >= balance.val()) {
+								next.enable();
+							}
+						} else {
+							next.enable();
+						}
+					}
+				} else {
+					customer.val('');
+					customer.parent().hide();
+				    if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+						if (limit == count) {
+							if (amountVal >= balance.val()) {
+								next.enable();
+							}
+						} else {
+							next.enable();
+						}
+					}
+				}
+			}
 			//
 			amount.keyboard({layout: 'num'});
 			amount.css('text-align', 'end');
@@ -1528,28 +1569,40 @@
 				);
 				el.attr('value', el.data('display'));
 				el.val(el.data('display'));
+				//
+				var typeVal = select.val();
+				var customerVal = customer.val();
+				var cardNoVal = cardNo.val();
+				var cardTypeVal = parseInt(cardType.val());
+				var amountVal = parseInt(el.data('value'));
 				next.disable();
-				if (parseFloat(el.data('value')) > 0) {
-					if (limit == count) {
-						if (parseFloat(el.data('value')) >= balance.val()) {
+				if (typeVal == 'credit') {
+					customer.parent().show();
+					if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+						if (limit == count) {
+							if (amountVal >= balance.val()) {
+								next.enable();
+							}
+						} else {
 							next.enable();
 						}
-					} else {
-						next.enable();
+					}
+				} else {
+					customer.val('');
+					customer.parent().hide();
+				    if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+						if (limit == count) {
+							if (amountVal >= balance.val()) {
+								next.enable();
+							}
+						} else {
+							next.enable();
+						}
 					}
 				}
 			});
 			cardNo.keyboard({layout: 'qwerty'});
 			customer.keyboard({layout: 'qwerty'});
-			select.on('change', function () {
-				var v = $(this).val();
-				if (v == 'debit') {
-					customer.parent().hide();
-					customer.val('');
-				} else {
-					customer.parent().show();
-				}
-			});
 			swiper.keydown(function (e) {
 				if (e.keyCode == 13) {
 					e.preventDefault();
@@ -1571,20 +1624,10 @@
 					el.val('');
 				}, 1000);
 			});
-			cardNo.on('change', function(){
-				var val = $(this).val();
-				next.disable();
-				if (val && customer.val()) {
-					next.enable();
-				}
-			});
-			customer.on('change', function(){
-				var val = $(this).val();
-				next.disable();
-				if (val && cardNo.val()) {
-					next.enable();
-				}
-			});
+			select.on('change', validate);
+			cardType.on('change', validate)
+			cardNo.on('change', validate);
+			customer.on('change', validate);
 
 			if (limit == count) {
 				amount.attr('disabled', 1);
@@ -1599,12 +1642,14 @@
 			var limit = parseInt(modeCounter.val());
 			var options = '';
 			for (var c in window.Charge2Room) {
-				var el = window.Charge2Room[c];
-				options += `
-				<option value="${el.folio_id}">
-					[${el.room_type} / ${el.room_no}] &nbsp; ${el.cust_firt_name} ${el.cust_last_name}
-				</option>
-				`
+				if (parseInt(c)) {
+					var el = window.Charge2Room[c];
+					options += `
+					<option value="${el.folio_id}">
+						[${el.room_type} / ${el.room_no}] &nbsp; ${el.cust_firt_name} ${el.cust_last_name}
+					</option>
+					`
+				}
 			}
 			var pay = $(`
 				<div class="row">
@@ -1694,9 +1739,11 @@
 				if (parseFloat(el.data('value')) > 0) {
 					if (limit == count) {
 						if (parseFloat(el.data('value')) >= balance.val()) {
-							next.enable();
+							if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
+								next.enable();
+							}
 						}
-					} else {
+					} else if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
 						next.enable();
 					}
 				}
@@ -1715,11 +1762,18 @@
 					pay.find(`#${id}-room_type`).html(d.room_type + '/' + d.room_type_name);
 					pay.find(`#${id}-vip_type`).html(d.vip_type);
 					if (d.is_cash_bases.toLowerCase() === 'n') {
-						next.enable();
+						if (parseFloat(amount.data('value')) > 0) {
+							if (limit == count) {
+								if (parseFloat(amount.data('value')) >= balance.val()) {
+									next.enable();
+								}
+							} else {
+								next.enable();
+							}
+						}
 					}
 				}
 			});
-
 			if (limit == count) {
 				amount.attr('disabled', 1);
 				amount.data('value', parseFloat(balance.val()));
@@ -1731,9 +1785,11 @@
 		var payWithHouseUse = function (id) {
 			var limit = parseInt(modeCounter.val());
 			var options = ''
-			for (var c in window.GuestUse) {
-				var el = window.GuestUse[c];
-				options += `<option value="${el.house_use_id}">[${el.code}] &nbsp; ${el.pos_cost_center_name}  / ${el.name}</option>`
+			for (var c in window.HouseUse) {
+				if (parseInt(c)) {
+					var el = window.HouseUse[c];
+					options += `<option value="${el.house_use_id}">[${el.code}] &nbsp; ${el.pos_cost_center_name}  / ${el.name}</option>`
+				}
 			}
 			var pay = $(`
 				<div class="row">
@@ -1794,26 +1850,33 @@
 				</div>
 			`);
 			//
-			var spent = 0, should = false;
 			var amount = pay.find(`#${id}-amount`);
 			var select = pay.find(`#${id}-select`);
 
 			select.on('change', function () {
 				var i = $(this).val();
-				var d = GuestUse.current = GuestUse[i];
-				d.current_transc_amount = d.current_transc_amount || 0;
-				d.max_spent_monthly = d.max_spent_monthly || 0;
-				should = false;
-				if (d) {
-					pay.find(`#${id}-cost_center`).html(d.cost_center);
-					pay.find(`#${id}-house_use`).html(d.house_use);
-					pay.find(`#${id}-current_transc_amount`).html(rupiahJS(d.current_transc_amount));
-					pay.find(`#${id}-max_spent_monthly`).html(rupiahJS(d.max_spent_monthly));
-					pay.find(`#${id}-period`).html(d.period);
-					spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
-					if (spent > 0) {
-						if (d.period && (spent - parseFloat(grandtotal.val()) >= 0)) {
-							should = true;
+				next.disable();
+				if (parseInt(i)) {
+					var d = HouseUse.current = HouseUse[i];
+					d.current_transc_amount = d.current_transc_amount || 0;
+					d.max_spent_monthly = d.max_spent_monthly || 0;
+					if (d) {
+						pay.find(`#${id}-cost_center`).html(d.cost_center);
+						pay.find(`#${id}-house_use`).html(d.house_use);
+						pay.find(`#${id}-current_transc_amount`).html(rupiahJS(d.current_transc_amount));
+						pay.find(`#${id}-max_spent_monthly`).html(rupiahJS(d.max_spent_monthly));
+						pay.find(`#${id}-period`).html(d.period || `/* NO PERIOD! */`);
+						//
+						var spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
+						var paywith = parseFloat(amount.data('value'));
+						if (d.period && paywith && (spent >= paywith)) {
+							if (limit == count) {
+								if (paywith >= parseFloat(balance.val())) {
+									next.enable();
+								}
+							} else {
+								next.enable();
+							}
 						}
 					}
 				}
@@ -1832,9 +1895,13 @@
 				el.attr('value', el.data('display'));
 				el.val(el.data('display'));
 				next.disable();
-				if (should && spent && parseFloat(el.data('value')) > 0) {
+				//
+				var d = HouseUse.current || {};
+				var spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
+				var paywith = parseFloat(el.data('value'));
+				if (d.period && paywith && (spent >= paywith)) {
 					if (limit == count) {
-						if (parseFloat(el.data('value')) >= balance.val()) {
+						if (paywith >= parseFloat(balance.val())) {
 							next.enable();
 						}
 					} else {
@@ -1877,6 +1944,34 @@
 				var limit = parseInt(modeCounter.val());
 				var bayar = parseFloat(activePayment.find('[id*="-amount"]').data('value'));
 				var nextBalance = balance.val() - parseFloat(bayar);
+				var an = activePayment.find('[id*="-mode"]').find('select').val();
+				var d = {};
+				d.order_id = <?php echo $this->uri->segment(3); ?>;
+				if (an == 'cash') {
+				    d.payment_type_id = 1;
+				    d.payment_amount = activePayment.find('[id*="-cash-paywith"]').data('value');
+				    d.grandtotal = activePayment.find('[id*="-cash-amount"]').data('value');
+				    d.change_amount = activePayment.find('[id*="-cash-change"]').attr('val');
+				} else if (an == 'card') {
+					d.payment_type_id = activePayment.find('[id*="-card-card_type"]').val();
+					d.payment_amount = activePayment.find('[id*="-card-amount"]').data('value');
+					d.grandtotal = d.payment_amount;
+					d.change_amount = 0;
+					d.card_no = activePayment.find('[id*="-cardno"]').val();
+				} else if (an == 'charge2room') {
+					d.payment_type_id = 16;
+					d.payment_amount = activePayment.find('[id*="-charge-amount"]').data('value');
+					d.grandtotal = d.payment_amount;
+					d.change_amount = 0;
+					d.folio_id = activePayment.find('[id*="-charge-select"]').val();
+				} else if (an == 'houseuse') {
+					d.payment_type_id = 17;
+					d.payment_amount = activePayment.find('[id*="-amount"]').data('value');
+					d.grandtotal = d.payment_amount;
+					d.change_amount = 0;
+					d.house_use_id = activePayment.find('[id*="-house-select"]').val();
+				}
+				console.log(d);
 				if (nextBalance > 0) {
 					next.disable();
 					balance.val(nextBalance);
@@ -1887,6 +1982,7 @@
 					setTimeout(function () { //todo: change ajax to send data
 						activePayment.hide();
 						next.enable();
+						next.click();
 						console.log('saving & printing done #' + count);
 					}, 2000)
 				} else if ((nextBalance <= 0) || (count == limit)) {
@@ -1924,17 +2020,27 @@
 			var v = $(this).val();
 			modeCounter.parent().prev().hide();
 			modeCounter.hide();
+			next.disable();
+			close.disable();
 			if (v) {
-				next.enable();
-				close.disable();
 				if (v == 'manual') {
 					modeCounter.parent().prev().show();
 					modeCounter.show();
+					if (parseFloat(modeCounter.val())) {
+						next.enable();
+					}
 				}
 			}
 		});
+		modeCounter.on('change', function () {
+			next.disable();
+			if (mode.val() == 'manual' && parseFloat(modeCounter.val())) {
+				next.enable();
+			}
+		})
 		//
 		m.on('show.bs.modal', function() {
+			modeCounter.val(0);
 			recordList.html('');
 			modeCounter.parent().prev().hide()
 			modeCounter.hide();
@@ -1972,7 +2078,7 @@
 			}
 		};
 		var showGuestUseInfo = function (i) {
-			var d = GuestUse[i];
+			var d = HouseUse[i];
 			$('#submitGuestUse').attr('disabled', 1);
 			if (d) {
 				$('input[name="house_use_id"]').val(d.house_use_id);
@@ -2067,8 +2173,8 @@
 			showCharge2RoomInfo(Charge2Room.current);
 		});
 		$('#guest_use').on('change', function () {
-			GuestUse.current = $(this).val();
-			showGuestUseInfo(GuestUse.current);
+			HouseUse.current = $(this).val();
+			showGuestUseInfo(HouseUse.current);
 		});
 		$('.list-group.checked-list-box .list-group-item').each(function () {
 			// Settings
