@@ -1528,7 +1528,7 @@
 				var customerVal = customer.val();
 				var cardNoVal = cardNo.val();
 				var cardTypeVal = parseInt(cardType.val());
-				var amountVal = parseInt(amount.data('value'));
+				var amountVal = parseFloat(amount.data('value'));
 				next.disable();
 				if (typeVal == 'credit') {
 					customer.parent().show();
@@ -2005,7 +2005,7 @@
 					recordList.append(recordPayment(count, bayar));
 
 					console.log('saving & printing start #' + count);
-					sendData(d, function(res, is){
+					sendData(d, function(xhr, is){
 						var res = xhr.responseJSON;
 						if (res && is == 'success') {
 							if (res.result == true) {
