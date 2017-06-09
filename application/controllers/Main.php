@@ -429,7 +429,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			$this->print_bill(implode(',', $orderId), $payment_amount);
+			$this->print_bill($orderId[0], $payment_amount);
 		}
 		function submit() {
 			$P = $this->input->post();
@@ -478,7 +478,7 @@
 				$this->db->where('id', $key);
 				$this->db->update('pos_orders');
 			}
-			$this->print_bill(implode(',', $order_id), $payment_amount);
+			$this->print_bill($order_id[0], $payment_amount);
 		}
 		function submit_split() {
 			$P = $this->input->post();
@@ -537,7 +537,7 @@
 				'url' => BIRT .'&no_bill='.  implode('-', $order_id) . '&payment=' . $payment_amount
 			);
 			echo json_encode($data);
-			$this->print_split(implode(',', $order_id), $payment_amount);
+			$this->print_split($order_id[0], $payment_amount);
 		}
 		function include_room() {
 			$no_bill = $this->input->post('bill');
