@@ -435,7 +435,7 @@
 			$P = $this->input->post();
 			$user_id = $this->session->userdata('user_id');
 			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
-			$order_id = explode('-', $order_id);
+			$order_id = explode(',', $order_id);
 			$card_no = isset($P['card_no']) ? $P['card_no'] : '';
 			$grandtotal = isset($P['grandtotal']) ? $P['grandtotal'] : 0;
 			$payment_type_id = isset($P['payment_type_id']) ? $P['payment_type_id'] : NULL;
@@ -444,38 +444,32 @@
 			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
-
+			
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
 			} else {
 				$payment_amount = $grandtotal;
 			}
-			$i=0;
-			foreach ($order_id as $key) {
-				if($i==0){
-					$newData = array(
-						'order_id' => $key,
-						'payment_type_id' => $payment_type_id,
-						'payment_amount' => $payment_amount,
-						'change_amount' => $change_amount,
-						'folio_id' => $folio_id,
-						'card_no' => $card_no,
-						'house_use_Id'=>$house_use_id,
-						'total_amount' => floatval($grandtotal),
-						'created_by' => $user_id
-					);
-					$ee = $this->db->insert('pos_payment_detail', $newData);
-				}
-				$i++;
-				$this->db->set('status', '2', false);
-				$this->db->set('modified_by', $user_id, false);
-				$this->db->set('modified_date', 'now()', false);
-				if ($note) {
-					$this->db->set('order_notes', $note);
-				}
-				$this->db->where('id', $key);
-				$this->db->update('pos_orders');
+
+			$this->db->set('status', '2', false);
+			$this->db->set('modified_by', $user_id, false);
+			$this->db->set('modified_date', 'now()', false);
+			if ($note) {
+				$this->db->set('order_notes', $note);
 			}
+			$this->db->where_in('id', $order_id);
+			$this->db->update('pos_orders');
+			$this->db->insert('pos_payment_detail', array(
+				'order_id' => $order_id[0],
+				'payment_type_id' => $payment_type_id,
+				'payment_amount' => floatval($payment_amount),
+				'change_amount' => floatval($change_amount),
+				'folio_id' => $folio_id,
+				'card_no' => $card_no,
+				'house_use_id'=> $house_use_id,
+				'total_amount' => floatval($grandtotal),
+				'created_by' => $user_id
+			));
 			$this->print_bill($order_id[0], $payment_amount);
 		}
 		function submit_split() {
@@ -493,45 +487,38 @@
 			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
-			$newData = array();
 			$res = false;
+			
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
 			} else {
 				$payment_amount = $grandtotal;
 			}
-			//
-			$i=0;
-			foreach($order_id as $id) {
-				if ($id && intval($id)) {
-					$this->db->set('status', '2', false);
-					$this->db->set('modified_by', $user_id, false);
-					$this->db->set('modified_date', 'now()', false);
-					if ($note) {
-						$this->db->set('order_notes', $note);
-					}
-					$this->db->where('id', $id);
-					$this->db->update('pos_orders');
-					if (!$i) {
-						$newData = array(
-							'order_id' => $id,
-							'payment_type_id' => $payment_type_id,
-							'payment_amount' => floatval($payment_amount),
-							'change_amount' => floatval($change_amount),
-							'folio_id' => $folio_id,
-							'card_no' => $card_no,
-							'house_use_id'=> $house_use_id,
-							'total_amount' => floatval($grandtotal),
-							'created_by' => $user_id
-						);
-						$res = $this->db->insert('pos_payment_detail', $newData);
-					}
-				}
-				$i++;
+			
+			$this->db->set('status', '2', false);
+			$this->db->set('modified_by', $user_id, false);
+			$this->db->set('modified_date', 'now()', false);
+			if ($note) {
+				$this->db->set('order_notes', $note);
 			}
+			$this->db->where_in('id', $order_id);
+			$this->db->update('pos_orders');
+			$res = $this->db->insert('pos_payment_detail', array(
+				'order_id' => $order_id[0],
+				'payment_type_id' => $payment_type_id,
+				'payment_amount' => floatval($payment_amount),
+				'change_amount' => floatval($change_amount),
+				'folio_id' => $folio_id,
+				'card_no' => $card_no,
+				'house_use_id'=> $house_use_id,
+				'total_amount' => floatval($grandtotal),
+				'created_by' => $user_id
+			));
+
 			header('Content-Type: application/json');
 			$data = array(
 				'result' => $res,
+				'order_id' => $order_id,
 				'url' => BIRT .'&no_bill='.  implode('-', $order_id) . '&payment=' . $payment_amount
 			);
 			echo json_encode($data);
