@@ -452,8 +452,6 @@
 			}
 			$i=0;
 			foreach ($order_id as $key) {
-				$res = $this->db->query("select * from pos_orders where id=" . $key);
-				$res = $res->result();
 				if($i==0){
 					$newData = array(
 						'order_id' => $key,
