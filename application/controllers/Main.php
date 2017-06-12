@@ -65,7 +65,13 @@
 			$data = "";
 			pesan('orders/pesan', $data);
 		}
+		function test(){
+			$date = strtolower(date("l"));
+			$promo = $this->compile("select * from pos_menus_promos where outlet_menu_id=93 and is_avail_$date='Y'");
+			echo json_encode($promo);
+		}
 		function inputpesan() {
+			$date = strtolower(date("l"));
 			$user_id = $this->session->userdata('user_id');
 			$menuClassId = $this->uri->segment(5);
 			$orderId = $this->uri->segment(6);
@@ -74,34 +80,10 @@
 			$price = $this->uri->segment(4);
 			$taxVal = 0;
 			$serviceVal = 0;
-			$isTaxes = $this->compile("
-				select is_tax_included e from inv_outlet_menus where id = $menuId
-			");
-			if ($isTaxes[0]->e == 'N') {
-				$rows = $this->compile('
-					select
-						a.outlet_id,
-						max(case when b.code = \'SC\' then tax_percent end) service_charge,
-						max(case when b.code = \'TX\' then tax_percent end) tax
-					from pos_outlet_tax a
-					left join mst_pos_taxes b on b.id = a.pos_tax_id
-					where outlet_id = ' . $outletId . '
-					group by a.outlet_id
-				');
-				$taxVal += $price * ($rows[0]->tax) / 100;
-				$serviceVal += $price * ($rows[0]->service_charge) / 100;
-				$adTaxes = $this->compile("
-					select a.outlet_menu_id, b.name, b.tax_percent
-					from pos_menus_tax a
-					left join mst_pos_taxes b on b.id = a.pos_tax_id
-					where outlet_menu_id = $menuId
-				");
-				foreach ($adTaxes as $adTax) {
-					if ($adTax->tax_percent > 0) {
-						$taxVal += $price * ($adTax->tax_percent) / 100;
-					}
-				}
-			}
+			$discount=0;
+
+			$promo = $this->compile("select * from pos_menus_promos where outlet_menu_id=$menuId and is_avail_$date='Y'");
+
 			$data = array(
 				"order_id" => $orderId,
 				"menu_class_id" => $menuClassId,
@@ -115,20 +97,44 @@
 				"created_by" => $user_id,
 				"created_date" => date('Y-m-d H:i:s')
 			);
+			// real inserting
+			$this->db->insert('pos_orders_line_item', $data);
+			if (sizeof($promo) > 0) {
+				$line_id=$this->db->insert_id();
+				if($promo[0]->discount_amount>0)
+					$discount=$promo[0]->discount_amount;
+				else
+					$discount=$price/100*$promo[0]->discount_percent;
+				echo $discount;
+				echo $line_id;
+				$data = array(
+					"order_line_item_id" => $orderId,
+					"menu_class_id" => $menuClassId,
+					"outlet_menu_id" => $menuId,
+					"promo_id"=>$promo[0]->id,
+					"discount_amount"=>$discount,
+					"created_by" => $user_id,
+					"created_date" => date('Y-m-d H:i:s')
+				);
+				$this->db->insert('pos_patched_discount', $data);
+			}
 			// updating phase #1
-			$this->db->set('tax_amount', 'tax_amount+(' . $price . '*tax_percent/100)', false);
-			$this->db->where('order_id', $orderId);
-			$this->db->update('pos_order_taxes');
-			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $orderId);
-			$sum = $sum[0]->tax;
+			$isTaxes = $this->compile("
+				select is_tax_included e from inv_outlet_menus where id = $menuId
+			");
+			if ($isTaxes[0]->e == 'N') {
+				$this->db->set('tax_amount', 'tax_amount+(' . $price-$discount . '*tax_percent/100)', false);
+				$this->db->where('order_id', $orderId);
+				$this->db->update('pos_order_taxes');
+				$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $orderId);
+				$sum = $sum[0]->tax;
+			}
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price, false);
+			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price-$discount, false);
 			$this->db->set('tax_total_amount', $sum, false);
 			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $orderId);
 			$this->db->update('pos_orders');
-			// real inserting
-			$this->db->insert('pos_orders_line_item', $data);
 			redirect(base_url() . "main/reload_pesan/" . $this->uri->segment(6) . ($this->uri->segment(7) ? "/" . $this->uri->segment(7) : "") . ($this->uri->segment(8) ? "/" . $this->uri->segment(8) : "") . ($this->input->get('search') != "" ? "?search=" . $this->input->get('search') : ""));
 		}
 		function cancel_order() {
@@ -201,31 +207,36 @@
 			$order_id = $this->uri->segment(3);
 			$menu_id = $this->uri->segment(4);
 			$price = $this->uri->segment(5);
+			$discount=0;
 			$res = $this->db->query("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '0' LIMIT 1");
 			$arr = $res->result();
 			if (sizeof($arr) > 0) {
-				$this->db->where('order_id', $order_id);
-				$this->db->where('outlet_menu_id', $menu_id);
-				$this->db->where('serving_status', '0');
-				$this->db->order_by('id');
-				$this->db->limit(1);
+				$this->db->where('id', $arr[0]->id);
 				$this->db->delete('pos_orders_line_item');
+				$this->db->where('order_line_item_id', $arr[0]->id);
+				$this->db->delete('pos_patched_discount');
 			} else {
+				$arr = $this->compile("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '1' LIMIT 1");
 				$this->db->set('serving_status', '4');
-				$this->db->where('order_id', $order_id);
-				$this->db->where('outlet_menu_id', $menu_id);
-				$this->db->where('serving_status', '1');
-				$this->db->order_by('id');
-				$this->db->limit(1);
+				$this->db->where('id', $arr[0]->id);
 				$this->db->update('pos_orders_line_item');
+				$this->db->where('order_line_item_id', $arr[0]->id);
+				$this->db->delete('pos_patched_discount');
 			}
-			$this->db->set('tax_amount', 'tax_amount-(' . $price . '*tax_percent/100)', false);
+			$promo = $this->compile("select * from pos_menus_promos where outlet_menu_id=$menuId and is_avail_$date='Y'");
+			if (sizeof($promo) > 0) {
+				if($promo[0]->discount_amount>0)
+					$discount=$promo[0]->discount_amount;
+				else
+					$discount=$price/100*$promo[0]->discount_percent;
+			}
+			$this->db->set('tax_amount', 'tax_amount-(' . ($price-$discount) . '*tax_percent/100)', false);
 			$this->db->where('order_id', $order_id);
 			$this->db->update('pos_order_taxes');
 			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $order_id);
 			$sum = $sum[0]->tax;
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount-' . $price, false);
+			$this->db->set('sub_total_amount', 'sub_total_amount-' . $price+$discount, false);
 			$this->db->set('tax_total_amount', $sum, false);
 			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $order_id);
@@ -444,7 +455,7 @@
 			$folio_id = isset($P['folio_id']) ? $P['folio_id'] : NULL;
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
-			
+
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
 			} else {
@@ -488,13 +499,13 @@
 			$house_use_id = isset($P['house_use_id']) ? $P['house_use_id'] : NULL;
 			$note = isset($P['note']) ? $P['note'] : '';
 			$res = false;
-			
+
 			if (!$card_no) {
 				$payment_amount = str_replace(',', '', $payment_amount);
 			} else {
 				$payment_amount = $grandtotal;
 			}
-			
+
 			$this->db->set('status', '2', false);
 			$this->db->set('modified_by', $user_id, false);
 			$this->db->set('modified_date', 'now()', false);
