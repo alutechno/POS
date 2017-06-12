@@ -208,13 +208,13 @@
 			$menu_id = $this->uri->segment(4);
 			$price = $this->uri->segment(5);
 			$discount=0;
-			$res = $this->db->query("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '0' LIMIT 1");
+			$res = $this->db->query("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '0'");
 			$arr = $res->result();
 			if (sizeof($arr) > 0) {
-				$this->db->where('id', $arr[0]->id);
-				$this->db->delete('pos_orders_line_item');
 				$this->db->where('order_line_item_id', $arr[0]->id);
 				$this->db->delete('pos_patched_discount');
+				$this->db->where('id', $arr[0]->id);
+				$this->db->delete('pos_orders_line_item');
 			} else {
 				$arr = $this->compile("select * from pos_orders_line_item WHERE order_id = " . $order_id . " AND outlet_menu_id = " . $menu_id . " AND serving_status = '1' LIMIT 1");
 				$this->db->set('serving_status', '4');
