@@ -24,16 +24,17 @@
 					select 
 						a.id, a.code, a.user_id, a.working_shift_id, 
 						a.outlet_id, a.start_time, a.end_time, a.begin_saldo,
-						a.closing_saldo, b.name shift_name,
+						a.closing_saldo, b.name shift_name, c.name outlet_name,
 						b.start_time should_start_time, b.end_time should_end_time
 					from pos_cashier_transaction a
 					left join ref_pos_working_shift b on a.working_shift_id = b.id
+					left join mst_outlet c on a.outlet_id = c.id
 					where a.user_id=$row->id and a.outlet_id=$outlet and (a.end_time is null or a.end_time = 0);					
 				");
-				if ($shift->num_rows()) {
+				if ($shift->num_rows() == 0) {
 					$this->session->set_userdata($data);
 					echo "<script>";
-					echo "var saldo = prompt('Please enter current saldo', 0);";
+					echo "var saldo = prompt('Please enter your begining saldo', 0);";
 					echo "saldo = parseFloat(saldo);";
 					echo "if (saldo && saldo > 0) {";
 					echo "    window.location.href = '" . base_url() . "login/continue_process/' + saldo";
@@ -67,6 +68,21 @@
 				"created_by" => $this->session->userdata('user_id')
 			);
 			$this->db->insert('pos_cashier_transaction', $data);
+			$parentId = $this->db->insert_id();
+			//
+			$shift = $this->db->query("
+				select 
+					a.id, a.code, a.user_id, a.working_shift_id, 
+					a.outlet_id, a.start_time, a.end_time, a.begin_saldo,
+					a.closing_saldo, b.name shift_name, c.name outlet_name,
+					b.start_time should_start_time, b.end_time should_end_time
+				from pos_cashier_transaction a
+				left join ref_pos_working_shift b on a.working_shift_id = b.id
+				left join mst_outlet c on a.outlet_id = c.id
+				where a.id=$parentId;					
+			");
+			$data['shift'] = $shift->result()[0];
+			$this->session->set_userdata($data);
 			redirect(base_url('main'));
 		}
 		function logout() {

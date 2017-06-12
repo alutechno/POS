@@ -25,18 +25,22 @@
 		<!-- sidebar menu: : style can be found in sidebar.less -->
 		<ul class="sidebar-menu">
 			<li>
+				<a href="<?= base_url('cashier') ?>">
+					<i class="fa fa-clock-o"></i>
+					<span>Cashier</span>
+				</a>
+			</li>
+			<li>
 				<a href="<?= base_url('main') ?>">
 					<i class="fa fa-money"></i>
 					<span>Point Of Sales</span>
 				</a>
 			</li>
-
-			<!-- <li class="<? echo $this->uri->segment(1) == 'pos' ? 'active' : ''; ?>">
-                            <a href="<?= base_url('pos/cashier') ?>">
-                                <i class="fa fa-money"></i> <span>Cashier</span>
-                            </a>
-                        </li>-->
-
+			<!--<li class="<? /* echo $this->uri->segment(1) == 'pos' ? 'active' : ''; */ ?>">
+				<a href="<? /*= base_url('pos/cashier') */ ?>">
+					<i class="fa fa-money"></i> <span>Cashier</span>
+				</a>
+			</li>-->
 			<li class="treeview <?php echo $this->uri->segment(1) == 'referensi' ? 'active' : ''; ?>">
 				<a href="#">
 					<i class="fa fa-table"></i> <span>Referensi</span>
@@ -105,8 +109,8 @@
 					<li class="<?php echo $this->uri->segment(2) == 'mst_pos_cost_center' ? 'active' : ''; ?>">
 						<a href="<?php echo base_url('master/mst_pos_cost_center') ?>"><i
 								class="fa fa-angle-double-right"></i> Cost Center</a></li>
-					<!-- <li class="<? echo $this->uri->segment(2) == 'mst_pos_type' ? 'active' : ''; ?>"><a href="<?php echo base_url('master/mst_pos_type') ?>"><i class="fa fa-angle-double-right"></i> POS Type</a></li>    -->
-
+					<!--<li class="<?/* echo $this->uri->segment(2) == 'mst_pos_type' ? 'active' : ''; */?>"><a
+							href="<?php /*echo base_url('master/mst_pos_type') */?>"><i class="fa fa-angle-double-right"></i> POS Type</a></li>-->
 					<li class="<?php echo $this->uri->segment(2) == 'mst_kitchen' ? 'active' : ''; ?>">
 						<a href="<?php echo base_url('master/mst_kitchen') ?>"><i
 								class="fa fa-angle-double-right"></i>Kitchen</a></li>
@@ -119,7 +123,9 @@
 					<li class="<?php echo $this->uri->segment(2) == 'mst_pos_member_package' ? 'active' : ''; ?>">
 						<a href="<?php echo base_url('master/mst_pos_member_package') ?>"><i
 								class="fa fa-angle-double-right"></i> Member Package</a></li>
-					<!--<li class="<? echo $this->uri->segment(2) == 'mst_pos_scheduled_discount' ? 'active' : ''; ?>"><a href="<?= base_url('master/mst_pos_scheduled_discount') ?>"><i class="fa fa-angle-double-right"></i>scheduled discount</a></li> -->
+					<!--<li class="<?/* echo $this->uri->segment(2) == 'mst_pos_scheduled_discount' ? 'active' : ''; */?>"><a
+							href="<?/*= base_url('master/mst_pos_scheduled_discount') */?>"><i class="fa fa-angle-double-right"></i>scheduled discount</a>
+					</li>-->
 				</ul>
 			</li>
 
@@ -138,7 +144,8 @@
 					<li class="<?php echo $this->uri->segment(2) == 'mst_outlet' ? 'active' : ''; ?>">
 						<a href="<?php echo base_url('setting/mst_outlet') ?>"><i
 								class="fa fa-angle-double-right"></i> Outlet</a></li>
-					<!--<li class="<? echo $this->uri->segment(2) == 'pos_outlet_zones' ? 'active' : ''; ?>"><a href="<?php echo base_url('setting/pos_outlet_zones') ?>"><i class="fa fa-angle-double-right"></i> Outlet Zone</a></li>-->
+					<!--<li class="<?/* echo $this->uri->segment(2) == 'pos_outlet_zones' ? 'active' : ''; */?>"><a
+							href="<?php /*echo base_url('setting/pos_outlet_zones') */?>"><i class="fa fa-angle-double-right"></i> Outlet Zone</a></li>-->
 					<li class="<?php echo $this->uri->segment(2) == 'pos_outlet_tables' ? 'active' : ''; ?>">
 						<a href="<?php echo base_url('setting/pos_outlet_tables') ?>"><i
 								class="fa fa-angle-double-right"></i> Tables Outlet</a></li>
