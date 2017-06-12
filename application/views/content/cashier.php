@@ -8,13 +8,15 @@
 				<h4 class="modal-title">Shift Revenue</h4>
 			</div>
 			<div class="modal-body">
-				?
+				<iframe src="http://103.43.47.115:8888/birt/output?_report=report/pos/close_cashier
+				.rptdesign&transc_id=<?php echo $shift->id; ?>&dpi=96&format=pdf&pageoverflow=0&_overwrite=false"
+						style="border: none; width: 100%; height: 100%;"
+				></iframe>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary">Save</button>
+				<button type="submit" class="btn btn-primary">Submit</button>
 			</div>
-			</form>
 		</div>
 	</div>
 </div>
