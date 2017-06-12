@@ -20,14 +20,54 @@
 					$data['outlet'] = $outlet;
 					$data['is_logged_in'] = true;
 				}
-				$this->session->set_userdata($data);
-				redirect(base_url('main'));
+				$shift = $this->db->query("
+					select 
+						a.id, a.code, a.user_id, a.working_shift_id, 
+						a.outlet_id, a.start_time, a.end_time, a.begin_saldo,
+						a.closing_saldo, b.name shift_name,
+						b.start_time should_start_time, b.end_time should_end_time
+					from pos_cashier_transaction a
+					left join ref_pos_working_shift b on a.working_shift_id = b.id
+					where a.user_id=$row->id and a.outlet_id=$outlet and (a.end_time is null or a.end_time = 0);					
+				");
+				if ($shift->num_rows()) {
+					$this->session->set_userdata($data);
+					echo "<script>";
+					echo "var saldo = prompt('Please enter current saldo', 0);";
+					echo "saldo = parseFloat(saldo);";
+					echo "if (saldo && saldo > 0) {";
+					echo "    window.location.href = '" . base_url() . "login/continue_process/' + saldo";
+					echo "}";
+					echo "</script>";
+				} else {
+					$data['shift'] = $shift->result()[0];
+					$this->session->set_userdata($data);
+					redirect(base_url('main'));
+				}
 			} else {
-				$data['alert'] = "<div class=\"alert alert-danger\">
-                                    sorry your username or password is wrong.
-                                  </div>";
+				$data['alert'] = "<div class=\"alert alert-danger\">sorry your username or password is wrong.</div>";
 				$this->load->view('v_login2', $data);
 			}
+		}
+		function continue_process() {
+			$code = $this->db->query("select concat('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;");
+			$code = $code->result();
+			$working = $this->db->query("select id, name, start_time, end_time from ref_pos_working_shift where start_time >= CURRENT_TIME and end_time < CURRENT_TIME;");
+			$working = $working->result();
+			$data = array(
+				"code" => $code[0]->id,
+				"user_id" => $this->session->userdata('user_id'),
+				"working_shift_id" => $working[0]->id,
+				"outlet_id" => $this->session->userdata('outlet'),
+				"start_time" => date('Y-m-d H:i:s'),
+				"created_date" => date('Y-m-d H:i:s'),
+				"end_time" => null,
+				"begin_saldo" => $this->uri->segment(3),
+				"closing_saldo" => 0,
+				"created_by" => $this->session->userdata('user_id')
+			);
+			$this->db->insert('pos_cashier_transaction', $data);
+			redirect(base_url('main'));
 		}
 		function logout() {
 			session_destroy();

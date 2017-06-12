@@ -101,11 +101,6 @@
 
 						<!-- Menu Footer-->
 						<li class="user-footer">
-							<div class="pull-left">
-								<a data-toggle="modal" href="#myModalshift"
-								   class="btn btn-default btn-flat">Change Shift Time</a>
-							</div>
-
 							<div class="pull-right">
 								<a href="<?php echo base_url('login/logout') ?>"
 								   class="btn btn-default btn-flat">Sign out</a>
