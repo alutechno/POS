@@ -105,10 +105,8 @@
 					$discount=$promo[0]->discount_amount;
 				else
 					$discount=$price/100*$promo[0]->discount_percent;
-				echo $discount;
-				echo $line_id;
 				$data = array(
-					"order_line_item_id" => $orderId,
+					"order_line_item_id" => $line_id,
 					"menu_class_id" => $menuClassId,
 					"outlet_menu_id" => $menuId,
 					"promo_id"=>$promo[0]->id,
@@ -122,15 +120,16 @@
 			$isTaxes = $this->compile("
 				select is_tax_included e from inv_outlet_menus where id = $menuId
 			");
+			$price=$price-$discount;
 			if ($isTaxes[0]->e == 'N') {
-				$this->db->set('tax_amount', 'tax_amount+(' . $price-$discount . '*tax_percent/100)', false);
+				$this->db->set('tax_amount', 'tax_amount+(' . $price . '*tax_percent/100)', false);
 				$this->db->where('order_id', $orderId);
 				$this->db->update('pos_order_taxes');
 				$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $orderId);
 				$sum = $sum[0]->tax;
 			}
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price-$discount, false);
+			$this->db->set('sub_total_amount', 'sub_total_amount+' . $price, false);
 			$this->db->set('tax_total_amount', $sum, false);
 			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $orderId);
@@ -204,6 +203,7 @@
 			//echo $keyword;exit;
 		}
 		function void_item() {
+			$date = strtolower(date("l"));
 			$order_id = $this->uri->segment(3);
 			$menu_id = $this->uri->segment(4);
 			$price = $this->uri->segment(5);
@@ -223,20 +223,21 @@
 				$this->db->where('order_line_item_id', $arr[0]->id);
 				$this->db->delete('pos_patched_discount');
 			}
-			$promo = $this->compile("select * from pos_menus_promos where outlet_menu_id=$menuId and is_avail_$date='Y'");
+			$promo = $this->compile("select * from pos_menus_promos where outlet_menu_id=$menu_id and is_avail_$date='Y'");
 			if (sizeof($promo) > 0) {
 				if($promo[0]->discount_amount>0)
 					$discount=$promo[0]->discount_amount;
 				else
 					$discount=$price/100*$promo[0]->discount_percent;
 			}
-			$this->db->set('tax_amount', 'tax_amount-(' . ($price-$discount) . '*tax_percent/100)', false);
+			$price=$price-$discount;
+			$this->db->set('tax_amount', 'tax_amount-(' . $price . '*tax_percent/100)', false);
 			$this->db->where('order_id', $order_id);
 			$this->db->update('pos_order_taxes');
 			$sum = $this->compile("select sum(tax_amount) tax from pos_order_taxes where order_id=" . $order_id);
 			$sum = $sum[0]->tax;
 			// updating phase #2
-			$this->db->set('sub_total_amount', 'sub_total_amount-' . $price+$discount, false);
+			$this->db->set('sub_total_amount', 'sub_total_amount-' . $price, false);
 			$this->db->set('tax_total_amount', $sum, false);
 			$this->db->set('due_amount', 'sub_total_amount+tax_total_amount', false);
 			$this->db->where('id', $order_id);

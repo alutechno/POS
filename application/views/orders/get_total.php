@@ -50,13 +50,15 @@
 			$amount+=$row->tax_amount;
 		}
 
-		$query = $this->db->query("select b.name,sum(price_amount)price from pos_orders_line_item a,ref_outlet_menu_class b
+		$query = $this->db->query("select b.name,sum(price_amount)price,IFNULL(sum(c.discount_amount),0) discount
+			from pos_orders_line_item a left join pos_patched_discount c on a.id=c.order_line_item_id,ref_outlet_menu_class b
 			where a.menu_class_id=b.id
 			and a.order_id in (".$order_id.")
 			group by b.name");
 		$class=[];
 		foreach ($query->result() as $row) {
-			$class[$row->name]=$row->price;
+			$class[$row->name]=array($row->price,$row->discount);
+			$amount-=$row->discount;
 		}
 	?>
 
@@ -69,11 +71,11 @@
 		?>
 	<tr>
 		<td colspan="3" align="left">Total <?php echo $key?></td>
-		<td align="right"><?php echo number_format($value) ?></td>
+		<td align="right"><?php echo number_format($value[0]) ?></td>
 	</tr>
 	<tr>
 		<td colspan="3" align="left">Discount <?php echo $key?></td>
-		<td align="right">0</td>
+		<td align="right"><?php echo number_format($value[1]) ?></td>
 	</tr>
 	<?php }?>
 
