@@ -50,5 +50,5 @@
 
 	<input type="hidden" name="id" value="<?php echo $id; ?>"/>
 	<button type="submit" class="btn btn-primary"><?php echo $button ?></button>
-	<a href="<?php echo site_url('mst_pos_tables') ?>" class="btn btn-default">Cancel</a>
+	<a href="<?php echo base_url('master/mst_pos_tables')" class="btn btn-default">Cancel</a>
 </form>
