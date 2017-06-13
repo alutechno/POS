@@ -8,7 +8,7 @@
 				<h4 class="modal-title">Shift Revenue</h4>
 			</div>
 			<div class="modal-body">
-				<iframe src="<?php echo BIRT;?>&transc_id=<?php echo $shift->id; ?>"
+				<iframe src="<?php echo BIRT_CLOSE_CASHIER . $shift->id; ?>"
 						style="border: none; width: 100%; height: 100%;"
 				></iframe>
 			</div>

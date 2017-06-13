@@ -248,6 +248,7 @@
 			$user_id = $this->session->userdata('user_id');
 			$outlet_id = $this->session->userdata('outlet');
 			$table_id = $this->input->post('table');
+			$shift = $this->session->userdata('shift');
 			$num_of_cover = $this->input->post('guest');
 			$count = $this->compile("select count(id)+1 as no_bill from pos_orders where outlet_id='" . $this->session->userdata('outlet') . "'");
 			$count = $count[0]->no_bill;
@@ -255,6 +256,7 @@
 			$this->session->set_userdata('no_bill', $code);
 			$this->db->insert('pos_orders', array(
 				'code' => $code,
+				'transc_batch_id' => $shift->id,
 				'outlet_id' => $outlet_id,
 				'table_id' => $table_id,
 				'num_of_cover' => $num_of_cover,
@@ -446,6 +448,7 @@
 		function submit() {
 			$P = $this->input->post();
 			$user_id = $this->session->userdata('user_id');
+			$shift = $this->session->userdata('shift');
 			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
 			$order_id = explode(',', $order_id);
 			$card_no = isset($P['card_no']) ? $P['card_no'] : '';
@@ -466,6 +469,7 @@
 			$this->db->set('status', '2', false);
 			$this->db->set('modified_by', $user_id, false);
 			$this->db->set('modified_date', 'now()', false);
+			$this->db->set('closing_batch_id', $shift->id, false);
 			if ($note) {
 				$this->db->set('order_notes', $note);
 			}
@@ -486,6 +490,7 @@
 		}
 		function submit_split() {
 			$P = $this->input->post();
+			$shift = $this->session->userdata('shift');
 			$counter = isset($P['counter']) ? $P['counter'] : '';
 			$user_id = $this->session->userdata('user_id');
 			$order_id = isset($P['order_id']) ? $P['order_id'] : '';
@@ -510,6 +515,7 @@
 			$this->db->set('status', '2', false);
 			$this->db->set('modified_by', $user_id, false);
 			$this->db->set('modified_date', 'now()', false);
+			$this->db->set('closing_batch_id', $shift->id, false);
 			if ($note) {
 				$this->db->set('order_notes', $note);
 			}
