@@ -11,6 +11,11 @@
 			$data = "";
 			show($view, $data);
 		}
+		function print_cashier_report ($id) {
+			file_put_contents("bills\cashier_report_".$id.".pdf", fopen(BIRT_CLOSE_CASHIER.$id, 'r'));
+			shell_exec('"C:\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bills\cashier_report'.$id.'.pdf"');
+			redirect(base_url() . "main");
+		}
 		function close_cashier () {
 			$date = date('Y-m-d H:i:s');
 			$sess = $this->session->userdata();
@@ -31,6 +36,7 @@
 			$this->db->set('modified_date', $date);
 			$this->db->where('id', $shift->id);
 			$this->db->update('pos_cashier_transaction');
+			$this->print_cashier_report($shift->id);
 			redirect(base_url('main'));
 		}
 	}
