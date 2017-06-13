@@ -17,7 +17,7 @@ define('APP_YEAR'   , '2017');
 define('LICENSE_TO' , 'THE MEDIA HOTEL AND TOWERS');
 define('REPORT_BIRT','http://localhost:8080/birt/frameset?__report=report/pos/');
 define('BIRT','http://localhost:8080/birt/output?__report=report/pos/struk_order.rptdesign&__format=pdf');
-define('BIRT_CLOSE_CASHIER','http://localhost:8080/birt/output?__report=report/pos/close_cashier.rptdesign&dpi=96&format=pdf&pageoverflow=0&_overwrite=false&transc_id=');
+define('BIRT_CLOSE_CASHIER','http://localhost:8080/birt/output?__report=report/pos/close_cashier.rptdesign&dpi=96&__format=pdf&pageoverflow=0&_overwrite=false&transc_id=');
 // -- Module
 define('DEF_MODULE'     , 1); // 1. perencanaan 2.etc  ref => apps table
 define('SELECT_MODULE'  , TRUE);
