@@ -77,19 +77,15 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	//10.108.220.3
     //'hostname' => "localhost",
-    'hostname' => "103.43.47.115",
-	//'hostname' => "103.43.47.115",
+	//'username' => "root",
+	//'password' => "root",
+	//'database' => "media",
+    'hostname' => "103.43.47.115", //10.108.220.3
 	'username' => "media",
 	'password' => "media",
 	'database' => "media",
 	'dbdriver' => DB_TYPE,
-    /* 'hostname' => "localhost",
-	'username' => "root",
-	'password' => "",
-	'database' => "media2",
-	'dbdriver' => DB_TYPE,*/
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => DB_DBUG,
