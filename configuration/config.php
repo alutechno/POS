@@ -30,7 +30,8 @@ define('MY_ENV', 'production'); //development testing production
 $db_debug =  (MY_ENV == 'development') ? TRUE : FALSE;
 define('DB_DBUG', $db_debug);
 define('DB_TYPE', 'mysqli');  //mysql postgre
-define('DB_HOST', '103.43.47.115');
+//define('DB_HOST', '103.43.47.115');
+define('DB_HOST', '10.108.220.3');
 define('DB_PORT', '3306');
 define('DB_USER', 'media');
 define('DB_PASS', 'media');
