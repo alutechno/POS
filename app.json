@@ -1,9 +1,9 @@
 {
     "apps": [
         {
-            "name": "mpos",
+            "name": "media-pos",
             "script": "bin/app",
-            "instances": 0,
+            "instances": 4,
             "exec_mode": "cluster",
             "exec_interpreter": "node",
             "env": {
