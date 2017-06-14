@@ -1,0 +1,6 @@
+.idea/
+log/
+trash/
+node_modules/
+uploads/
+npm-debug.log
