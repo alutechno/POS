@@ -1,0 +1,53 @@
+{
+  "name": "POS",
+  "description": "Media POS",
+  "version": "0.0.1",
+  "author": "alutechno",
+  "bugs": {
+    "url": "https://github.com/alutechno/POS/issues"
+  },
+  "dependencies": {
+    "async-to-gen": "^1.3.3",
+    "bcrypt": "^1.0.2",
+    "bluebird": "^3.5.0",
+    "body-parser": "^1.17.2",
+    "connect-multiparty": "^2.0.0",
+    "cors": "^2.8.3",
+    "dateformat": "^2.0.0",
+    "ejs": "^2.5.6",
+    "express": "^4.15.3",
+    "mysql": "^2.13.0",
+    "node-uuid": "^1.4.8",
+    "rand-token": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "supertest": "^3.0.0"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "homepage": "https://github.com/alutechno/POS#readme",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "example",
+    "test",
+    "tests"
+  ],
+  "keywords": [
+    "point of sales",
+    "pos"
+  ],
+  "license": "MIT",
+  "main": "src/app",
+  "repository": {
+    "type": "https",
+    "url": "git+https://github.com/alutechno/POS.git"
+  },
+  "scripts": {
+    "app": "nodemon bin/app"
+  }
+}
