@@ -13,7 +13,7 @@
 		}
 		function print_cashier_report ($id) {
 			file_put_contents("bills\cashier_report_".$id.".pdf", fopen(BIRT_CLOSE_CASHIER.$id, 'r'));
-			shell_exec('"C:\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bills\cashier_report'.$id.'.pdf"');
+			shell_exec('"C:\Program Files (X86)\Foxit Software\Foxit Reader\Foxit Reader.exe" /t "bills\cashier_report_'.$id.'.pdf"');
 			redirect(base_url() . "main");
 		}
 		function close_cashier () {
@@ -22,7 +22,7 @@
 			$shift = $sess['shift'];
 			$closingSaldo = $this->db->query("
 				select
-					#a.id, a.code, a.transc_batch_id, c.payment_amount, c.change_amount, 
+					#a.id, a.code, a.transc_batch_id, c.payment_amount, c.change_amount,
 					sum(c.payment_amount-c.change_amount) uang
 				from pos_orders a
 				join pos_cashier_transaction b on b.id = a.transc_batch_id
