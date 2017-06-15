@@ -4,12 +4,21 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-	<title><%- locals.description %></title>
 	<% include part/header-css.ejs %>
 	<% include part/header-js.ejs %>
 </head>
-<body class="hold-transition login-page">
-<!-- Content goes here.. -->
+<body class="hold-transition skin-blue fixed layout-top-nav sidebar-mini">
+<div class="wrapper">
+	<% include part/navbar.ejs %>
+	<div class="content-wrapper">
+		<div class="container">
+			<section class="content">
+				Order
+			</section>
+		</div>
+	</div>
+	<% include part/footer.ejs %>
+</div>
 <% include part/body-js.ejs %>
 </body>
 </html>

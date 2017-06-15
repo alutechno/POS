@@ -75,9 +75,16 @@ const http = function (pool, compile) {
         if (myCookie) {
             myCookie = Crypt.de(myCookie);
             try {
-                let {id, time} = JSON.parse(myCookie);
+                let {id, time, outlet} = JSON.parse(myCookie);
                 let getUserQuery = `SELECT * FROM user WHERE id = ${id}`;
                 let getter = await compile(getUserQuery);
+                if (getter.constructor == Error) throw getter;
+                if (getter.length !== 1) throw new Error(`Invalid username "${username}"!`);
+
+                let getOutletQuery = 'SELECT * FROM mst_outlet WHERE status = 1 AND id = ?';
+                let getOutlet = await compile(getOutletQuery, outlet);
+                if (getOutlet.constructor == Error) throw getOutlet;
+                if (getOutlet.length !== 1) throw new Error(`Invalid outlet "${outlet}"!`);
 
                 time += cookie.maxAge;
 
@@ -89,9 +96,11 @@ const http = function (pool, compile) {
                     delete getter[0][key]
                 });
                 locals.user = getter[0];
+                locals.outlet = getOutlet[0];
                 locals.message = '';
                 return next()
             } catch (e) {
+                locals.message = e.message;
                 if (isLoginPage || isAuthing) return next();
                 return res.redirect('/login');
             }
@@ -100,12 +109,25 @@ const http = function (pool, compile) {
         return res.redirect('/login');
     });
     app.get('/', function (req, res, next) {
+        locals.page = 'Home';
         res.render('home')
     });
     app.get('/order', function (req, res, next) {
+        locals.page = 'Order';
         res.render('order')
     });
-    app.get('/login', function (req, res, next) {
+    app.get('/cashier', function (req, res, next) {
+        locals.page = 'Cashier';
+        res.render('cashier')
+    });
+    app.get('/login', async function (req, res, next) {
+        let outlets = await compile('SELECT * FROM mst_outlet WHERE status = 1 ORDER BY name');
+
+        if (outlets.constructor == Error) throw outlets;
+        delete locals.outlet;
+        delete locals.user;
+        locals.page = 'Login';
+        locals.outlets = outlets;
         locals.message = locals.message || "Please fill form input..";
         res.clearCookie(name);
         res.render('login');
@@ -125,30 +147,39 @@ const http = function (pool, compile) {
         res.send({error, data});
     });
     app.post('/auth', async function (req, res, next) {
-        let {body} = req, {username, password} = body;
+        let {body} = req, {username, password, outlet} = body;
         //
         try {
+            if (!username) throw new Error(`Empty username!`);
+            if (!password) throw new Error(`Empty password!`);
+            if (!outlet) throw new Error(`Empty outlet!`);
+
             let getUserQuery = `SELECT * FROM user WHERE name = '${username}'`;
             let getter = await compile(getUserQuery);
-
             if (getter.constructor == Error) throw getter;
             if (getter.length !== 1) throw new Error(`Invalid username "${username}"!`);
             if (getter[0].password !== password) throw new Error(`Invalid password "${password}" for ${username} account!`);
 
             let {id} = getter[0];
             let time = new Date().getTime();
-            let token = Crypt.en(JSON.stringify({id, time}));
+            let token = Crypt.en(JSON.stringify({id, time, outlet}));
             let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
             let setter = await compile(updateUserQuery, [token, id]);
-
             if (setter.constructor == Error) throw setter;
+
+            let getOutletQuery = 'SELECT * FROM mst_outlet WHERE status = 1 AND id = ? ORDER BY name';
+            let getOutlet = await compile(getOutletQuery, outlet);
+            if (getOutlet.constructor == Error) throw getOutlet;
+            if (getOutlet.length !== 1) throw new Error(`Invalid outlet "${outlet}"!`);
 
             cookie.expire = time + cookie.maxAge;
             del.split(',').forEach(function (key) {
                 delete getter[0][key]
             });
+            delete locals.outlets;
+            delete locals.message;
             locals.user = getter[0];
-            locals.message = '';
+            locals.outlet = getOutlet[0];
             res.cookie(name, token, cookie);
             res.redirect('/');
         } catch (e) {
