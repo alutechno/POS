@@ -9,10 +9,7 @@
             "env": {
                 "PORT": "8000",
                 "NODE_ENV": "production",
-                "TOKEN_EXPIRES": 86400000,
-                "TOKEN_EXTEND": 86400000,
-                "TOKEN_REGEN": 86400000,
-                "TOKEN_RESAVE": 86400000
+                "MAX_AGE": 86400000
             },
             "autorestart": true,
             "max_memory_restart": "200M",
