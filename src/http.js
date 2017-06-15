@@ -15,28 +15,7 @@ const {STATUS_CODES} = require('http'),
     Crypt = require(`${Glob.home}/utils/crypt`),
     Upload = require(`${Glob.home}/utils/upload`)(Glob.upload);
 //
-const {env, name, description, version, session, port, home, factory, config, regEx} = Glob;
-const Db = mysql.createPool(config.mysql);
-const compileQuery = function (sql, data, cb) {
-    Db.getConnection(function (err, conn) {
-        if (err) {
-            if (!conn) conn.release();
-            cb(err);
-        } else {
-            if (!data) {
-                conn.query(sql, function (err, rows, fields) {
-                    conn.release();
-                    cb(err, rows, fields);
-                });
-            } else {
-                conn.query(sql, data, function (err, rows, fields) {
-                    conn.release();
-                    cb(err, rows, fields);
-                });
-            }
-        }
-    });
-};
+const {env, name, description, version, session, port, home, config} = Glob;
 const http = function (pool, compile) {
     let del = 'password,default_module,default_menu,status,created_date,modified_date,created_by,modified_by';
     let app = express();
@@ -72,7 +51,7 @@ const http = function (pool, compile) {
         next();
     });
     if (app.get('env') === 'production') {
-        cookie.secure = true;
+        //cookie.secure = true;
         app.set('trust proxy', 1);
     }
     app.use(async function (req, res, next) {
@@ -106,7 +85,7 @@ const http = function (pool, compile) {
                 if (time < new Date().getTime()) throw error;
                 if (isLoginPage || isAuthing) return res.redirect('/');
 
-                del.split(',').forEach(function(key){
+                del.split(',').forEach(function (key) {
                     delete getter[0][key]
                 });
                 locals.user = getter[0];
@@ -165,12 +144,12 @@ const http = function (pool, compile) {
             if (setter.constructor == Error) throw setter;
 
             cookie.expire = time + cookie.maxAge;
-            del.split(',').forEach(function(key){
+            del.split(',').forEach(function (key) {
                 delete getter[0][key]
             });
             locals.user = getter[0];
             locals.message = '';
-            res.cookie(name , token, cookie);
+            res.cookie(name, token, cookie);
             res.redirect('/');
         } catch (e) {
             locals.message = e.message;
