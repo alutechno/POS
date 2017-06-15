@@ -1,0 +1,40 @@
+<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+<script type="text/javascript">
+    Element.prototype.remove = function () {
+        this.parentElement.removeChild(this);
+    };
+    NodeList.prototype.remove = HTMLCollection.prototype.remove = function () {
+        for (var i = this.length - 1; i >= 0; i--) {
+            if (this[i] && this[i].parentElement) {
+                this[i].parentElement.removeChild(this[i]);
+            }
+        }
+    };
+    window.App = <%- JSON.stringify(locals) %>;
+    ["LOGIN", "cache", "_locals", "settings", "LOGIN", "filename"].forEach(function(s){delete window.App[s]});
+    window.SQL = function (query, params) {
+        var a = $.ajax({
+            method: 'POST',
+            url: '/sql',
+            async: false,
+            data: {query, params},
+            complete: function (xhr, is) {
+                if (is === 'success') {
+                    var error = xhr.responseJSON.error;
+                    if (xhr.responseJSON.error) {
+                        console.error(error.code, {query, params, error})
+                    }
+                } else {
+                    console.error('Something wrong with host..')
+                }
+            }
+        });
+        return a.responseJSON;
+    }
+</script>
