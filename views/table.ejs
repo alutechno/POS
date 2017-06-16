@@ -21,7 +21,7 @@
 	</div>
 	<% include part/footer.ejs %>
 </div>
-<div class="modal fade" id="myModalguest" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="myModalGuest" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 	<div class="modal-dialog modal-sm" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -29,17 +29,38 @@
 					<span aria-hidden="true">&times;</span>
 				</button>
 				<h4 class="modal-title" id="myModalLabel">
-					Table No: <span>?</span>
+					New Guest for Table: <span>?</span>
 				</h4>
 			</div>
 			<div class="modal-body">
 				<div class="form-group has-feedback">
 					<label for="#guest">Guest:</label>
-					<input type="number" class="form-control" id="guest" name="guest" required value="1">
+					<input type="currency" class="form-control" id="guest" required value="1">
 				</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="myModalBeginSaldo" tabindex="-1" role="dialog" aria-labelledby="myModalBeginSaldoLabel">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="myModalBeginSaldoLabel">
+					Cashier Working Shift
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group has-feedback">
+					<label for="#saldo">Input begining saldo :</label>
+					<input type="currency" class="form-control" id="saldo" required value="0">
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary">Submit</button>
+				</div>
 			</div>
 		</div>
 	</div>

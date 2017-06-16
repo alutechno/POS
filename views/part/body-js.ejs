@@ -5,3 +5,28 @@
 <script src="/tmpl/plugins/fastclick/fastclick.js"></script>
 <script src="/tmpl/dist/js/app.min.js"></script>
 <script src="/tmpl/dist/js/demo.js"></script>
+<script src="/vendor/vkeyboard/docs/js/jquery-ui.min.js"></script>
+<script src="/vendor/vkeyboard/js/jquery.keyboard.js"></script>
+<script src="/vendor/vkeyboard/js/jquery.mousewheel.js"></script>
+<script>
+    $(document).ready(function () {
+        var s = $('input[type="currency"]');
+        s.keyboard({layout: 'num'});
+        s.css('text-align', 'end');
+        s.on('change', function () {
+            var el = $(this);
+            var val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+        });
+
+        $('input[type="text"]').keyboard({layout: 'qwerty'});
+        $('textarea').keyboard({layout: 'qwerty'});
+    })
+</script>
