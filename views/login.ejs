@@ -43,8 +43,9 @@
     $(function () {
         var outlet = $('#outlet');
 
-        outlet.html('<option value="">- Outlet -</option>');
-        App.outlets.forEach(function (el) {
+        //App.virtualKeyboard();
+        App.outlets.forEach(function (el, i) {
+            if (!i) outlet.html('<option value="">- Outlet -</option>');
 			outlet.append(`<option value="${el.id}">${el.name}</option>`);
         });
         $('input').iCheck({

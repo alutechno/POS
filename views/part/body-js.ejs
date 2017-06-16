@@ -12,7 +12,7 @@
 <script src="/vendor/vkeyboard/js/jquery.keyboard.extension-all.js"></script>
 <!-- Personal -->
 <script>
-    $(document).ready(function () {
+    App.virtualKeyboard = function () {
         var s = $('input[type="currency"]');
         s.keyboard({layout: 'num'});
         s.css('text-align', 'end');
@@ -31,5 +31,5 @@
 
         $('input[type="text"]').keyboard({layout: 'qwerty'});
         $('textarea').keyboard({layout: 'qwerty'});
-    })
+	}
 </script>

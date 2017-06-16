@@ -66,4 +66,5 @@ $(document).ready(function () {
     btn.on('click', function(){
         //todo: input new order
     });
+    App.virtualKeyboard();
 });
