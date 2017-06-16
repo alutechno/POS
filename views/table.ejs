@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<% include part/header-css.ejs %>
+	<% include part/header-js.ejs %>
+</head>
+<body class="hold-transition skin-blue fixed layout-top-nav sidebar-mini">
+<div class="wrapper">
+	<% include part/navbar.ejs %>
+	<div class="content-wrapper">
+		<div class="container">
+			<section class="content">
+				<div class="row" id="tables-container">
+					<!-- auto generated -->
+				</div>
+			</section>
+		</div>
+	</div>
+	<% include part/footer.ejs %>
+</div>
+<div class="modal fade" id="myModalguest" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog modal-sm" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					Table No: <span>?</span>
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group has-feedback">
+					<label for="#guest">Guest:</label>
+					<input type="number" class="form-control" id="guest" name="guest" required value="1">
+				</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<% include part/body-js.ejs %>
+<script src="/js/tables.js"></script>
+</body>
+</html>

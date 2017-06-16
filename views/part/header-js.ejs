@@ -36,5 +36,11 @@
             }
         });
         return a.responseJSON;
-    }
+    };
+    if (App.time) {
+        App.time = new Date(App.time);
+        App.timeIntv = setInterval(function(){
+            App.time.setSeconds(App.time.getSeconds() + 1);
+		}, 1000)
+	}
 </script>
