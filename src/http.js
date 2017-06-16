@@ -72,33 +72,68 @@ const http = function (pool, compile) {
         let isLoginPage = pathname === '/login' && method === 'GET';
         let isAuthing = pathname === '/auth' && method === 'POST';
         //
+        locals.time = new Date();
+        delete locals.ERR;
         if (myCookie) {
-            myCookie = Crypt.de(myCookie);
             try {
-                let {id, time, outlet} = JSON.parse(myCookie);
-                let getUserQuery = `SELECT * FROM user WHERE id = ${id}`;
-                let getter = await compile(getUserQuery);
-                if (getter.constructor == Error) throw getter;
-                if (getter.length !== 1) throw new Error(`Invalid username "${username}"!`);
+                myCookie = Crypt.de(myCookie);
+                let now = new Date();
+                let {id, time, outlet, posCashier} = JSON.parse(myCookie);
 
+                /* get user info */
+                let getUserQuery = `SELECT * FROM user WHERE id = ${id}`;
+                let getUser = await compile(getUserQuery);
+                if (getUser.constructor === Error) throw getUser;
+                if (getUser.length !== 1) throw new Error(`Session: Invalid username "${username}"!`);
+
+                /* get user outlet */
                 let getOutletQuery = 'SELECT * FROM mst_outlet WHERE status = 1 AND id = ?';
                 let getOutlet = await compile(getOutletQuery, outlet);
-                if (getOutlet.constructor == Error) throw getOutlet;
-                if (getOutlet.length !== 1) throw new Error(`Invalid outlet "${outlet}"!`);
+                if (getOutlet.constructor === Error) throw getOutlet;
+                if (getOutlet.length !== 1) throw new Error(`Session: Invalid outlet "${outlet}"!`);
+
+                /* get existing working shift */
+                let getExistShiftQuery = `
+                    SELECT
+                        a.id, a.code, a.user_id, a.working_shift_id,
+                        a.outlet_id, a.start_time, a.end_time, a.begin_saldo,
+                        a.closing_saldo, b.name shift_name, c.name outlet_name,
+                        b.start_time should_start_time, b.end_time should_end_time
+                    FROM pos_cashier_transaction a
+                    LEFT JOIN ref_pos_working_shift b on a.working_shift_id = b.id
+                    LEFT JOIN mst_outlet c on a.outlet_id = c.id
+                    WHERE a.id=?
+                `;
+                let getExistShift = await compile(getExistShiftQuery, posCashier);
+                if (getExistShift.constructor === Error) throw getExistShift;
+                if (!getExistShift.length) throw new Error(`Session: Invalid working shift for "${username}"!`);
 
                 time += cookie.maxAge;
 
-                if (getter.constructor == Error) throw getter;
-                if (time < new Date().getTime()) throw error;
+                if (time < now.getTime()) throw error;
                 if (isLoginPage || isAuthing) return res.redirect('/');
+                if (now.getMinutes() % 5 === 0) {
+                    /* extend session for every 5 minutes */
+                    let token = Crypt.en(JSON.stringify({id, time, outlet, posCashier}));
+                    let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
+                    let updateUser = await compile(updateUserQuery, [token, id]);
+                    if (updateUser.constructor === Error) throw updateUser;
+
+                    getUser[0].token = token;
+                    cookie.expire = time;
+                    res.cookie(name, token, cookie);
+                }
 
                 del.split(',').forEach(function (key) {
-                    delete getter[0][key]
+                    delete getUser[0][key]
                 });
-                locals.user = getter[0];
+
+                locals.user = getUser[0];
                 locals.outlet = getOutlet[0];
+                locals.posCashier = getExistShift[0];
                 locals.message = '';
-                return next()
+
+                return next();
             } catch (e) {
                 locals.message = e.message;
                 if (isLoginPage || isAuthing) return next();
@@ -109,10 +144,10 @@ const http = function (pool, compile) {
         return res.redirect('/login');
     });
     app.get('/', function (req, res, next) {
-        locals.page = 'Home';
-        res.render('home')
+        locals.page = 'Table';
+        res.render('table')
     });
-    app.get('/order', function (req, res, next) {
+    app.get('/order/:id', function (req, res, next) {
         locals.page = 'Order';
         res.render('order')
     });
@@ -124,8 +159,11 @@ const http = function (pool, compile) {
         let outlets = await compile('SELECT * FROM mst_outlet WHERE status = 1 ORDER BY name');
 
         if (outlets.constructor == Error) throw outlets;
+
         delete locals.outlet;
         delete locals.user;
+        delete locals.posCashier;
+
         locals.page = 'Login';
         locals.outlets = outlets;
         locals.message = locals.message || "Please fill form input..";
@@ -154,32 +192,116 @@ const http = function (pool, compile) {
             if (!password) throw new Error(`Empty password!`);
             if (!outlet) throw new Error(`Empty outlet!`);
 
+            /* get user info */
             let getUserQuery = `SELECT * FROM user WHERE name = '${username}'`;
-            let getter = await compile(getUserQuery);
-            if (getter.constructor == Error) throw getter;
-            if (getter.length !== 1) throw new Error(`Invalid username "${username}"!`);
-            if (getter[0].password !== password) throw new Error(`Invalid password "${password}" for ${username} account!`);
+            let getUser = await compile(getUserQuery);
+            if (getUser.constructor === Error) throw getUser;
+            if (getUser.length !== 1) throw new Error(`Invalid username "${username}"!`);
+            if (getUser[0].status !== '1') throw new Error(`Inactive account "${username}"!`);
+            if (getUser[0].password !== password) throw new Error(`Invalid password "${password}" for ${username} account!`);
 
-            let {id} = getter[0];
-            let time = new Date().getTime();
-            let token = Crypt.en(JSON.stringify({id, time, outlet}));
-            let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
-            let setter = await compile(updateUserQuery, [token, id]);
-            if (setter.constructor == Error) throw setter;
-
+            /* get user outlet */
             let getOutletQuery = 'SELECT * FROM mst_outlet WHERE status = 1 AND id = ? ORDER BY name';
             let getOutlet = await compile(getOutletQuery, outlet);
-            if (getOutlet.constructor == Error) throw getOutlet;
+            if (getOutlet.constructor === Error) throw getOutlet;
             if (getOutlet.length !== 1) throw new Error(`Invalid outlet "${outlet}"!`);
 
-            cookie.expire = time + cookie.maxAge;
+            let {id} = getUser[0];
+
+            /* get should working shift */
+            let getShiftQuery = `
+                SELECT @now := now();
+                SELECT id, name, description, status, start_time, DATE(stime), end_time, DATE(etime)
+                FROM (
+                    SELECT 
+                        TIMESTAMP(
+                            date_add(
+                                DATE(@now),
+                                INTERVAL 
+                                    CASE 
+                                        WHEN start_time < end_time THEN 0
+                                        WHEN start_time > end_time AND @now >= start_time THEN 0
+                                        WHEN start_time > end_time THEN -1
+                                    END
+                                day
+                            ), start_time
+                        ) stime,
+                        TIMESTAMP(
+                            date_add(
+                                DATE(@now), 
+                                    INTERVAL 
+                                    CASE 
+                                        when start_time > end_time and @now >= start_time then 1
+                                        else 0
+                                    END
+                                DAY
+                            ), end_time
+                        ) etime,
+                        a.*
+                        FROM ref_pos_working_shift a
+                ) a
+                WHERE @now BETWEEN stime AND etime;
+            `;
+            let getShift = await compile(getShiftQuery);
+            if (getShift.constructor === Error) throw getOutlet;
+            if (getShift[1].length !== 1)  throw new Error(`Duplicate time shift!`);
+
+            /* get existing working shift */
+            let getExistShiftQuery = `
+                SELECT
+                    a.id, a.code, a.user_id, a.working_shift_id,
+                    a.outlet_id, a.start_time, a.end_time, a.begin_saldo,
+                    a.closing_saldo, b.name shift_name, c.name outlet_name,
+                    b.start_time should_start_time, b.end_time should_end_time
+                FROM pos_cashier_transaction a
+                LEFT JOIN ref_pos_working_shift b on a.working_shift_id = b.id
+                LEFT JOIN mst_outlet c on a.outlet_id = c.id
+                WHERE a.user_id=? and a.outlet_id=? and (a.end_time is null or a.end_time = 0)
+            `;
+            let getExistShift = await compile(getExistShiftQuery, [id, outlet]);
+            if (getExistShift.constructor === Error) throw getExistShift;
+            if (!getExistShift.length) {
+                //let code = await compile(`SELECT CONCAT('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;`);
+                let now = await compile(`SELECT NOW() val;`);
+                let code = await compile(`SELECT CONCAT('PCS/', DATE_FORMAT(CURRENT_DATE, '%Y%m%d')) id;`);
+                let insertionData = {
+                    code : code[0].id,
+                    user_id : id,
+                    working_shift_id : getShift[1][0].id,
+                    outlet_id : outlet,
+                    start_time : now[0].val,
+                    created_date : now[0].val,
+                    begin_saldo : null,
+                    closing_saldo : null,
+                    created_by : id
+                };
+                let insertion = await compile(`INSERT INTO pos_cashier_transaction SET ?`, insertionData);
+                if (insertion.constructor === Error) throw insertion;
+            }
+            getExistShift = await compile(getExistShiftQuery, [id, outlet]);
+            if (getExistShift.constructor === Error) throw getExistShift;
+
+            /* set user token */
+            let time = new Date().getTime();
+            let posCashier = getExistShift[0].id;
+            let token = Crypt.en(JSON.stringify({id, time, outlet, posCashier}));
+            let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
+            let updateUser = await compile(updateUserQuery, [token, id]);
+            if (updateUser.constructor === Error) throw updateUser;
+            getUser[0].token = token;
+
             del.split(',').forEach(function (key) {
-                delete getter[0][key]
+                delete getUser[0][key]
             });
+
             delete locals.outlets;
             delete locals.message;
-            locals.user = getter[0];
+
+            locals.user = getUser[0];
             locals.outlet = getOutlet[0];
+            locals.posCashier = getExistShift[0];
+
+            cookie.expire = time + cookie.maxAge;
             res.cookie(name, token, cookie);
             res.redirect('/');
         } catch (e) {
