@@ -1,0 +1,30 @@
+.dinein-table {
+    margin-bottom: 15px;
+}
+.dinein-table > div > div {
+    text-align: center;
+}
+.dinein-table > div {
+    height: 156px;
+    border-radius: 30px;
+    padding-top: 15%;
+    background-image: url(/img/dining-table.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 70%;
+}
+.dinein-table > div.used {
+    border: 2px solid rgba(210, 152, 47, 0.45);
+    background-color: antiquewhite;
+}
+.dinein-table > div.notused {
+    border: 2px solid rgba(47, 210, 195, 0.45);
+    background-color: #e8fad7;
+}
+.dinein-table div.table-number {
+    margin: 0 40%;
+    height: 30px;
+    line-height: 2;
+    border: 1px solid rgba(255, 0, 0, 0.28);
+    border-radius: 100%;
+}
