@@ -18,119 +18,34 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="box box-info">
-									<div class="box-body">
+									<div class="box-header">
 										<div class="row">
-											<div id="orders" class="col-md-9" style="border-right:1px solid rgba(128, 128, 128, 0.26);">
-												<code style="margin-right: 5px">Order Number / Table</code>
-												<label class="badge btn-primary" style="font-weight: lighter">CHK-39 / 12</label>
-												<label class="badge btn-primary" style="font-weight: lighter">CHK-12 / 4</label>
-											</div>
+											<div id="order" class="col-md-9" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
 											<div class="col-md-3">
 												<code style="margin-right: 5px">Meal Time</code>
-												<label class="badge btn-info" style="font-weight: lighter">Supper</label>
+												<label class="badge btn-info" style="font-weight: lighter" id="meal-time"></label>
 											</div>
 										</div>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-12">
-								<div class="box box-default">
-									<div class="box-header">
+										<hr style="margin-top: 10px;">
 										<div class="form-group row" style="margin-bottom: 0">
 											<div class="col-sm-4">
-												<label for="#select-class">Menu Class</label>
-												<select class="form-control" name="select_menu" id="select-class" onchange="load()">
-													<option value="">All</option>
-													<option value="1">Food</option>
-													<option value="2">Beverage</option>
-													<option value="3">Cigarette</option>
-													<option value="4">Others</option>
-													<option value="5">Setmenu/Combo</option>
-													<option value="6">Promo Food</option>
-													<option value="7">Promo Beverage</option>
-													<option value="8">Buffet</option>
-												</select>
+												<label for="#menu-class">Menu Class</label>
+												<select class="form-control" name="menu-class" id="menu-class"></select>
 											</div>
 											<div class="col-sm-4">
-												<label for="ex2">Sub Class</label>
-												<select class="form-control" name="select_sub_menu" id="select-sub-class">
-													<option value="">All</option>
-												</select>
+												<label for="#select-sub-class">Sub Class</label>
+												<select class="form-control" name="menu-sub-class" id="menu-sub-class"></select>
 											</div>
 											<div class="col-sm-4">
-												<label for="ex2">Find</label>
-												<input class="form-control" type="text" name="search_food" placeholder="Search" id="search-menu"/>
+												<label for="#search-menu">Find</label>
+												<input class="form-control" type="text" name="menu-finder" placeholder="Search" id="menu-finder"/>
 											</div>
 										</div>
 									</div>
-									<hr style="margin: 5px 10px;">
-									<div class="box-body" style="padding-bottom: 0;">
+									<div class="box-body" style="padding: 10px 0 0 0;">
 										<div class="row">
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="col-lg-3 col-sm-4 col-xs-6">
-												<div class="small-box">
-													<div class="small-box-footer menu">
-														<div class="menu-bg"></div>
-														<div class="menu-info text-center">
-															<div class="menu-info-name">Bebek Goreng Sambal</div>
-															<div class="menu-info-price">85,000</div>
-														</div>
-													</div>
-												</div>
+											<div class="col-lg-12">
+												<div class="col-lg-12" id="menu" style="max-height: 868px;overflow-y: auto;"></div>
 											</div>
 										</div>
 									</div>
@@ -140,76 +55,6 @@
 					</div>
 					<div class="col-md-4">
 						<div class="row">
-							<div class="col-md-12">
-								<div class="box box-success">
-									<div class="box-body" style="padding-top: 0;">
-										<table id="order-menus" data-classes="table table-striped table-no-bordered"
-											   data-toggle="table" data-height="300" zzdata-row-style="rowStyle">
-											<thead>
-											<tr>
-												<th data-field="no" data-halign="left" data-align="right">No</th>
-												<th data-field="name" style="width:180px">Menu</th>
-												<th data-field="qty" data-halign="right" data-align="right">Qty</th>
-												<th data-field="amount_" data-halign="right" data-align="right">Amount</th>
-											</tr>
-											</thead>
-										</table>
-										<table class="table table-striped">
-											<tbody>
-											<tr>
-												<td colspan="3" align="left">Total Food</td>
-												<td align="right" id="order-tot-food">401,693</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Discount Food</td>
-												<td align="right" id="order-tot-discount">0</td>
-											</tr>
-
-											<tr>
-												<td colspan="3" align="left">Total Service Charge</td>
-												<td align="right" id="order-tot-service">6,169</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Total Tax</td>
-												<td align="right" id="order-tot-tax">6,786</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Grand Total</td>
-												<td align="right" id="order-tot-sum">414,649</td>
-											</tr>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-12">
-								<div class="box box-primary">
-									<div class="box-header">
-										<code>Order Control</code>
-									</div>
-									<div class="box-body text-center" style="padding-left: 0;">
-										<a class="btn btn-app bg-red" data-toggle="modal" href="#myModalVoid">
-											<i class="fa fa-times"></i>
-											Void Menu
-										</a>
-										<a class="btn btn-app bg-yellow"
-										   data-toggle="modal" href="#myModalPrint"
-										   xhref="http://localhost:8888/media-pos-php/main/print_kitchen/95"
-										>
-											<i class="fa fa-print"></i>
-											Print Order
-										</a>
-										<a class="btn btn-app bg-green">
-											<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
-											Open Menu
-										</a>
-										<a class="btn btn-app bg-yellow" data-toggle="modal" href="#myModalAddNotes">
-											<i class="fa fa-edit"></i>
-											Note
-										</a>
-									</div>
-								</div>
-							</div>
 							<div class="col-md-12">
 								<div class="box box-danger">
 									<div class="box-header">
@@ -249,6 +94,80 @@
 										   href="http://localhost:8888/media-pos-php/main/open_cash/95">
 											<i class="fa fa-th-large"></i>
 											Cash draw
+										</a>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="box box-success">
+									<div class="box-body" style="padding-top: 0;">
+										<table id="order-menu" data-classes="table table-striped table-no-bordered"
+											   data-toggle="table" data-height="300" zzdata-row-style="rowStyle">
+											<thead>
+											<tr>
+												<th data-field="no" data-halign="left" data-align="right">No</th>
+												<th data-field="name" style="width:180px">Menu</th>
+												<th data-field="qty" data-halign="right" data-align="right">Qty</th>
+												<th data-field="amount_" data-halign="right" data-align="right">Amount</th>
+											</tr>
+											</thead>
+										</table>
+										<table class="table table-striped">
+											<tbody>
+											<tr>
+												<td colspan="3" align="left">Total Food</td>
+												<td align="right" id="order-tot-food">?</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Discount Food</td>
+												<td align="right" id="order-tot-discount">?</td>
+											</tr>
+
+											<tr>
+												<td colspan="3" align="left">Total Service Charge</td>
+												<td align="right" id="order-tot-service">?</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Total Tax</td>
+												<td align="right" id="order-tot-tax">?</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Grand Total</td>
+												<td align="right" id="order-tot-sum">?</td>
+											</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="box box-primary">
+									<div class="box-header">
+										<code>Order Control</code>
+									</div>
+									<div class="box-body text-center" style="padding-left: 0;">
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#myModalSave">
+											<i class="fa fa-save"></i>
+											Save
+										</a>
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#myModalAddNotes">
+											<i class="fa fa-edit"></i>
+											Note
+										</a>
+										<a class="btn btn-app bg-grey"
+										   data-toggle="modal" href="#myModalPrint"
+										   xhref="http://localhost:8888/media-pos-php/main/print_kitchen/95"
+										>
+											<i class="fa fa-print"></i>
+											Print Order
+										</a>
+										<a class="btn btn-app bg-blue">
+											<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
+											Open Menu
+										</a>
+										<a class="btn btn-app bg-red" data-toggle="modal" href="#myModalVoid">
+											<i class="fa fa-times"></i>
+											Void Menu
 										</a>
 									</div>
 								</div>
