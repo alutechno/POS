@@ -15,787 +15,170 @@
 			<section class="content">
 				<div class="row">
 					<div class="col-md-8">
-						<div class="nav-tabs-custom">
-							<div class="tab-content">
-								<div class="tab-pane active" id="tab_1">
-									<table>
-										<tr>
-											<th>Order Number/Table
-											</th>
-											<th>:</th>
-											<th>
-												CHK-29 /1
-											</th>
-											<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-											<th>Meal Time</th>
-											<th>:</th>
-											<th>Supper</th>
-										</tr>
-										<tr>
-											<th colspan="3">&nbsp;</th>
-										</tr>
-									</table>
-									<!-- Main content -->
-									<form action=" http://localhost:8888/media-pos-php/main/reload_pesan" name="myform"
-										  id="myform" method="post">
-										<section class="content">
-											<!--
-											<div class="input-group input-group-sm">
-												<input type="text" name="cari" id="cari" class="form-control" placeholder="Search menu">
-												<span class="input-group-btn">
-													<button class="btn btn-info btn-flat" type="button">Go!</button>
-												</span>
-											</div>
-											-->
-											<div class="form-group row">
-												<div class="col-xs-3">
-													<!-- <label for="ex2">Menu Class</label>-->
-													<select class="form-control" name="select_menu" id="select_menu"
-															onchange="load()">
-														<option value="">All</option>
-														<option
-																value="1" >Food</option>
-														<option
-																value="2" >Beverage</option>
-														<option
-																value="3" >Cigarette</option>
-														<option
-																value="4" >Others</option>
-														<option
-																value="5" >Setmenu/Combo</option>
-														<option
-																value="6" >Promo Food</option>
-														<option
-																value="7" >Promo Beverage</option>
-														<option
-																value="8" >Buffet</option>
-													</select>
-												</div>
-												<div class="col-xs-3">
-													<!-- <label for="ex2">Menu Class</label>-->
-													<select class="form-control" name="select_sub_menu"
-															id="select_sub_menu"
-															onchange="load_sub()">
-														<option value="">All</option>
-													</select>
-												</div>
-												<div class="col-xs-3">
-													<input class="form-control" type="text" name="search_food"
-														   placeholder="search menu..." id="search_food"
-														   value=""/>
-												</div>
-												<!-- 								<div class="col-xs-3">
-																					<button class="btn btn-info btn-flat" type="submit">Search</button>
-																				</div> -->
-												<!--<div class="col-xs-4">
-													<label for="ex3">&nbsp;</label><br/>
-													<button class="btn btn-info btn-flat" type="submit">Search !</button>
-												  </div>-->
-											</div>
-											<!-- /input-group -->
-										</section>
-									</form>
-									<section class="content">
+						<div class="row">
+							<div class="col-md-12">
+								<div class="box box-info">
+									<div class="box-body">
 										<div class="row">
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/93/85000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Bebek Goreng Sambal</center>
-														85,000											</a>
-												</div>
-
+											<div id="orders" class="col-md-9" style="border-right:1px solid rgba(128, 128, 128, 0.26);">
+												<code style="margin-right: 5px">Order Number / Table</code>
+												<label class="badge btn-primary" style="font-weight: lighter">CHK-39 / 12</label>
+												<label class="badge btn-primary" style="font-weight: lighter">CHK-12 / 4</label>
 											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/94/41322.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Roti Bakar</center>
-														41,322											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/95/53719.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Bubur Ayam</center>
-														53,719											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/96/144628.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Sop Buntut</center>
-														144,628											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/97/51652.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Nasi Rames Deli</center>
-														51,652											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/98/51652.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Mie Ayam Jamur Speci</center>
-														51,652											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/99/41322.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Rujak (V)</center>
-														41,322											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/100/51653.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Sandwiches</center>
-														51,653											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/101/41322.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Fresh Fruit Platter</center>
-														41,322											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/102/65000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Pollo Relleno</center>
-														65,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/103/75000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Calamare Ala Romana</center>
-														75,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/104/75000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Gambas Al Pil Pil</center>
-														75,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/105/65000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Jalapeno Relleno</center>
-														65,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/106/65000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Crispy Vegetable Spr</center>
-														65,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/107/65000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Barbeque Chicken Win</center>
-														65,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/108/82000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Tex Mex Nachos</center>
-														82,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/109/52000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Crispy Fried Potato </center>
-														52,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/110/72000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Chicken Twister</center>
-														72,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/111/112000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Triple Decker Sandwi</center>
-														112,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/112/120000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Fish and Chip</center>
-														120,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/113/20000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Mineral Water</center>
-														20,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/114/37500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Coke</center>
-														37,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/115/37500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Sprite</center>
-														37,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/116/37500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Soda Water</center>
-														37,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/117/37500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Tonic Water</center>
-														37,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/118/37500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Ginger Ale</center>
-														37,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/119/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Orange Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/120/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Apple Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/121/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Melon Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/122/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Water Melon Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/123/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Papaya Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/124/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Star Fruit Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/125/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Carrot Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/126/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Tomato Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/127/62500.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Lime Juice</center>
-														62,500											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/128/56250.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Lime Squash</center>
-														56,250											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/129/56250.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Orange Squash</center>
-														56,250											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/130/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Jasmine Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/131/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  English Breakfast Te</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/132/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Earl Grey Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/133/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Camomile Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/134/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Peppermint Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/135/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Ice Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/136/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Ice Lemon Tea</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/137/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Regular Coffee</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/138/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Cappuccino</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/139/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Cafe Latte</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/140/50000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Espresso</center>
-														50,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/141/60000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Double Espresso</center>
-														60,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/142/75000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Bintang</center>
-														75,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/143/82000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Heinneken</center>
-														82,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/144/82000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Guinness Stout</center>
-														82,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/145/300000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Bintang Beer by Pitc</center>
-														300,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/163/123.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  asd</center>
-														123											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/164/45000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Nasi Goreng</center>
-														45,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/165/62000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Empal Gentong</center>
-														62,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/166/35000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Soto Ayam</center>
-														35,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/167/6000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Surabi</center>
-														6,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/168/25000.00/2/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  Black Coffee</center>
-														25,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/169/10000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  test</center>
-														10,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/170/35000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  nasi ketan</center>
-														35,000											</a>
-												</div>
-
-											</div>
-											<div class="col-lg-3 col-xs-6">
-												<div class="small-box bg-aqua">
-													<a href="http://localhost:8888/media-pos-php/main/inputpesan/171/10000.00/1/95"
-													   class="small-box-footer">&nbsp;<center><img
-																	src="http://localhost:8888/media-pos-php/menu/no_image.svg"
-																	width="130" height="80"></center>
-														<center>  tttt</center>
-														10,000											</a>
-												</div>
-
+											<div class="col-md-3">
+												<code style="margin-right: 5px">Meal Time</code>
+												<label class="badge btn-info" style="font-weight: lighter">Supper</label>
 											</div>
 										</div>
-									</section>
-								</div><!-- /.tab-pane -->
-							</div><!-- /.tab-content -->
+									</div>
+								</div>
+							</div>
+							<div class="col-md-12">
+								<div class="box box-default">
+									<div class="box-header">
+										<div class="form-group row" style="margin-bottom: 0">
+											<div class="col-sm-4">
+												<label for="#select-class">Menu Class</label>
+												<select class="form-control" name="select_menu" id="select-class" onchange="load()">
+													<option value="">All</option>
+													<option value="1">Food</option>
+													<option value="2">Beverage</option>
+													<option value="3">Cigarette</option>
+													<option value="4">Others</option>
+													<option value="5">Setmenu/Combo</option>
+													<option value="6">Promo Food</option>
+													<option value="7">Promo Beverage</option>
+													<option value="8">Buffet</option>
+												</select>
+											</div>
+											<div class="col-sm-4">
+												<label for="ex2">Sub Class</label>
+												<select class="form-control" name="select_sub_menu" id="select-sub-class">
+													<option value="">All</option>
+												</select>
+											</div>
+											<div class="col-sm-4">
+												<label for="ex2">Find</label>
+												<input class="form-control" type="text" name="search_food" placeholder="Search" id="search-menu"/>
+											</div>
+										</div>
+									</div>
+									<hr style="margin: 5px 10px;">
+									<div class="box-body" style="padding-bottom: 0;">
+										<div class="row">
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-3 col-sm-4 col-xs-6">
+												<div class="small-box">
+													<div class="small-box-footer menu">
+														<div class="menu-bg"></div>
+														<div class="menu-info text-center">
+															<div class="menu-info-name">Bebek Goreng Sambal</div>
+															<div class="menu-info-price">85,000</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 					<div class="col-md-4">
 						<div class="row">
 							<div class="col-md-12">
 								<div class="box box-success">
-									<div class="box-header">
-										<code>Orders</code>
-									</div>
-									<div class="box-body">
-										<iframe width="100%" scrolling="yes" frameBorder="0" height="375"
-												src="http://localhost:8888/media-pos-php/main/get_total/95"
-												allowfullscreen></iframe>
+									<div class="box-body" style="padding-top: 0;">
+										<table id="order-menus" data-classes="table table-striped table-no-bordered"
+											   data-toggle="table" data-height="300" zzdata-row-style="rowStyle">
+											<thead>
+											<tr>
+												<th data-field="no" data-halign="left" data-align="right">No</th>
+												<th data-field="name" style="width:180px">Menu</th>
+												<th data-field="qty" data-halign="right" data-align="right">Qty</th>
+												<th data-field="amount_" data-halign="right" data-align="right">Amount</th>
+											</tr>
+											</thead>
+										</table>
+										<table class="table table-striped">
+											<tbody>
+											<tr>
+												<td colspan="3" align="left">Total Food</td>
+												<td align="right" id="order-tot-food">401,693</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Discount Food</td>
+												<td align="right" id="order-tot-discount">0</td>
+											</tr>
+
+											<tr>
+												<td colspan="3" align="left">Total Service Charge</td>
+												<td align="right" id="order-tot-service">6,169</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Total Tax</td>
+												<td align="right" id="order-tot-tax">6,786</td>
+											</tr>
+											<tr>
+												<td colspan="3" align="left">Grand Total</td>
+												<td align="right" id="order-tot-sum">414,649</td>
+											</tr>
+											</tbody>
+										</table>
 									</div>
 								</div>
 							</div>
@@ -902,7 +285,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+							<label>&nbsp&nbspService Charge
+								<small>&nbsp&nbsp&nbsp10.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="25500">
@@ -911,7 +296,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+							<label>&nbsp&nbspTax
+								<small>&nbsp&nbsp&nbsp11.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="28050">
@@ -926,7 +313,8 @@
 							<label style="margin-right: 13px;" for="grandtot" val="36550">
 								36,550.00</label>
 						</div>
-					</div>					<div class="row">
+					</div>
+					<div class="row">
 						<div class="col-lg-6">
 							<label for="usr">Cash with</label>
 						</div>
@@ -982,7 +370,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+							<label>&nbsp&nbspService Charge
+								<small>&nbsp&nbsp&nbsp10.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="25500">
@@ -991,7 +381,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+							<label>&nbsp&nbspTax
+								<small>&nbsp&nbsp&nbsp11.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="28050">
@@ -1006,7 +398,8 @@
 							<label style="margin-right: 13px;" for="grandtot" val="36550">
 								36,550.00</label>
 						</div>
-					</div>					<hr/>
+					</div>
+					<hr/>
 					<div class="row">
 						<div class="col-lg-3">
 							<div class="form-group">
@@ -1025,58 +418,67 @@
 									<option>- Choose -</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[5] = {"id":"5","code":"BNID","name":"BNI Debit","description":"BNI Debit"};
+                                        CardMethod[5] = {"id": "5", "code": "BNID", "name": "BNI Debit", "description": "BNI Debit"};
 									</script>
 									<option value="5">
-										BNID - BNI Debit											</option>
+										BNID - BNI Debit
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[6] = {"id":"6","code":"BNIM","name":"BNI Master","description":"BNI Master"};
+                                        CardMethod[6] = {"id": "6", "code": "BNIM", "name": "BNI Master", "description": "BNI Master"};
 									</script>
 									<option value="6">
-										BNIM - BNI Master											</option>
+										BNIM - BNI Master
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[7] = {"id":"7","code":"BNIV","name":"BNI Visa","description":"BNI Visa"};
+                                        CardMethod[7] = {"id": "7", "code": "BNIV", "name": "BNI Visa", "description": "BNI Visa"};
 									</script>
 									<option value="7">
-										BNIV - BNI Visa											</option>
+										BNIV - BNI Visa
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[8] = {"id":"8","code":"MAND","name":"Mandiri Debit","description":"Mandiri Debit"};
+                                        CardMethod[8] = {"id": "8", "code": "MAND", "name": "Mandiri Debit", "description": "Mandiri Debit"};
 									</script>
 									<option value="8">
-										MAND - Mandiri Debit											</option>
+										MAND - Mandiri Debit
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[9] = {"id":"9","code":"MANV","name":"Mandiri Visa","description":"Mandiri Visa"};
+                                        CardMethod[9] = {"id": "9", "code": "MANV", "name": "Mandiri Visa", "description": "Mandiri Visa"};
 									</script>
 									<option value="9">
-										MANV - Mandiri Visa											</option>
+										MANV - Mandiri Visa
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[10] = {"id":"10","code":"MANM","name":"Mandiri Master","description":"Mandiri Master"};
+                                        CardMethod[10] = {"id": "10", "code": "MANM", "name": "Mandiri Master", "description": "Mandiri Master"};
 									</script>
 									<option value="10">
-										MANM - Mandiri Master											</option>
+										MANM - Mandiri Master
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[13] = {"id":"13","code":"BCAD","name":"BCA Debit","description":"BCA Debit"};
+                                        CardMethod[13] = {"id": "13", "code": "BCAD", "name": "BCA Debit", "description": "BCA Debit"};
 									</script>
 									<option value="13">
-										BCAD - BCA Debit											</option>
+										BCAD - BCA Debit
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[14] = {"id":"14","code":"BCAM","name":"BCA Master","description":"BCA Master"};
+                                        CardMethod[14] = {"id": "14", "code": "BCAM", "name": "BCA Master", "description": "BCA Master"};
 									</script>
 									<option value="14">
-										BCAM - BCA Master											</option>
+										BCAM - BCA Master
+									</option>
 									<script>
                                         window.CardMethod = window.CardMethod || {};
-                                        CardMethod[15] = {"id":"15","code":"BCAV","name":"BCA Visa","description":"BCA Visa"};
+                                        CardMethod[15] = {"id": "15", "code": "BCAV", "name": "BCA Visa", "description": "BCA Visa"};
 									</script>
 									<option value="15">
-										BCAV - BCA Visa											</option>
+										BCAV - BCA Visa
+									</option>
 								</select>
 							</div>
 						</div>
@@ -1139,7 +541,8 @@
 							<label style="margin-right: 13px;" for="grantotal-merge-me" val="36550">
 								36,550.00</label>
 						</div>
-					</div>					<br/>
+					</div>
+					<br/>
 					<div class="row">
 						<style>
 							.state-icon {
@@ -1154,16 +557,55 @@
 						<div class="col-lg-12">
 							<div style="max-height: 500px;overflow: auto;">
 								<ul id="check-list-box" class="list-group checked-list-box">
-									<li id="merge-w-103" class="list-group-item" data-color="info">Table #3<span class='badge badge-default badge-pill'>0.00</span></li><script>
+									<li id="merge-w-103" class="list-group-item" data-color="info">Table #3<span
+												class='badge badge-default badge-pill'>0.00</span></li>
+									<script>
                                         window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-103'] = {"id":"3","table_no":"3","cover":"4","order_id":"103","guest":"1","sub_total_amount":"0.00","discount_total_amount":"0.00","tax_total_amount":"0.00","due_amount":"0.00"}
-									</script><li id="merge-w-101" class="list-group-item" data-color="info">Table #5<span class='badge badge-default badge-pill'>0.00</span></li><script>
+                                        mergeWith['merge-w-103'] = {
+                                            "id": "3",
+                                            "table_no": "3",
+                                            "cover": "4",
+                                            "order_id": "103",
+                                            "guest": "1",
+                                            "sub_total_amount": "0.00",
+                                            "discount_total_amount": "0.00",
+                                            "tax_total_amount": "0.00",
+                                            "due_amount": "0.00"
+                                        }
+									</script>
+									<li id="merge-w-101" class="list-group-item" data-color="info">Table #5<span
+												class='badge badge-default badge-pill'>0.00</span></li>
+									<script>
                                         window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-101'] = {"id":"5","table_no":"5","cover":"8","order_id":"101","guest":"1","sub_total_amount":"0.00","discount_total_amount":"0.00","tax_total_amount":"0.00","due_amount":"0.00"}
-									</script><li id="merge-w-99" class="list-group-item" data-color="info">Table #6<span class='badge badge-default badge-pill'>-19,779.87</span></li><script>
+                                        mergeWith['merge-w-101'] = {
+                                            "id": "5",
+                                            "table_no": "5",
+                                            "cover": "8",
+                                            "order_id": "101",
+                                            "guest": "1",
+                                            "sub_total_amount": "0.00",
+                                            "discount_total_amount": "0.00",
+                                            "tax_total_amount": "0.00",
+                                            "due_amount": "0.00"
+                                        }
+									</script>
+									<li id="merge-w-99" class="list-group-item" data-color="info">Table #6<span
+												class='badge badge-default badge-pill'>-19,779.87</span></li>
+									<script>
                                         window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-99'] = {"id":"6","table_no":"6","cover":"2","order_id":"99","guest":"1","sub_total_amount":"-16347.00","discount_total_amount":"0.00","tax_total_amount":"-3432.87","due_amount":"-19779.87"}
-									</script>								</ul>
+                                        mergeWith['merge-w-99'] = {
+                                            "id": "6",
+                                            "table_no": "6",
+                                            "cover": "2",
+                                            "order_id": "99",
+                                            "guest": "1",
+                                            "sub_total_amount": "-16347.00",
+                                            "discount_total_amount": "0.00",
+                                            "tax_total_amount": "-3432.87",
+                                            "due_amount": "-19779.87"
+                                        }
+									</script>
+								</ul>
 							</div>
 						</div>
 					</div>
@@ -1231,99 +673,141 @@
 							<td>
 								<select class="form-control" name="meal_time_id" id="meal_time_id">
 									<option
-											value="1" >Breakfast</option>
+											value="1">Breakfast
+									</option>
 									<option
-											value="2" >Lunch</option>
+											value="2">Lunch
+									</option>
 									<option
-											value="3" >Dinners</option>
+											value="3">Dinners
+									</option>
 									<option
-											value="4" selected>Supper</option>
+											value="4" selected>Supper
+									</option>
 									<option
-											value="5" >All Time</option>
+											value="5">All Time
+									</option>
 								</select>
 							</td>
 							<td>
 								<select class="form-control" name="menu_class_id"
 										id="menu_class_id">
 									<option
-											value="1" >Food</option>
+											value="1">Food
+									</option>
 									<option
-											value="2" >Beverage</option>
+											value="2">Beverage
+									</option>
 									<option
-											value="3" >Cigarette</option>
+											value="3">Cigarette
+									</option>
 									<option
-											value="4" >Others</option>
+											value="4">Others
+									</option>
 									<option
-											value="5" >Setmenu/Combo</option>
+											value="5">Setmenu/Combo
+									</option>
 									<option
-											value="6" >Promo Food</option>
+											value="6">Promo Food
+									</option>
 									<option
-											value="7" >Promo Beverage</option>
+											value="7">Promo Beverage
+									</option>
 									<option
-											value="8" >Buffet</option>
+											value="8">Buffet
+									</option>
 								</select>
 							</td>
 							<td>
 								<select class="form-control" name="menu_group_id"
 										id="menu_group_id">
 									<option
-											value="1" >Breakfast Menu</option>
+											value="1">Breakfast Menu
+									</option>
 									<option
-											value="2" >Appetizers</option>
+											value="2">Appetizers
+									</option>
 									<option
-											value="3" >Soups</option>
+											value="3">Soups
+									</option>
 									<option
-											value="4" >Main Course</option>
+											value="4">Main Course
+									</option>
 									<option
-											value="5" >Snacks & Sandwiches</option>
+											value="5">Snacks & Sandwiches
+									</option>
 									<option
-											value="6" >Western Dishes</option>
+											value="6">Western Dishes
+									</option>
 									<option
-											value="7" >Indonesian & Asian</option>
+											value="7">Indonesian & Asian
+									</option>
 									<option
-											value="8" >Noddles</option>
+											value="8">Noddles
+									</option>
 									<option
-											value="9" >Pastas</option>
+											value="9">Pastas
+									</option>
 									<option
-											value="10" >Dessert</option>
+											value="10">Dessert
+									</option>
 									<option
-											value="11" >Special Promotion</option>
+											value="11">Special Promotion
+									</option>
 									<option
-											value="12" >Side Orders</option>
+											value="12">Side Orders
+									</option>
 									<option
-											value="13" >Selection Lunch & Dinner</option>
+											value="13">Selection Lunch & Dinner
+									</option>
 									<option
-											value="14" >Local Food</option>
+											value="14">Local Food
+									</option>
 									<option
-											value="15" >Bakery & Pastries</option>
+											value="15">Bakery & Pastries
+									</option>
 									<option
-											value="16" >Buffet</option>
+											value="16">Buffet
+									</option>
 									<option
-											value="17" >Open Food</option>
+											value="17">Open Food
+									</option>
 									<option
-											value="18" >Food Testing</option>
+											value="18">Food Testing
+									</option>
 									<option
-											value="19" >Juice - Food</option>
+											value="19">Juice - Food
+									</option>
 									<option
-											value="20" >Tea & Tisanes - Food</option>
+											value="20">Tea & Tisanes - Food
+									</option>
 									<option
-											value="21" >Coffees - Food</option>
+											value="21">Coffees - Food
+									</option>
 									<option
-											value="22" >Milkshakes - Food</option>
+											value="22">Milkshakes - Food
+									</option>
 									<option
-											value="23" >Soft Drink</option>
+											value="23">Soft Drink
+									</option>
 									<option
-											value="24" >Mineral Water</option>
+											value="24">Mineral Water
+									</option>
 									<option
-											value="25" >Squash</option>
+											value="25">Squash
+									</option>
 									<option
-											value="26" >Beer</option>
+											value="26">Beer
+									</option>
 									<option
-											value="27" >Relaxing Massage</option>
+											value="27">Relaxing Massage
+									</option>
 									<option
-											value="28" >Spa Treatment</option>
+											value="28">Spa Treatment
+									</option>
 									<option
-											value="29" >Lobster</option>
+											value="29">Lobster
+									</option>
 								</select>
 							</td>
 							<td><input type="text" class="form-control" name="menu_name"
@@ -1367,7 +851,9 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-6">
-						<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+						<label>&nbsp&nbspService Charge
+							<small>&nbsp&nbsp&nbsp10.00%</small>
+						</label>
 					</div>
 					<div class="col-lg-6 text-right">
 						<label style="margin-right: 13px;" for="" val="25500">
@@ -1376,7 +862,9 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-6">
-						<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+						<label>&nbsp&nbspTax
+							<small>&nbsp&nbsp&nbsp11.00%</small>
+						</label>
 					</div>
 					<div class="col-lg-6 text-right">
 						<label style="margin-right: 13px;" for="" val="28050">
@@ -1391,7 +879,8 @@
 						<label style="margin-right: 13px;" for="grandtot" val="36550">
 							36,550.00</label>
 					</div>
-				</div>				<hr/>
+				</div>
+				<hr/>
 				<form id="subscribe-email-form"
 					  action="http://localhost:8888/media-pos-php/main/no_pos/95"
 					  method="post">
@@ -1458,7 +947,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+							<label>&nbsp&nbspService Charge
+								<small>&nbsp&nbsp&nbsp10.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="25500">
@@ -1467,7 +958,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+							<label>&nbsp&nbspTax
+								<small>&nbsp&nbsp&nbsp11.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="28050">
@@ -1482,7 +975,8 @@
 							<label style="margin-right: 13px;" for="grandtot" val="36550">
 								36,550.00</label>
 						</div>
-					</div>					<hr/>
+					</div>
+					<hr/>
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="form-group">
@@ -1493,21 +987,63 @@
 									<script>
                                         window.Charge2Room = window.Charge2Room || {};
                                         Charge2Room[6] =
-                                            {"folio_id":"6","reservation_type":"MICE","room_type":"CQ","room_type_name":"Classic Queen","room_no":"c1","room_rate_code":"a","room_rate_name":"asd","num_of_pax":"1","num_of_child":"0","cust_firt_name":"TestSatu","cust_last_name":"Satu","company":null,"cust_segment":null,"check_in_date":null,"departure_date":"2017-04-06","vip_type":"VIP 1","is_room_only":"N","is_cash_bases":"N","cahier_remarks":""};
+                                            {
+                                                "folio_id": "6",
+                                                "reservation_type": "MICE",
+                                                "room_type": "CQ",
+                                                "room_type_name": "Classic Queen",
+                                                "room_no": "c1",
+                                                "room_rate_code": "a",
+                                                "room_rate_name": "asd",
+                                                "num_of_pax": "1",
+                                                "num_of_child": "0",
+                                                "cust_firt_name": "TestSatu",
+                                                "cust_last_name": "Satu",
+                                                "company": null,
+                                                "cust_segment": null,
+                                                "check_in_date": null,
+                                                "departure_date": "2017-04-06",
+                                                "vip_type": "VIP 1",
+                                                "is_room_only": "N",
+                                                "is_cash_bases": "N",
+                                                "cahier_remarks": ""
+                                            };
 									</script>
 									<option value="6">
-										[CQ / c1												]
+										[CQ / c1 ]
 										&nbsp;
-										TestSatu Satu											</option>
+										TestSatu Satu
+									</option>
 									<script>
                                         window.Charge2Room = window.Charge2Room || {};
                                         Charge2Room[7] =
-                                            {"folio_id":"7","reservation_type":"Individual","room_type":"CQ","room_type_name":"Classic Queen","room_no":"1105","room_rate_code":"ADV14DAY","room_rate_name":"Advance Purchase","num_of_pax":"2","num_of_child":"0","cust_firt_name":"Dien","cust_last_name":"Ciet","company":null,"cust_segment":null,"check_in_date":"2017-06-04 21:01:32","departure_date":"2017-06-05","vip_type":null,"is_room_only":"N","is_cash_bases":"N","cahier_remarks":""};
+                                            {
+                                                "folio_id": "7",
+                                                "reservation_type": "Individual",
+                                                "room_type": "CQ",
+                                                "room_type_name": "Classic Queen",
+                                                "room_no": "1105",
+                                                "room_rate_code": "ADV14DAY",
+                                                "room_rate_name": "Advance Purchase",
+                                                "num_of_pax": "2",
+                                                "num_of_child": "0",
+                                                "cust_firt_name": "Dien",
+                                                "cust_last_name": "Ciet",
+                                                "company": null,
+                                                "cust_segment": null,
+                                                "check_in_date": "2017-06-04 21:01:32",
+                                                "departure_date": "2017-06-05",
+                                                "vip_type": null,
+                                                "is_room_only": "N",
+                                                "is_cash_bases": "N",
+                                                "cahier_remarks": ""
+                                            };
 									</script>
 									<option value="7">
-										[CQ / 1105												]
+										[CQ / 1105 ]
 										&nbsp;
-										Dien Ciet											</option>
+										Dien Ciet
+									</option>
 								</select>
 							</div>
 						</div>
@@ -1613,7 +1149,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+							<label>&nbsp&nbspService Charge
+								<small>&nbsp&nbsp&nbsp10.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="25500">
@@ -1622,7 +1160,9 @@
 					</div>
 					<div class="row">
 						<div class="col-lg-6">
-							<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+							<label>&nbsp&nbspTax
+								<small>&nbsp&nbsp&nbsp11.00%</small>
+							</label>
 						</div>
 						<div class="col-lg-6 text-right">
 							<label style="margin-right: 13px;" for="" val="28050">
@@ -1637,7 +1177,8 @@
 							<label style="margin-right: 13px;" for="grandtot" val="36550">
 								36,550.00</label>
 						</div>
-					</div>					<hr/>
+					</div>
+					<hr/>
 					<div class="row">
 						<div class="col-lg-6">
 							<div class="form-group">
@@ -1647,21 +1188,61 @@
 									<script>
                                         window.HouseUse = window.HouseUse || {};
                                         HouseUse[1] =
-                                            {"id":"1","code":"001","name":"Vudin","short_name":null,"description":null,"status":"1","pos_cost_center_id":"1","max_spent_monthly":"10000000.00","created_date":"2017-06-05 20:24:15","modified_date":null,"created_by":null,"modified_by":null,"current_transc_amount":null,"house_use":null,"house_use_id":"1","period":null,"cost_center":null,"pos_cost_center_name":"Owner"};
+                                            {
+                                                "id": "1",
+                                                "code": "001",
+                                                "name": "Vudin",
+                                                "short_name": null,
+                                                "description": null,
+                                                "status": "1",
+                                                "pos_cost_center_id": "1",
+                                                "max_spent_monthly": "10000000.00",
+                                                "created_date": "2017-06-05 20:24:15",
+                                                "modified_date": null,
+                                                "created_by": null,
+                                                "modified_by": null,
+                                                "current_transc_amount": null,
+                                                "house_use": null,
+                                                "house_use_id": "1",
+                                                "period": null,
+                                                "cost_center": null,
+                                                "pos_cost_center_name": "Owner"
+                                            };
 									</script>
 									<option value="1">
 										[001]
 										&nbsp;
-										Owner / Vudin											</option>
+										Owner / Vudin
+									</option>
 									<script>
                                         window.HouseUse = window.HouseUse || {};
                                         HouseUse[2] =
-                                            {"id":"2","code":"002","name":"Mail","short_name":null,"description":null,"status":"1","pos_cost_center_id":"2","max_spent_monthly":"1500000.00","created_date":"2017-06-05 20:47:51","modified_date":null,"created_by":null,"modified_by":null,"current_transc_amount":null,"house_use":null,"house_use_id":"2","period":null,"cost_center":null,"pos_cost_center_name":"General Manager"};
+                                            {
+                                                "id": "2",
+                                                "code": "002",
+                                                "name": "Mail",
+                                                "short_name": null,
+                                                "description": null,
+                                                "status": "1",
+                                                "pos_cost_center_id": "2",
+                                                "max_spent_monthly": "1500000.00",
+                                                "created_date": "2017-06-05 20:47:51",
+                                                "modified_date": null,
+                                                "created_by": null,
+                                                "modified_by": null,
+                                                "current_transc_amount": null,
+                                                "house_use": null,
+                                                "house_use_id": "2",
+                                                "period": null,
+                                                "cost_center": null,
+                                                "pos_cost_center_name": "General Manager"
+                                            };
 									</script>
 									<option value="2">
 										[002]
 										&nbsp;
-										General Manager / Mail											</option>
+										General Manager / Mail
+									</option>
 								</select>
 							</div>
 						</div>
@@ -1757,7 +1338,8 @@
 						<td> Bebek Goreng Sambal Penyet Khas Media</td>
 						<td> 4</td>
 						<td align="right">
-							340,000								</td>
+							340,000
+						</td>
 
 						<td align="center"><a
 									href="http://localhost:8888/media-pos-php/main/void_item/95/93/340000.00">
@@ -1797,7 +1379,9 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-6">
-						<label>&nbsp&nbspService Charge<small>&nbsp&nbsp&nbsp10.00% </small></label>
+						<label>&nbsp&nbspService Charge
+							<small>&nbsp&nbsp&nbsp10.00%</small>
+						</label>
 					</div>
 					<div class="col-lg-6 text-right">
 						<label style="margin-right: 13px;" for="" val="25500">
@@ -1806,7 +1390,9 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-6">
-						<label>&nbsp&nbspTax<small>&nbsp&nbsp&nbsp11.00% </small></label>
+						<label>&nbsp&nbspTax
+							<small>&nbsp&nbsp&nbsp11.00%</small>
+						</label>
 					</div>
 					<div class="col-lg-6 text-right">
 						<label style="margin-right: 13px;" for="" val="28050">
@@ -1830,7 +1416,8 @@
 						<label style="margin-right: 13px;" for="balance" val="36550">
 							36,550.00</label>
 					</div>
-				</div>				<hr/>
+				</div>
+				<hr/>
 				<div class="row" id="noState">
 					<div class="col-sm-12">
 						<div class="form-group row" style="margin-bottom:0px;">
@@ -1896,14 +1483,36 @@
 							</tr>
 							</thead>
 							<tbody>
-							<tr><td>1</td><td>Bebek Goreng Sambal Penyet Khas Media</td><td>\\DESKTOP-J7QH6TF\BEVE</td></tr><tr><td>1</td><td>Bebek Goreng Sambal Penyet Khas Media</td><td>\\DESKTOP-J7QH6TF\BEVE</td></tr><tr><td>1</td><td>Bebek Goreng Sambal Penyet Khas Media</td><td>\\DESKTOP-J7QH6TF\BEVE</td></tr><tr><td>1</td><td>Bebek Goreng Sambal Penyet Khas Media</td><td>\\DESKTOP-J7QH6TF\BEVE</td></tr>							</tbody>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							</tbody>
 						</table>
 					</div>
 				</div>
 				<div class="row" id="printContentManual">
 					<div class="col-sm-12">
 						<ul id="check-list-box" class="list-group checked-list-box">
-							<li id='printer-1' class='list-group-item' data-color='info' name='\\DESKTOP-J7QH6TF\BEVE' code='food'>&nbsp&nbsp&nbspFOOD <span class='badge badge-default badge-pill'>\\DESKTOP-J7QH6TF\BEVE</span></li>						</ul>
+							<li id='printer-1' class='list-group-item' data-color='info' name='\\DESKTOP-J7QH6TF\BEVE' code='food'>&nbsp&nbsp&nbspFOOD
+								<span class='badge badge-default badge-pill'>\\DESKTOP-J7QH6TF\BEVE</span></li>
+						</ul>
 					</div>
 				</div>
 			</div>
@@ -1926,5 +1535,55 @@
 	</div>
 </div>
 <% include part/body-js.ejs %>
+<script>
+    var $table = $('#paan');
+
+    $(function () {
+        $table.bootstrapTable('load', randomData());
+        setTimeout(function () {
+            $table.bootstrapTable('insertRow', {index: 1, row: {
+                id: '99',
+                name: 'test',
+                qty: 'test',
+                amount: '$aa'
+            }});
+        }, 3000)
+    });
+
+    function randomData() {
+        var startId = ~~(Math.random() * 100),
+            rows = [];
+
+        for (var i = 0; i < 10; i++) {
+            if (i % 2) {
+                rows.push({
+                    id: startId + i,
+                    name: 'test apaan coba deh' + (startId + i),
+                    qty: i,
+                    amount: '8,881,123.00'
+                });
+			} else {
+                rows.push({
+                    id: startId + i,
+                    name: 'test apaan coba deh' + (startId + i),
+                    qty: i,
+                    amount: startId * i
+                });
+			}
+        }
+        return rows;
+    }
+    function rowStyle(row, index) {
+        var classes = ['active', 'success', 'info', 'warning', 'danger'];
+
+        if (index % 2 === 0 && index / 2 < classes.length) {
+            return {
+                classes: classes[index / 2]
+            };
+        }
+        return {};
+    }
+</script>
+<script src="/js/order.js"></script>
 </body>
 </html>

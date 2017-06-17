@@ -59,3 +59,27 @@
     background-size: 60%;
     margin-left: -1px;
 }
+
+.menu {
+    background-color: transparent !important;
+    padding: 0 !important;
+}
+.menu-bg {
+    border: 2px solid rgba(60, 141, 188, 0.78);;
+    border-radius: 5px;
+    height: 128px;
+    background-image: url("http://localhost:8888/media-pos-php/menu/no_image.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    cursor: pointer;
+}
+.menu-info {
+    position:absolute;
+    width:100%;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px;
+    color: white;
+    border-radius: 0px 0px 5px 5px;
+}
