@@ -16,9 +16,21 @@
         var s = $('input[type="currency"]');
         s.keyboard({layout: 'num'});
         s.css('text-align', 'end');
+        s.on('focus', function(){
+            let v = $(this).val();
+            if (!v || v == "0.00") {
+                $(this).val('')
+			} else {
+                $(this).val(
+                    parseFloat(v.replace(/\,/g, ""))
+                	.toFixed(0).toString()
+                	.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+				)
+			}
+		})
         s.on('change', function () {
             var el = $(this);
-            var val = el.val();
+            var val = el.val() || "0";
             el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
             el.data('display',
                 parseFloat(val.replace(/\,/g, ""))
