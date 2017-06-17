@@ -1,7 +1,4 @@
-var trim = function (str) {
-    return str.replace(/\t\t+|\n\n+|\s\s+/g, ' ').trim()
-};
-var q = {
+let q = {
     table: `
         select * from (
             select

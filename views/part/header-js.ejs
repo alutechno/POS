@@ -16,9 +16,13 @@
             }
         }
     };
+    //
+    window.trim = function (str) {
+        return str.replace(/\t\t+|\n\n+|\s\s+/g, ' ').trim()
+    };
     window.App = <%- JSON.stringify(locals) %>;
-    ["LOGIN", "cache", "_locals", "settings", "LOGIN", "filename"].forEach(function(s){delete window.App[s]});
     window.SQL = function (query, params) {
+        query = trim(query);
         var a = $.ajax({
             method: 'POST',
             url: '/sql',
@@ -37,6 +41,7 @@
         });
         return a.responseJSON;
     };
+    ["LOGIN", "cache", "_locals", "settings", "LOGIN", "filename"].forEach(function(s){delete window.App[s]});
     //
 	App.mealTimeMenu = true;
     if (App.time) {
