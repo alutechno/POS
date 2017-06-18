@@ -66,18 +66,18 @@ const http = function (pool, compile) {
         next();
     });
     app.use(async function (req, res, next) {
+        let now = new Date();
         let myCookie = req.cookies[name];
         let error = new Error('Invalid cookie!');
         let pathname = req._parsedUrl.pathname, method = req.method;
         let isLoginPage = pathname === '/login' && method === 'GET';
         let isAuthing = pathname === '/auth' && method === 'POST';
         //
-        locals.time = new Date();
+        locals.time = now;
         delete locals.ERR;
         if (myCookie) {
             try {
                 myCookie = Crypt.de(myCookie);
-                let now = new Date();
                 let {id, time, outlet, posCashier} = JSON.parse(myCookie);
 
                 /* get user info */
@@ -108,19 +108,18 @@ const http = function (pool, compile) {
                 if (getExistShift.constructor === Error) throw getExistShift;
                 if (!getExistShift.length) throw new Error(`Session: Invalid working shift for "${username}"!`);
 
-                time += cookie.maxAge;
-
-                if (time < now.getTime()) throw error;
+                let maxTime = time + cookie.maxAge;
+                if (maxTime < now.getTime()) throw error;
                 if (isLoginPage || isAuthing) return res.redirect('/');
-                if (now.getMinutes() % 5 === 0) {
-                    /* extend session for every 5 minutes */
-                    let token = Crypt.en(JSON.stringify({id, time, outlet, posCashier}));
+                if (((now.getTime() - time) / 1000) > 10) {
+                    /* update session if diff == 10 second */
+                    let token = Crypt.en(JSON.stringify({id, time: now.getTime(), outlet, posCashier}));
                     let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
                     let updateUser = await compile(updateUserQuery, [token, id]);
                     if (updateUser.constructor === Error) throw updateUser;
 
                     getUser[0].token = token;
-                    cookie.expire = time;
+                    cookie.expire = maxTime;
                     res.cookie(name, token, cookie);
                 }
 
@@ -261,6 +260,7 @@ const http = function (pool, compile) {
             let getExistShift = await compile(getExistShiftQuery, [id, outlet]);
             if (getExistShift.constructor === Error) throw getExistShift;
             if (!getExistShift.length) {
+                //todo: uncomment
                 //let code = await compile(`SELECT CONCAT('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;`);
                 let now = await compile(`SELECT NOW() val;`);
                 let code = await compile(`SELECT CONCAT('PCS/', DATE_FORMAT(CURRENT_DATE, '%Y%m%d')) id;`);
@@ -300,7 +300,6 @@ const http = function (pool, compile) {
             locals.user = getUser[0];
             locals.outlet = getOutlet[0];
             locals.posCashier = getExistShift[0];
-
             cookie.expire = time + cookie.maxAge;
             res.cookie(name, token, cookie);
             res.redirect('/');
