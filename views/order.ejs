@@ -20,11 +20,8 @@
 								<div class="box box-info">
 									<div class="box-header">
 										<div class="row">
-											<div id="order" class="col-md-9" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
-											<div class="col-md-3">
-												<code style="margin-right: 5px">Meal Time</code>
-												<label class="badge btn-info" style="font-weight: lighter" id="meal-time"></label>
-											</div>
+											<div id="order" class="col-md-7" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
+											<div id="meal-time" class="col-md-5"></div>
 										</div>
 										<hr style="margin-top: 10px;">
 										<div class="form-group row" style="margin-bottom: 0">
@@ -102,13 +99,13 @@
 								<div class="box box-success">
 									<div class="box-body" style="padding-top: 0;">
 										<table id="order-menu" data-classes="table table-striped table-no-bordered"
-											   data-toggle="table" data-height="300" zzdata-row-style="rowStyle">
+											   data-toggle="table" data-height="300" xdata-row-style="rowStyle">
 											<thead>
 											<tr>
 												<th data-field="no" data-halign="left" data-align="right">No</th>
 												<th data-field="name" style="width:180px">Menu</th>
-												<th data-field="qty" data-halign="right" data-align="right">Qty</th>
-												<th data-field="amount_" data-halign="right" data-align="right">Amount</th>
+												<th data-field="order_qty" data-halign="right" data-align="right">Qty</th>
+												<th data-field="price_amount_" data-halign="right" data-align="right">Amount</th>
 											</tr>
 											</thead>
 										</table>
@@ -1455,43 +1452,6 @@
 </div>
 <% include part/body-js.ejs %>
 <script>
-    var $table = $('#paan');
-
-    $(function () {
-        $table.bootstrapTable('load', randomData());
-        setTimeout(function () {
-            $table.bootstrapTable('insertRow', {index: 1, row: {
-                id: '99',
-                name: 'test',
-                qty: 'test',
-                amount: '$aa'
-            }});
-        }, 3000)
-    });
-
-    function randomData() {
-        var startId = ~~(Math.random() * 100),
-            rows = [];
-
-        for (var i = 0; i < 10; i++) {
-            if (i % 2) {
-                rows.push({
-                    id: startId + i,
-                    name: 'test apaan coba deh' + (startId + i),
-                    qty: i,
-                    amount: '8,881,123.00'
-                });
-			} else {
-                rows.push({
-                    id: startId + i,
-                    name: 'test apaan coba deh' + (startId + i),
-                    qty: i,
-                    amount: startId * i
-                });
-			}
-        }
-        return rows;
-    }
     function rowStyle(row, index) {
         var classes = ['active', 'success', 'info', 'warning', 'danger'];
 

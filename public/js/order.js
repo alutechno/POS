@@ -3,7 +3,7 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
     El = {
         menu: $('div#menu'),
         order: $('div#order'),
-        mealTime: $('label#meal-time'),
+        mealTime: $('div#meal-time'),
         menuClass: $('select#menu-class'),
         menuSubClass: $('select#menu-sub-class'),
         menuFinder: $('input#menu-finder'),
@@ -19,11 +19,18 @@ let rupiahJS = function (val) {
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 };
 let loadMealTime = function () {
-    let mealTime = SQL(`select * from ref_meal_time where now() BETWEEN start_time and end_time limit 1`);
+    let mealTime = SQL(`select * from ref_meal_time where DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time`);
     MealTime = {};
+    El.mealTime.html('<code style="margin-right: 5px">Meal Time</code>');
     if (!mealTime.error) {
-        MealTime = mealTime.data[0];
-        El.mealTime.html(MealTime.name)
+        mealTime.data.forEach(function(e){
+            MealTime[e.id] = e
+            El.mealTime.append(`
+                <label class="badge btn-info" style="font-weight: lighter">
+                    ${e.name}
+                </label>
+            `)
+        })
     }
 };
 let loadClass = function () {
@@ -82,7 +89,7 @@ let loadSubClass = function (filter) {
 };
 let loadMenu = function (filter) {
     if (!filter) {
-        let query = App.mealTimeMenu ? ` and meal_time_id=${App.mealTimeMenu}` : ''
+        let query = App.mealTimeMenu ? ` and meal_time_id in (${Object.keys(MealTime).join()})` : ''
         let menu = SQL(`select * from inv_outlet_menus where status = 1 and outlet_id=${App.outlet.id} ${query} order by name`);
         Menu = [];
         if (!menu.error) {
@@ -110,8 +117,8 @@ let loadMenu = function (filter) {
                 return e;
             });
             El.menu.find('.menu-bg').height(El.menu.find('.menu-bg').parent().width());
-            El.menu.find('.menu-item').on('click', function(){
-                console.log($(this).data())
+            El.menu.find('.menu-item').on('click', function () {
+                addOrderMenu($(this).data())
             });
         }
     } else {
@@ -129,7 +136,6 @@ let loadMenu = function (filter) {
         El.menu.find(selector).show();
     }
 };
-
 let loadOrder = function () {
     let order = SQL(`
         select a.id, a.code,b.table_no from pos_orders a,mst_pos_tables b
@@ -153,41 +159,119 @@ let loadOrder = function () {
 let loadOrderMenu = function () {
     let orderMenu = SQL(`
         select
-            a.menu_id, sum(a.amount) as amount, a.order_no, sum(a.qty) as qty,
-            a.id, sum(a.tax) tax, sum(a.service) service, b.name, 
-            @rownum := @rownum + 1 as no, format(sum(a.amount),2) as amount_
-        from pos_outlet_order_detil a
-        join inv_outlet_menus b on b.id = a.menu_id
+            @rownum := @rownum + 1 as no,
+            a.outlet_menu_id, sum(a.price_amount) price_amount, a.order_id, 
+            sum(a.order_qty) as order_qty, a.id, b.name, format(sum(a.price_amount),2) as price_amount_
+        from pos_orders_line_item a
+        join inv_outlet_menus b on b.id = a.outlet_menu_id
         cross join (select @rownum := 0) r
-        where order_no in (${
-            Object.keys(Order).map(function (i) {
-                return `'${Order[i].code}'`
-            }).join()
-        })
-        group by order_no, menu_id
+        where order_id in (${Object.keys(Order).join()})
+        group by order_id, outlet_menu_id
         order by no
     `);
-
     OrderMenu = [];
     if (!orderMenu.error) {
-        let tax = 0, amount = 0, discount = 0, service = 0;
-
-        OrderMenu = orderMenu.data.map(function (e) {
-            e.amount_ = rupiahJS(e.amount);
-            amount += e.amount;
-            service += e.service;
-            tax += e.tax;
-            return e
-        });
-
-        El.orderTotFood.html(rupiahJS(amount));
-        El.orderTotDiscount.html(rupiahJS(discount));
-        El.orderTotService.html(rupiahJS(service));
-        El.orderTotTax.html(rupiahJS(tax));
-        El.orderTotSum.html(rupiahJS(amount + tax - discount + service));
+        OrderMenu = orderMenu.data;
     }
     El.orderMenu.bootstrapTable('load', OrderMenu);
 
+};
+let loadOrderSummary = function () {
+    //El.orderTotFood.html(rupiahJS(amount));
+    //El.orderTotDiscount.html(rupiahJS(discount));
+    //El.orderTotService.html(rupiahJS(service));
+    //El.orderTotTax.html(rupiahJS(tax));
+    //El.orderTotSum.html(rupiahJS(amount + tax - discount + service));
+}
+let addOrderMenu = function (data) {
+    console.log(data)
+    let {id, menu_price, menu_class_id, outlet_id} = data;
+    let qty = 1, totalDiscount = 0, nettPrice = menu_price;
+    let order = Order[Object.keys(Order)[0]];
+    let newLineItem = {
+        order_id: order.id,
+        menu_class_id: menu_class_id,
+        outlet_menu_id: id,
+        serving_status: 0,
+        order_qty: qty,
+        price_amount: menu_price,
+        total_amount: qty * menu_price,
+        created_by: App.user.id
+    }
+    let lineItem = SQL('insert into pos_orders_line_item set ?', newLineItem);
+    //todo: if lineItem.error
+    let lineItemId = lineItem.data.insertId;
+
+    let day = SQL('select LOWER(DAYNAME(NOW())) a');
+    //todo: if day.error
+
+    let promos = SQL(`select * from pos_menus_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
+    //todo: if promo.error
+    promos.data.forEach(function (promo) {
+        let discount = 0;
+        if (promo.discount_amount > 0) {
+            discount = promo.discount_amount
+        } else {
+            discount = menu_price / 100 * promo.discount_percent;
+        }
+        totalDiscount += discount;
+
+        let newPatchDiscount = {
+            order_line_item_id: lineItemId,
+            menu_class_id: menu_class_id,
+            outlet_menu_id: id,
+            promo_id: promo.id,
+            discount_amount: discount,
+            created_by: App.user.id
+        }
+
+        let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
+        //todo: if patchDiscount.error
+    })
+
+    let outletTaxes = SQL('select is_tax_included e from inv_outlet_menus where id = ?', id);
+    //todo: if outletTaxes.error
+    if (outletTaxes.data[0].e == 'N') {
+        let orderTaxes = SQL('select * from pos_order_taxes where order_id = ?', order.id);
+        nettPrice = menu_price - totalDiscount;
+        //todo: if orderTaxes.error
+        orderTaxes.data.forEach(function (orderTax) {
+            let taxAmount = orderTax.tax_amount + (nettPrice * orderTax.tax_percent / 100);
+            let updateOrderTaxes = SQL('update pos_order_taxes set tax_amount = ? where id = ?', [taxAmount, orderTax.id])
+            //todo: if updateOrderTaxes.error
+        });
+    }
+    //todo: ADDITIONAL TAX?
+    let taxes = SQL('select sum(tax_amount) tax from pos_order_taxes where order_id=?', order.id)
+    //todo: if taxes.error
+    let totalTaxes = taxes.data[0].tax;
+
+    let posOrder = SQL('select * from pos_orders where id = ?', order.id);
+    //todo: if posOrder.error
+    let {sub_total_amount, tax_total_amount, due_amount, discount_total_amount} = posOrder.data[0];
+    sub_total_amount += menu_price;
+    discount_total_amount += totalDiscount;
+    let updatePosOrder = SQL('update pos_orders set sub_total_amount=?, discount_total_amount=?, tax_total_amount=?, due_amount=? where id=?', [
+        sub_total_amount,
+        discount_total_amount,
+        totalTaxes,
+        sub_total_amount - discount_total_amount + totalTaxes,
+        order.id
+    ]);
+    El.orderMenu.bootstrapTable('insertRow', {
+        index: OrderMenu.length,
+        row: {
+            "menu_outlet_id": data.id,
+            "price_amount": menu_price,
+            "order_id": Object.keys(Order)[0],
+            "order_qty": qty,
+            "id": lineItemId,
+            "name": data.name,
+            "no": OrderMenu.length + 1,
+            "price_amount_": rupiahJS(menu_price)
+        }
+    });
+    loadOrderSummary();
 };
 $(document).ready(function () {
     loadMealTime();
@@ -196,6 +280,7 @@ $(document).ready(function () {
     loadMenu();
     loadOrder();
     loadOrderMenu();
+    loadOrderSummary();
 
     El.menuFinder.on('blur', function () {
         loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
