@@ -1,34 +1,20 @@
-let q = {
-    table: `
-        select * from (
-            select
-                a.*, b.id as posId, b.num_of_cover guest
-            from mst_pos_tables a
-            left join pos_orders b
-            on a.id=b.table_id and b.status in (0,1)
-            where a.outlet_id=${App.outlet.id}
-            group by a.id order by b.id DESC
-        ) x order by table_no, id
-    `,
-    newOrder: `
-        select * from (
-            select
-                a.*, b.id as posId, b.num_of_cover guest
-            from mst_pos_tables a
-            left join pos_orders b
-            on a.id=b.table_id and b.status in (0,1)
-            where a.outlet_id=${App.outlet.id}
-            group by a.id order by b.id DESC
-        ) x order by table_no, id
-    `
-};
 $(document).ready(function () {
     let tableNo, tableId, numOfCover,
         userId = App.user.id,
         outletId = App.outlet.id,
         workingShiftId = App.outlet.working_shift_id,
         transBatchId = App.posCashier.id;
-    let {data} = SQL(q.table);
+    let {data} = SQL(`
+        select * from (
+            select
+                a.*, b.id as posId, b.num_of_cover guest
+            from mst_pos_tables a
+            left join pos_orders b
+            on a.id=b.table_id and b.status in (0,1)
+            where a.outlet_id=${App.outlet.id}
+            group by a.id order by b.id DESC
+        ) x order by table_no, id
+    `);
     let parent = $('#tables-container');
     let guestModal = $('#myModalGuest');
     data.forEach(function (d) {
