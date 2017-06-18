@@ -213,6 +213,7 @@ const http = function (pool, compile) {
                 SELECT id, name, description, status, start_time, DATE(stime), end_time, DATE(etime)
                 FROM (
                     SELECT 
+                        a.*,
                         TIMESTAMP(
                             date_add(
                                 DATE(@now),
@@ -235,9 +236,9 @@ const http = function (pool, compile) {
                                     END
                                 DAY
                             ), end_time
-                        ) etime,
-                        a.*
-                        FROM ref_pos_working_shift a
+                        ) etime
+                    FROM ref_pos_working_shift a
+                    WHERE a.status = 1
                 ) a
                 WHERE @now BETWEEN stime AND etime;
             `;
