@@ -308,6 +308,38 @@ const http = function (pool, compile) {
             res.redirect('/login');
         }
     });
+    app.get('/openCashDraw', async function (req, res, next) {
+        //todo: open cash draw script here..
+        if (1) {
+            res.send({
+                error: false,
+                data: 'Cash draw opened.'
+            })
+        } else {
+            res.send({
+                error: true,
+                data: 'Cannot opening cash draw!'
+            })
+        }
+    });
+    app.get('/printBill', async function (req, res, next) {
+        let {orderId, payment} = req.query;
+        //todo: generate pdf printed file here..
+        //todo: open cash draw script here..
+        if (1) {
+            res.send({
+                error: false,
+                message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
+                data : {orderId, payment}
+            })
+        } else {
+            res.send({
+                error: true,
+                message: 'Billing with ' + JSON.stringify({orderId, payment}) + ' cannot be printed',
+                data : {orderId, payment}
+            })
+        }
+    });
     /** **************************************************************************
      ** error handling : http request
      ** **************************************************************************/
