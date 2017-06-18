@@ -12,7 +12,8 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         orderTotDiscount: $('td#order-tot-discount'),
         orderTotService: $('td#order-tot-service'),
         orderTotTax: $('td#order-tot-tax'),
-        orderTotSum: $('td#order-tot-sum')
+        orderTotSum: $('td#order-tot-sum'),
+        myModalQty: $('div#myModalQty'),
     };
 let rupiahJS = function (val) {
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
@@ -118,7 +119,10 @@ let loadMenu = function (filter) {
             });
             El.menu.find('.menu-bg').height(El.menu.find('.menu-bg').parent().width());
             El.menu.find('.menu-item').on('click', function () {
-                addOrderMenu($(this).data())
+                El.myModalQty.find('button#submit').removeAttr('disabled');
+                El.myModalQty.find('h4').html($(this).data('name'));
+                El.myModalQty.modal('show');
+                El.myModalQty.data($(this).data());
             });
         }
     } else {
@@ -160,13 +164,13 @@ let loadOrderMenu = function () {
     let orderMenu = SQL(`
         select
             @rownum := @rownum + 1 as no,
-            a.outlet_menu_id, sum(a.price_amount) price_amount, a.order_id, 
-            sum(a.order_qty) as order_qty, a.id, b.name, format(sum(a.price_amount),2) as price_amount_
+            a.outlet_menu_id, a.price_amount, sum(a.total_amount) total_amount, a.order_id, 
+            sum(a.order_qty) as order_qty, a.id, b.name, format(sum(a.total_amount),2) as total_amount_
         from pos_orders_line_item a
         join inv_outlet_menus b on b.id = a.outlet_menu_id
         cross join (select @rownum := 0) r
         where order_id in (${Object.keys(Order).join()})
-        group by order_id, outlet_menu_id
+        group by order_id, a.created_date, outlet_menu_id
         order by no
     `);
     OrderMenu = [];
@@ -177,101 +181,147 @@ let loadOrderMenu = function () {
 
 };
 let loadOrderSummary = function () {
-    //El.orderTotFood.html(rupiahJS(amount));
-    //El.orderTotDiscount.html(rupiahJS(discount));
-    //El.orderTotService.html(rupiahJS(service));
-    //El.orderTotTax.html(rupiahJS(tax));
-    //El.orderTotSum.html(rupiahJS(amount + tax - discount + service));
+    let summary = SQL(`
+        select 
+            sum(a.sub_total_amount) subtotals, sum(a.discount_total_amount) discounts, 
+            sum(b.service_amount) services, sum(c.tax_amount) taxes, sum(a.due_amount) totals
+        from pos_orders a
+        join (
+            select order_id, tax_amount service_amount from pos_order_taxes where tax_id = 1
+        ) b on b.order_id = a.id
+        join (
+            select order_id, sum(tax_amount) tax_amount from pos_order_taxes where tax_id != 1
+        ) c on c.order_id = a.id
+        where id in (?);
+    `, orderIds);
+    let row = summary.data[0]
+    El.orderTotFood.data('value', row.subtotals);
+    El.orderTotFood.html(rupiahJS(row.subtotals));
+    El.orderTotDiscount.data('value', row.discounts);
+    El.orderTotDiscount.html(rupiahJS(row.discounts));
+    El.orderTotService.data('value', row.services);
+    El.orderTotService.html(rupiahJS(row.services));
+    El.orderTotTax.data('value', row.taxes);
+    El.orderTotTax.html(rupiahJS(row.taxes));
+    El.orderTotSum.data('value', row.totals);
+    El.orderTotSum.html(rupiahJS(row.totals));
 }
-let addOrderMenu = function (data) {
-    console.log(data)
-    let {id, menu_price, menu_class_id, outlet_id} = data;
-    let qty = 1, totalDiscount = 0, nettPrice = menu_price;
+let addOrderMenu = function (data, qty = 1) {
+    let {id, menu_class_id, outlet_id} = data;
+    let menu_price = data.menu_price * qty;
+    let totalDiscount = 0, nettPrice = menu_price;
     let order = Order[Object.keys(Order)[0]];
-    let newLineItem = {
-        order_id: order.id,
-        menu_class_id: menu_class_id,
-        outlet_menu_id: id,
-        serving_status: 0,
-        order_qty: qty,
-        price_amount: menu_price,
-        total_amount: qty * menu_price,
-        created_by: App.user.id
-    }
-    let lineItem = SQL('insert into pos_orders_line_item set ?', newLineItem);
-    //todo: if lineItem.error
-    let lineItemId = lineItem.data.insertId;
-
-    let day = SQL('select LOWER(DAYNAME(NOW())) a');
-    //todo: if day.error
-
-    let promos = SQL(`select * from pos_menus_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
-    //todo: if promo.error
-    promos.data.forEach(function (promo) {
-        let discount = 0;
-        if (promo.discount_amount > 0) {
-            discount = promo.discount_amount
-        } else {
-            discount = menu_price / 100 * promo.discount_percent;
-        }
-        totalDiscount += discount;
-
-        let newPatchDiscount = {
-            order_line_item_id: lineItemId,
+    let orderItemId, patchDiscountIds = [], orderTaxIds = {}, posOrder;
+    //
+    let addOrderItem = function () {
+        let newLineItem = {
+            order_id: order.id,
             menu_class_id: menu_class_id,
             outlet_menu_id: id,
-            promo_id: promo.id,
-            discount_amount: discount,
+            serving_status: 0,
+            order_qty: qty,
+            price_amount: data.menu_price,
+            total_amount: menu_price,
             created_by: App.user.id
         }
+        let orderItem = SQL('insert into pos_orders_line_item set ?', newLineItem);
+        orderItemId = orderItem.data.insertId;
+    };
+    let addDiscountPatched = function () {
+        let day = SQL('select LOWER(DAYNAME(NOW())) a');
+        let promos = SQL(`select * from pos_menus_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
+        promos.data.forEach(function (promo) {
+            let discount = 0;
+            if (promo.discount_amount > 0) {
+                discount = promo.discount_amount
+            } else {
+                discount = menu_price / 100 * promo.discount_percent;
+            }
+            totalDiscount += discount;
 
-        let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
-        //todo: if patchDiscount.error
-    })
-
-    let outletTaxes = SQL('select is_tax_included e from inv_outlet_menus where id = ?', id);
-    //todo: if outletTaxes.error
-    if (outletTaxes.data[0].e == 'N') {
-        let orderTaxes = SQL('select * from pos_order_taxes where order_id = ?', order.id);
-        nettPrice = menu_price - totalDiscount;
-        //todo: if orderTaxes.error
-        orderTaxes.data.forEach(function (orderTax) {
-            let taxAmount = orderTax.tax_amount + (nettPrice * orderTax.tax_percent / 100);
-            let updateOrderTaxes = SQL('update pos_order_taxes set tax_amount = ? where id = ?', [taxAmount, orderTax.id])
-            //todo: if updateOrderTaxes.error
-        });
+            let newPatchDiscount = {
+                order_line_item_id: orderItemId,
+                menu_class_id: menu_class_id,
+                outlet_menu_id: id,
+                promo_id: promo.id,
+                discount_amount: discount,
+                created_by: App.user.id
+            }
+            let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
+            patchDiscountIds.push(patchDiscount.data.insertId);
+        })
     }
-    //todo: ADDITIONAL TAX?
-    let taxes = SQL('select sum(tax_amount) tax from pos_order_taxes where order_id=?', order.id)
-    //todo: if taxes.error
-    let totalTaxes = taxes.data[0].tax;
+    let updateOrderTaxes = function () {
+        let outletTaxes = SQL('select is_sevice_included, is_tax_included from inv_outlet_menus where id = ?', id);
+        let {is_tax_included, is_sevice_included} = outletTaxes.data[0];
+        let orderTaxes = SQL('select * from pos_order_taxes where order_id = ?', order.id);
+        if (is_tax_included != 'Y' || is_sevice_included != 'Y') {
+            if (is_tax_included != 'Y') {
+                let rows = orderTaxes.data.filter(function (row) {
+                    return row.tax_id == 2 ? 1 : 0
+                });
+                if (rows[0]) {
+                    let taxAmount = rows[0].tax_amount + (menu_price * rows[0].tax_percent / 100);
+                    let updateOrderTax2 = SQL(
+                        'update pos_order_taxes set tax_amount = ? where id = ? and tax_id = ?',
+                        [taxAmount, rows[0].id, rows[0].tax_id]
+                    );
+                    orderTaxIds[rows[0].id] = rows[0].tax_amount;
+                }
+            }
+            if (is_sevice_included != 'Y') {
+                let rows = orderTaxes.data.filter(function (row) {
+                    return row.tax_id == 1 ? 1 : 0
+                });
+                if (rows[0]) {
+                    let taxAmount = rows[0].tax_amount + (menu_price * rows[0].tax_percent / 100);
+                    let updateOrderTax1 = SQL(
+                        'update pos_order_taxes set tax_amount = ? where id = ? and tax_id = ?',
+                        [taxAmount, rows[0].id, rows[0].tax_id]
+                    );
+                    orderTaxIds[rows[0].id] = rows[0].tax_amount;
+                }
+            }
+            //todo: additional tax & service
+        }
+    }
+    let updateItem = function () {
+        let selectOrder = SQL('select * from pos_orders where id = ?', order.id);
+        let {sub_total_amount, tax_total_amount, due_amount, discount_total_amount} = selectOrder.data[0];
+        let taxes = SQL('select sum(tax_amount) tax from pos_order_taxes where order_id=?', order.id)
+        let totalTaxes = taxes.data[0].tax;
 
-    let posOrder = SQL('select * from pos_orders where id = ?', order.id);
-    //todo: if posOrder.error
-    let {sub_total_amount, tax_total_amount, due_amount, discount_total_amount} = posOrder.data[0];
-    sub_total_amount += menu_price;
-    discount_total_amount += totalDiscount;
-    let updatePosOrder = SQL('update pos_orders set sub_total_amount=?, discount_total_amount=?, tax_total_amount=?, due_amount=? where id=?', [
-        sub_total_amount,
-        discount_total_amount,
-        totalTaxes,
-        sub_total_amount - discount_total_amount + totalTaxes,
-        order.id
-    ]);
+        posOrder = selectOrder.data[0]
+        sub_total_amount += menu_price;
+        discount_total_amount += totalDiscount;
+        SQL('update pos_orders set sub_total_amount=?, discount_total_amount=?, tax_total_amount=?, due_amount=? where id=?', [
+            sub_total_amount,
+            discount_total_amount,
+            totalTaxes,
+            sub_total_amount - discount_total_amount + totalTaxes,
+            order.id
+        ]);
+    }
+
+    addOrderItem();
+    addDiscountPatched();
+    updateOrderTaxes();
+    updateItem();
+    loadOrderSummary();
     El.orderMenu.bootstrapTable('insertRow', {
         index: OrderMenu.length,
         row: {
             "menu_outlet_id": data.id,
-            "price_amount": menu_price,
+            "total_amount": menu_price,
             "order_id": Object.keys(Order)[0],
             "order_qty": qty,
-            "id": lineItemId,
+            "id": orderItemId,
             "name": data.name,
             "no": OrderMenu.length + 1,
-            "price_amount_": rupiahJS(menu_price)
+            "total_amount_": rupiahJS(menu_price)
         }
     });
-    loadOrderSummary();
+    El.myModalQty.modal('hide');
 };
 $(document).ready(function () {
     loadMealTime();
@@ -281,8 +331,16 @@ $(document).ready(function () {
     loadOrder();
     loadOrderMenu();
     loadOrderSummary();
-
+    El.myModalQty.find('button#submit').on('click', function () {
+        let qty = El.myModalQty.find('input#qty').data('value');
+        let item = El.myModalQty.data();
+        if (parseInt(qty) > 0) {
+            El.myModalQty.find('button#submit').attr('disabled', 1);
+            addOrderMenu(item, parseInt(qty));
+        }
+    });
     El.menuFinder.on('blur', function () {
         loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
-    })
+    });
+    App.virtualKeyboard();
 });
