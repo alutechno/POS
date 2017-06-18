@@ -260,10 +260,9 @@ const http = function (pool, compile) {
             let getExistShift = await compile(getExistShiftQuery, [id, outlet]);
             if (getExistShift.constructor === Error) throw getExistShift;
             if (!getExistShift.length) {
-                //todo: uncomment
-                //let code = await compile(`SELECT CONCAT('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;`);
                 let now = await compile(`SELECT NOW() val;`);
                 let code = await compile(`SELECT CONCAT('PCS/', DATE_FORMAT(CURRENT_DATE, '%Y%m%d')) id;`);
+                //let code = await compile(`SELECT CONCAT('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;`);
                 let insertionData = {
                     code : code[0].id,
                     user_id : id,
