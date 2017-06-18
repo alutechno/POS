@@ -58,37 +58,35 @@
 										<code>Payments</code>
 									</div>
 									<div class="box-body text-center" style="padding-left: 0;">
-										<a class="btn btn-app"
-										   data-toggle="modal" href="#myModalCash">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-cash">
 											<i class="fa fa-money"></i>
 											Cash
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalCard" id="btn-cc">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-card">
 											<i class="fa fa-credit-card"></i>
 											Card
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalCharge2Room">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-charge-to-room">
 											<i class="fa fa-edit"></i>
 											Charge room
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalHouseUse">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-house-use">
 											<i class="fa fa-tags"></i>
 											House use
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalMerge">
-											<i class="fa fa-arrow-down" aria-hidden="true"></i>
-											Merge
-										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalSplit">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-split">
 											<i class="fa fa-arrows-alt"></i>
 											Split
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#myModalNoPost">
+										<a class="btn btn-app" data-toggle="modal" href="#modal-merge">
+											<i class="fa fa-arrow-down" aria-hidden="true"></i>
+											Merge
+										</a>
+										<a class="btn btn-app" data-toggle="modal" href="#modal-no-post">
 											<i class="fa fa-times-circle"></i>
 											No Post
 										</a>
-										<a class="btn btn-app btn-warning" data-toggle="modal"
-										   href="http://localhost:8888/media-pos-php/main/open_cash/95">
+										<a class="btn btn-app btn-warning" data-toggle="modal" href="/openCashDraw">
 											<i class="fa fa-th-large"></i>
 											Cash draw
 										</a>
@@ -143,18 +141,11 @@
 										<code>Order Control</code>
 									</div>
 									<div class="box-body text-center" style="padding-left: 0;">
-										<a class="btn btn-app bg-grey" data-toggle="modal" href="#myModalSave">
-											<i class="fa fa-save"></i>
-											Save
-										</a>
-										<a class="btn btn-app bg-grey" data-toggle="modal" href="#myModalAddNotes">
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-add-note">
 											<i class="fa fa-edit"></i>
 											Note
 										</a>
-										<a class="btn btn-app bg-grey"
-										   data-toggle="modal" href="#myModalPrint"
-										   xhref="http://localhost:8888/media-pos-php/main/print_kitchen/95"
-										>
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-print">
 											<i class="fa fa-print"></i>
 											Print Order
 										</a>
@@ -162,7 +153,7 @@
 											<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
 											Open Menu
 										</a>
-										<a class="btn btn-app bg-red" data-toggle="modal" href="#myModalVoid">
+										<a class="btn btn-app bg-red" data-toggle="modal" href="#modal-void">
 											<i class="fa fa-times"></i>
 											Void Menu
 										</a>
@@ -177,14 +168,14 @@
 	</div>
 	<% include part/footer.ejs %>
 </div>
-<div class="modal fade" id="myModalQty" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-qty" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog modal-md" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title" id="myModalLabel">
+				<h4 class="modal-title" id="modal-label">
 					?
 				</h4>
 			</div>
@@ -201,391 +192,463 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalCash" tabindex="-1" role="dialog"
-	 aria-labelledby="myModalCash-label">
+<div class="modal fade" id="modal-cash" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalCash-label">Cash Payment</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal-label">Cash Payment</h4>
 			</div>
-			<form id="subscribe-email-form" action="http://localhost:8888/media-pos-php/main/submit"
-				  method="post">
-				<div class="modal-body">
-
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="0">
-								0.00</label>
-						</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Cash with</span>
 					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge
-								<small>&nbsp&nbsp&nbsp10.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="25500">
-								25,500.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspTax
-								<small>&nbsp&nbsp&nbsp11.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="28050">
-								28,050.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Grand Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="grandtot" val="36550">
-								36,550.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label for="usr">Cash with</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<input type="hidden" class="form-control" name="payment_type_id"
-								   value="1">
-							<input type="hidden" class="form-control" name="grandtotal"
-								   value="36550.00">
-							<input type="hidden" class="form-control" name="order_id"
-								   value="95">
-							<input type="currency" class="form-control" name="payment_amount">
-							<input type="hidden" class="form-control" name="change_amount">
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label for="usr">Change</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label for="change" style="margin-right: 13px;"></label>
-						</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="amount">
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close
-					</button>
-					<button type="submit" class="btn btn-primary">Submit</button>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Change</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<label id="change" style="margin-right: 13px;"></label>
+					</div>
 				</div>
-			</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalCard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-card" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Debit/Credit Card Payment</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">Debit/Credit Card Payment</h4>
 			</div>
-			<form id="subscribe-email-form" action="http://localhost:8888/media-pos-php/main/submit"
-				  method="post">
-				<div class="modal-body">
-
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="0">
-								0.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge
-								<small>&nbsp&nbsp&nbsp10.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="25500">
-								25,500.00</label>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-3">
+						<div class="form-group">
+							<span>Type</span>
+							<select class="form-control" id="cc-type">
+								<option value="credit">Credit</option>
+								<option value="debit">Debit</option>
+							</select>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspTax
-								<small>&nbsp&nbsp&nbsp11.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="28050">
-								28,050.00</label>
+					<div class="col-lg-9">
+						<div class="form-group">
+							<span>Bank</span>
+							<span>Customer</span>
+							<select class="form-control" id="bank-type"></select>
 						</div>
 					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Grand Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="grandtot" val="36550">
-								36,550.00</label>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<hr/>
+						<input id="card-swiper" type="force-text" class="form-control" placeholder="Tap here, then swipe the card">
+						<hr/>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-7">
+						<div class="form-group">
+							<span>Number</span>
+							<input id="card-no" type="text" class="form-control">
 						</div>
 					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-3">
-							<div class="form-group">
-								<label>Type</label>
-								<select class="form-control" id="cc_type">
-									<option value="credit">Credit</option>
-									<option value="debit">Debit</option>
+					<div class="col-lg-5">
+						<div class="form-group">
+							<span>Name</span>
+							<input id="card-name" type="text" class="form-control">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-charge-to-room" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">Charge to Room</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<span>Customer</span>
+							<select class="form-control" id="customer"></select>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Check In</span>
+						<span> : </span>
+						<span id="check-in-date"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Departure</span>
+						<span> : </span>
+						<span id="departure-date"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Cash Bases</span>
+						<span> : </span>
+						<span id="is-cash-bases"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Room Only</span>
+						<span> : </span>
+						<span id="is-room-only"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Reservation Type</span>
+						<span> : </span>
+						<span id="reservation-type"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Room No</span>
+						<span> : </span>
+						<span id="room-no"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Room Rate</span>
+						<span> : </span>
+						<span id="room-rate-code"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Room Type</span>
+						<span> : </span>
+						<span id="room-type"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>VIP Type</span>
+						<span> : </span>
+						<span id="vip-type"></span>
+					</div>
+				</div>
+				<hr/>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="form-group">
+							<span>Notes</span>
+							<textarea id="note" style="width: 100%;height: 60px;"></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-no-post" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal-label">No Post</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="col-lg-12">
+					<div class="form-group">
+						<span>Notes</span>
+						<textarea id="note" style="width: 100%;height: 60px;"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-house-use" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal-label">House Use</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<span>House use</span>
+							<select class="form-control" id="house-use"></select>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<span>Period</span>
+						<span> : </span>
+						<span id="period"></span>
+					</div>
+					<div class="col-lg-12">
+						<span>House use</span>
+						<span> : </span>
+						<span id="house-use"></span>
+					</div>
+					<div class="col-lg-12">
+						<span>Cost Center</span>
+						<span> : </span>
+						<span id="cost-center"></span>
+					</div>
+					<div class="col-lg-12">
+						<div class="row">
+							<div class="col-lg-6">
+								<span>Monthly Spent</span>
+							</div>
+							<div class="col-lg-6 pull-right">
+								<span id="max-spent" class="pull-right"></span>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-12">
+						<div class="row">
+							<div class="col-lg-6">
+								<span>Current Transaction Amount</span>
+							</div>
+							<div class="col-lg-6 pull-right">
+								<span id="current-balance" class="pull-right"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<hr/>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="form-group">
+							<span>Notes</span>
+							<textarea id="note" style="width: 100%;height: 60px;"></textarea>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-split" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title" id="modal-label">Split Billing</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Balance</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<span style="margin-right: 13px;" id="balance">0.00</span>
+					</div>
+				</div>
+				<hr/>
+				<div class="row" id="no-state">
+					<div class="col-sm-12">
+						<div class="form-group row" style="margin-bottom:0px;">
+							<h5 class="col-sm-2 control-label">
+								<span>Split bills</span>
+							</h5>
+							<div class="col-sm-4">
+								<select class="form-control" id="mode">
+									<option value="">- Choose one -</option>
+									<option value="manual">Manually</option>
+									<!--
+									<option value="event">Evently</option>
+									<option value="item">Items</option>
+									-->
 								</select>
 							</div>
-						</div>
-						<div class="col-lg-9">
-							<div class="form-group">
-								<label>Bank</label>
-								<label>Customer</label>
-								<select class="form-control" name="payment_type_id" id="payment_type_id">
-									<option>- Choose -</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[5] = {"id": "5", "code": "BNID", "name": "BNI Debit", "description": "BNI Debit"};
-									</script>
-									<option value="5">
-										BNID - BNI Debit
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[6] = {"id": "6", "code": "BNIM", "name": "BNI Master", "description": "BNI Master"};
-									</script>
-									<option value="6">
-										BNIM - BNI Master
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[7] = {"id": "7", "code": "BNIV", "name": "BNI Visa", "description": "BNI Visa"};
-									</script>
-									<option value="7">
-										BNIV - BNI Visa
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[8] = {"id": "8", "code": "MAND", "name": "Mandiri Debit", "description": "Mandiri Debit"};
-									</script>
-									<option value="8">
-										MAND - Mandiri Debit
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[9] = {"id": "9", "code": "MANV", "name": "Mandiri Visa", "description": "Mandiri Visa"};
-									</script>
-									<option value="9">
-										MANV - Mandiri Visa
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[10] = {"id": "10", "code": "MANM", "name": "Mandiri Master", "description": "Mandiri Master"};
-									</script>
-									<option value="10">
-										MANM - Mandiri Master
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[13] = {"id": "13", "code": "BCAD", "name": "BCA Debit", "description": "BCA Debit"};
-									</script>
-									<option value="13">
-										BCAD - BCA Debit
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[14] = {"id": "14", "code": "BCAM", "name": "BCA Master", "description": "BCA Master"};
-									</script>
-									<option value="14">
-										BCAM - BCA Master
-									</option>
-									<script>
-                                        window.CardMethod = window.CardMethod || {};
-                                        CardMethod[15] = {"id": "15", "code": "BCAV", "name": "BCA Visa", "description": "BCA Visa"};
-									</script>
-									<option value="15">
-										BCAV - BCA Visa
-									</option>
-								</select>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-12">
-							<hr/>
-							<input type="hidden" class="form-control" name="order_id"
-								   value="95">
-							<input type="hidden" class="form-control" name="grandtotal"
-								   value="36550.00">
-							<input id="card_swiper" type="force-text" class="form-control"
-								   placeholder="Tap here, then swipe the card">
-							<hr/>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-7">
-							<div class="form-group">
-								<label for="usr">Number:</label>
-								<input id="card_no" type="text" class="form-control" id="card_no"
-									   name="card_no">
-							</div>
-						</div>
-						<div class="col-lg-5">
-							<div class="form-group">
-								<label for="usr">Name:</label>
-								<input id="card_name" type="text" class="form-control"
-									   name="cust_name">
+							<h5 class="col-sm-1 control-label">
+								<span>by</span>
+							</h5>
+							<div class="col-sm-2">
+								<input type="number" class="form-control" id="mode-counter"/>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close
-					</button>
-					<button type="submit" class="btn btn-primary">Submit</button>
+				<div id="state" style="display:none;">
+					<div class="row">
+						<div class="col-sm-12">
+							<h5>
+								<span id="mode-label-0"></span>
+								<span style="margin: 0 10px;">/</span>
+								<span id="mode-label-1"></span>
+							</h5>
+						</div>
+					</div>
+					<div class="row payment-state" id="manual-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
+					<div class="row payment-state" id="event-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
+					<div class="row payment-state" id="item-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
 				</div>
-			</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Next</button>
+			</div>
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalMerge" tabindex="-1" role="dialog"
-	 aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-merge" tabindex="-1" role="dialog"
+	 aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Choose Tables</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">Choose Tables</h4>
 			</div>
-			<form id="mergeTable">
-				<div class="modal-body">
-
-					<div class="row">
-						<div class="col-lg-6">
-							<label>This Table</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="grantotal-merge-me" val="36550">
-								36,550.00</label>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-lg-6">
+						<span>This Table</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<span style="margin-right: 13px;" id="home-total">0.00</span>
+					</div>
+				</div>
+				<br/>
+				<div class="row">
+					<div class="col-lg-12">
+						<div style="max-height: 500px;overflow: auto;">
+							<ul id="check-list-box" class="list-group checked-list-box"></ul>
 						</div>
 					</div>
-					<br/>
-					<div class="row">
-						<style>
-							.state-icon {
-								left: -5px;
-							}
-
-							.list-group-item-primary {
-								color: rgb(255, 255, 255);
-								background-color: rgb(66, 139, 202);
-							}
-						</style>
-						<div class="col-lg-12">
-							<div style="max-height: 500px;overflow: auto;">
-								<ul id="check-list-box" class="list-group checked-list-box">
-									<li id="merge-w-103" class="list-group-item" data-color="info">Table #3<span
-												class='badge badge-default badge-pill'>0.00</span></li>
-									<script>
-                                        window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-103'] = {
-                                            "id": "3",
-                                            "table_no": "3",
-                                            "cover": "4",
-                                            "order_id": "103",
-                                            "guest": "1",
-                                            "sub_total_amount": "0.00",
-                                            "discount_total_amount": "0.00",
-                                            "tax_total_amount": "0.00",
-                                            "due_amount": "0.00"
-                                        }
-									</script>
-									<li id="merge-w-101" class="list-group-item" data-color="info">Table #5<span
-												class='badge badge-default badge-pill'>0.00</span></li>
-									<script>
-                                        window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-101'] = {
-                                            "id": "5",
-                                            "table_no": "5",
-                                            "cover": "8",
-                                            "order_id": "101",
-                                            "guest": "1",
-                                            "sub_total_amount": "0.00",
-                                            "discount_total_amount": "0.00",
-                                            "tax_total_amount": "0.00",
-                                            "due_amount": "0.00"
-                                        }
-									</script>
-									<li id="merge-w-99" class="list-group-item" data-color="info">Table #6<span
-												class='badge badge-default badge-pill'>-19,779.87</span></li>
-									<script>
-                                        window.mergeWith = window.mergeWith || {};
-                                        mergeWith['merge-w-99'] = {
-                                            "id": "6",
-                                            "table_no": "6",
-                                            "cover": "2",
-                                            "order_id": "99",
-                                            "guest": "1",
-                                            "sub_total_amount": "-16347.00",
-                                            "discount_total_amount": "0.00",
-                                            "tax_total_amount": "-3432.87",
-                                            "due_amount": "-19779.87"
-                                        }
-									</script>
-								</ul>
+				</div>
+				<hr/>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="row">
+							<div class="col-lg-6">
+								<span>Grand Total</span>
 							</div>
-						</div>
-					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-6">
-									<label>Grand Total</label>
-								</div>
-								<div class="col-lg-6 pull-right">
-									<span id="grantotal-merge"
-										  order_id="95"
-										  class="pull-right"
-										  style="margin-right: 20px;">
-										36,550.00									</span>
-								</div>
+							<div class="col-lg-6 pull-right">
+								<span id="grantotal-merge" class="pull-right" style="margin-right: 20px;">36,550.00</span>
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close
-					</button>
-					<button type="submit" class="btn btn-primary" id="mergeTableBtn" disabled>
-						Submit
-					</button>
-				</div>
-			</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalOpenMenu" tabindex="-1" role="dialog"
-	 aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-print" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">Print Order</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div class="row" id="printContentDefault">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<thead>
+							<tr>
+								<th>Qty</th>
+								<th>Menu</th>
+								<th>Printer</th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							<tr>
+								<td>1</td>
+								<td>Bebek Goreng Sambal Penyet Khas Media</td>
+								<td>\\DESKTOP-J7QH6TF\BEVE</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="row" id="printContentManual">
+					<div class="col-sm-12">
+						<ul id="check-list-box" class="list-group checked-list-box"></ul>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="row">
+					<div class="col-sm-6">
+						<div class="pull-left">
+							<button class="btn btn-primary" id="manualprint">Print</button>
+							<button class="btn btn-default" id="print">Print</button>
+							<button class="btn btn-primary" id="reprint">Reprint</button>
+						</div>
+					</div>
+					<div class="col-sm-6 pull-right">
+						<button type="button" class="btn btn-danger" id="printtoogle" state="default">Manual Print</button>
+						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-open-menu" tabindex="-1" role="dialog"
+	 aria-labelledby="modal-label">
 	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Open Menu</h4>
+				<h4 class="modal-title" id="modal-label">Open Menu</h4>
 			</div>
 			<div class="modal-body">
 				<form id="subscribe-email-form"
@@ -769,84 +832,13 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalNoPost" tabindex="-1" role="dialog"
-	 aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-add-note" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">No Post</h4>
-			</div>
-			<div class="modal-body">
-
-				<div class="row">
-					<div class="col-lg-6">
-						<label>Total</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="0">
-							0.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>&nbsp&nbspService Charge
-							<small>&nbsp&nbsp&nbsp10.00%</small>
-						</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="25500">
-							25,500.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>&nbsp&nbspTax
-							<small>&nbsp&nbsp&nbsp11.00%</small>
-						</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="28050">
-							28,050.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>Grand Total</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="grandtot" val="36550">
-							36,550.00</label>
-					</div>
-				</div>
-				<hr/>
-				<form id="subscribe-email-form"
-					  action="http://localhost:8888/media-pos-php/main/no_pos/95"
-					  method="post">
-					<label>Notes</label>
-					<input type="hidden" class="form-control" name="payment_amount"
-						   value="36550.00">
-					<input type="hidden" class="form-control" name="grandtotal"
-						   value="36550.00">
-					<textarea class="form-control" name="note"
-							  id="note"></textarea>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary">Submit</button>
-			</div>
-			</form>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="myModalAddNotes" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Menu Note</h4>
+				<h4 class="modal-title" id="modal-label">Menu Note</h4>
 			</div>
 			<div class="modal-body">
 				<form id="subscribe-email-form"
@@ -864,403 +856,13 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="myModalCharge2Room" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade" id="modal-void" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
 							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Charge to Room</h4>
-			</div>
-			<form id="subscribe-email-form" action="http://localhost:8888/media-pos-php/main/submit"
-				  method="post">
-				<div class="modal-body">
-
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="0">
-								0.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge
-								<small>&nbsp&nbsp&nbsp10.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="25500">
-								25,500.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspTax
-								<small>&nbsp&nbsp&nbsp11.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="28050">
-								28,050.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Grand Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="grandtot" val="36550">
-								36,550.00</label>
-						</div>
-					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label>Customer</label>
-								<select class="form-control" name="charge_to_room"
-										id="charge_to_room">
-									<option>- Choose -</option>
-									<script>
-                                        window.Charge2Room = window.Charge2Room || {};
-                                        Charge2Room[6] =
-                                            {
-                                                "folio_id": "6",
-                                                "reservation_type": "MICE",
-                                                "room_type": "CQ",
-                                                "room_type_name": "Classic Queen",
-                                                "room_no": "c1",
-                                                "room_rate_code": "a",
-                                                "room_rate_name": "asd",
-                                                "num_of_pax": "1",
-                                                "num_of_child": "0",
-                                                "cust_firt_name": "TestSatu",
-                                                "cust_last_name": "Satu",
-                                                "company": null,
-                                                "cust_segment": null,
-                                                "check_in_date": null,
-                                                "departure_date": "2017-04-06",
-                                                "vip_type": "VIP 1",
-                                                "is_room_only": "N",
-                                                "is_cash_bases": "N",
-                                                "cahier_remarks": ""
-                                            };
-									</script>
-									<option value="6">
-										[CQ / c1 ]
-										&nbsp;
-										TestSatu Satu
-									</option>
-									<script>
-                                        window.Charge2Room = window.Charge2Room || {};
-                                        Charge2Room[7] =
-                                            {
-                                                "folio_id": "7",
-                                                "reservation_type": "Individual",
-                                                "room_type": "CQ",
-                                                "room_type_name": "Classic Queen",
-                                                "room_no": "1105",
-                                                "room_rate_code": "ADV14DAY",
-                                                "room_rate_name": "Advance Purchase",
-                                                "num_of_pax": "2",
-                                                "num_of_child": "0",
-                                                "cust_firt_name": "Dien",
-                                                "cust_last_name": "Ciet",
-                                                "company": null,
-                                                "cust_segment": null,
-                                                "check_in_date": "2017-06-04 21:01:32",
-                                                "departure_date": "2017-06-05",
-                                                "vip_type": null,
-                                                "is_room_only": "N",
-                                                "is_cash_bases": "N",
-                                                "cahier_remarks": ""
-                                            };
-									</script>
-									<option value="7">
-										[CQ / 1105 ]
-										&nbsp;
-										Dien Ciet
-									</option>
-								</select>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Check In</label>
-							<span> : </span>
-							<span id="check_in_date"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Departure</label>
-							<span> : </span>
-							<span id="departure_date"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Cash Bases</label>
-							<span> : </span>
-							<span id="is_cash_bases"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Room Only</label>
-							<span> : </span>
-							<span id="is_room_only"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Reservation Type</label>
-							<span> : </span>
-							<span id="reservation_type"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Room No</label>
-							<span> : </span>
-							<span id="room_no"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Room Rate</label>
-							<span> : </span>
-							<span id="room_rate_code"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>Room Type</label>
-							<span> : </span>
-							<span id="room_type"></span>
-						</div>
-						<div class="col-lg-6">
-							<label>VIP Type</label>
-							<span> : </span>
-							<span id="vip_type"></span>
-						</div>
-					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="form-group">
-								<label>Notes</label>
-								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
-								<input type="hidden" class="form-control" name="folio_id">
-								<input type="hidden" class="form-control" name="order_id"
-									   value="95">
-								<input type="hidden" class="form-control" name="grandtotal"
-									   value="36550.00">
-								<input type="hidden" class="form-control" name="payment_type_id"
-									   value="16">
-								<input type="hidden" class="form-control" name="payment_amount"
-									   value="36550.00">
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close
-					</button>
-					<button id="submitChargeToRoom" type="submit" class="btn btn-primary"
-							disabled>Submit
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="myModalHouseUse" tabindex="-1" role="dialog"
-	 aria-labelledby="myModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">House Use</h4>
-			</div>
-			<form id="subscribe-email-form" action="http://localhost:8888/media-pos-php/main/submit"
-				  method="post">
-				<div class="modal-body">
-
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="0">
-								0.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspService Charge
-								<small>&nbsp&nbsp&nbsp10.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="25500">
-								25,500.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>&nbsp&nbspTax
-								<small>&nbsp&nbsp&nbsp11.00%</small>
-							</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="" val="28050">
-								28,050.00</label>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-6">
-							<label>Grand Total</label>
-						</div>
-						<div class="col-lg-6 text-right">
-							<label style="margin-right: 13px;" for="grandtot" val="36550">
-								36,550.00</label>
-						</div>
-					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-6">
-							<div class="form-group">
-								<label>House use</label>
-								<select class="form-control" name="guest_use" id="guest_use">
-									<option>- Choose -</option>
-									<script>
-                                        window.HouseUse = window.HouseUse || {};
-                                        HouseUse[1] =
-                                            {
-                                                "id": "1",
-                                                "code": "001",
-                                                "name": "Vudin",
-                                                "short_name": null,
-                                                "description": null,
-                                                "status": "1",
-                                                "pos_cost_center_id": "1",
-                                                "max_spent_monthly": "10000000.00",
-                                                "created_date": "2017-06-05 20:24:15",
-                                                "modified_date": null,
-                                                "created_by": null,
-                                                "modified_by": null,
-                                                "current_transc_amount": null,
-                                                "house_use": null,
-                                                "house_use_id": "1",
-                                                "period": null,
-                                                "cost_center": null,
-                                                "pos_cost_center_name": "Owner"
-                                            };
-									</script>
-									<option value="1">
-										[001]
-										&nbsp;
-										Owner / Vudin
-									</option>
-									<script>
-                                        window.HouseUse = window.HouseUse || {};
-                                        HouseUse[2] =
-                                            {
-                                                "id": "2",
-                                                "code": "002",
-                                                "name": "Mail",
-                                                "short_name": null,
-                                                "description": null,
-                                                "status": "1",
-                                                "pos_cost_center_id": "2",
-                                                "max_spent_monthly": "1500000.00",
-                                                "created_date": "2017-06-05 20:47:51",
-                                                "modified_date": null,
-                                                "created_by": null,
-                                                "modified_by": null,
-                                                "current_transc_amount": null,
-                                                "house_use": null,
-                                                "house_use_id": "2",
-                                                "period": null,
-                                                "cost_center": null,
-                                                "pos_cost_center_name": "General Manager"
-                                            };
-									</script>
-									<option value="2">
-										[002]
-										&nbsp;
-										General Manager / Mail
-									</option>
-								</select>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-lg-12">
-							<label>Period</label>
-							<span> : </span>
-							<span id="period"></span>
-						</div>
-						<div class="col-lg-12">
-							<label>House use</label>
-							<span> : </span>
-							<span id="house_use"></span>
-						</div>
-						<div class="col-lg-12">
-							<label>Cost Center</label>
-							<span> : </span>
-							<span id="cost_center"></span>
-						</div>
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-6">
-									<label>Monthly Spent</label>
-								</div>
-								<div class="col-lg-6 pull-right">
-									<span id="max_spent_monthly" class="pull-right"></span>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-12">
-							<div class="row">
-								<div class="col-lg-6">
-									<label>Current Transaction Amount</label>
-								</div>
-								<div class="col-lg-6 pull-right">
-									<span id="current_transc_amount" class="pull-right"></span>
-								</div>
-							</div>
-						</div>
-					</div>
-					<hr/>
-					<div class="row">
-						<div class="col-lg-12">
-							<div class="form-group">
-								<label>Notes</label>
-								<textarea name="notes" style="width: 100%;height: 60px;"></textarea>
-								<input type="hidden" class="form-control" name="house_use_id">
-								<input type="hidden" class="form-control" name="order_id"
-									   value="95">
-								<input type="hidden" class="form-control" name="grandtotal"
-									   value="36550.00">
-								<input type="hidden" class="form-control" name="payment_type_id"
-									   value="17">
-								<input type="hidden" class="form-control" name="payment_amount"
-									   value="36550.00">
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close
-					</button>
-					<button id="submitGuestUse" type="submit" class="btn btn-primary"
-							disabled>Submit
-					</button>
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="myModalVoid" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Menu List</h4>
+				<h4 class="modal-title" id="modal-label">Menu List</h4>
 			</div>
 			<div class="modal-body">
 				<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post"> -->
@@ -1296,180 +898,6 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="myModalSplit" role="dialog">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title">Split Billing</h4>
-			</div>
-			<div class="modal-body" style="padding-bottom: 0px;">
-
-				<div class="row">
-					<div class="col-lg-6">
-						<label>Total</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="0">
-							0.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>&nbsp&nbspService Charge
-							<small>&nbsp&nbsp&nbsp10.00%</small>
-						</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="25500">
-							25,500.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>&nbsp&nbspTax
-							<small>&nbsp&nbsp&nbsp11.00%</small>
-						</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="" val="28050">
-							28,050.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>Grand Total</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="grandtot" val="36550">
-							36,550.00</label>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-6">
-						<label>Balance</label>
-					</div>
-					<div class="col-lg-6 text-right">
-						<label style="margin-right: 13px;" for="balance" val="36550">
-							36,550.00</label>
-					</div>
-				</div>
-				<hr/>
-				<div class="row" id="noState">
-					<div class="col-sm-12">
-						<div class="form-group row" style="margin-bottom:0px;">
-							<h5 for="inputKey" class="col-sm-2 control-label">
-								<label>Split bills</label>
-							</h5>
-							<div class="col-sm-4">
-								<select class="form-control" id="mode">
-									<option value="">- Choose one -</option>
-									<option value="manual">Manually</option>
-									<!--
-									<option value="event">Evently</option>
-									<option value="item">Items</option>
-									-->
-								</select>
-							</div>
-							<h5 for="inputKey" class="col-sm-1 control-label">
-								<label>by</label>
-							</h5>
-							<div class="col-sm-2">
-								<input type="number" class="form-control" id="modeCounter"/>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div id="state" style="display:none;">
-					<div class="row">
-						<div class="col-sm-12">
-							<h5>
-								<label id="modeLabel0"></label>
-								<label style="margin: 0 10px;">/</label>
-								<label id="modeLabel1"></label>
-							</h5>
-						</div>
-					</div>
-					<div class="row payment-state" id="manualState" style="max-height: 300px;overflow-y: auto;display: none;"></div>
-					<div class="row payment-state" id="eventState" style="max-height: 300px;overflow-y: auto;display: none;"></div>
-					<div class="row payment-state" id="itemState" style="max-height: 300px;overflow-y: auto;display: none;"></div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="next" class="btn btn-primary" disabled>Next</button>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="myModalPrint" role="dialog">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h4 class="modal-title">Print Order</h4>
-			</div>
-			<div class="modal-body" style="padding-bottom: 0px;">
-				<div class="row" id="printContentDefault">
-					<div class="col-sm-12">
-						<table class="table table-bordered">
-							<thead>
-							<tr>
-								<th>Qty</th>
-								<th>Menu</th>
-								<th>Printer</th>
-							</tr>
-							</thead>
-							<tbody>
-							<tr>
-								<td>1</td>
-								<td>Bebek Goreng Sambal Penyet Khas Media</td>
-								<td>\\DESKTOP-J7QH6TF\BEVE</td>
-							</tr>
-							<tr>
-								<td>1</td>
-								<td>Bebek Goreng Sambal Penyet Khas Media</td>
-								<td>\\DESKTOP-J7QH6TF\BEVE</td>
-							</tr>
-							<tr>
-								<td>1</td>
-								<td>Bebek Goreng Sambal Penyet Khas Media</td>
-								<td>\\DESKTOP-J7QH6TF\BEVE</td>
-							</tr>
-							<tr>
-								<td>1</td>
-								<td>Bebek Goreng Sambal Penyet Khas Media</td>
-								<td>\\DESKTOP-J7QH6TF\BEVE</td>
-							</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<div class="row" id="printContentManual">
-					<div class="col-sm-12">
-						<ul id="check-list-box" class="list-group checked-list-box">
-							<li id='printer-1' class='list-group-item' data-color='info' name='\\DESKTOP-J7QH6TF\BEVE' code='food'>&nbsp&nbsp&nbspFOOD
-								<span class='badge badge-default badge-pill'>\\DESKTOP-J7QH6TF\BEVE</span></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<div class="row">
-					<div class="col-sm-6">
-						<div class="pull-left">
-							<button class="btn btn-primary" id="manualprint">Print</button>
-							<button class="btn btn-default" id="print">Print</button>
-							<button class="btn btn-primary" id="reprint">Reprint</button>
-						</div>
-					</div>
-					<div class="col-sm-6 pull-right">
-						<button type="button" class="btn btn-danger" id="printtoogle" state="default">Manual Print</button>
-						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>
