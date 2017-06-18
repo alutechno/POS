@@ -13,8 +13,99 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         orderTotService: $('td#order-tot-service'),
         orderTotTax: $('td#order-tot-tax'),
         orderTotSum: $('td#order-tot-sum'),
-        myModalQty: $('div#myModalQty'),
+        modalQty: $('div#modal-qty'),
+        modalCash: $('div#modal-cash'),
+        modalCard: $('div#modal-card'),
+        modalCharge2Room: $('div#modal-charge-to-room'),
+        modalNoPost: $('div#modal-no-post'),
+        modalHouseUse: $('div#modal-house-use'),
+        modalSplit: $('div#modal-split'),
+        modalMerge: $('div#modal-merge'),
+        modalPrint: $('div#modal-print'),
+        modalOpenMenu: $('div#modal-open-menu'),
+        modalAddNote: $('div#modal-add-note'),
+        modalVoid: $('div#modal-void')
     };
+let Printing = function (param) {
+    $.ajax({
+        method: 'GET',
+        url: '/printBill',
+        async: false,
+        data: param,
+        complete: function (xhr, is) {
+            if (is == 'success') {
+                if (xhr.responseJSON) {
+                    if (!xhr.responseJSON.error) console.info(xhr.responseJSON.message);
+                    else console.error(xhr.responseJSON.message);
+                } else console.error(xhr.response);
+            } else console.error('Server down!');
+        }
+    });
+};
+let Payment = function (param, splitted) {
+    let {
+        order_notes, payment_type_id, payment_amount,
+        change_amount, folio_id, card_no, house_use_id,
+        total_amount
+    } = param;
+    let userId = App.user.id;
+    let tranBatchId = App.posCashier.id;
+    let orderId = Object.keys(Order)[0];
+    let getDate = SQL('select NOW() now');
+    let datetime = getDate.data.now;
+    //
+    let posOrders = {
+        status: 2,
+        order_notes,
+        modified_by: userId,
+        modified_date: datetime,
+        closing_batch_id: tranBatchId
+    };
+    let posOrdersArr = [];
+    let posOrdersVal = [orderIds];
+    for (let i in posOrders) {
+        if (posOrders[i] === undefined) delete posOrders[i];
+        else {
+            posOrdersArr.unshift(i + '=?')
+            posOrdersVal.unshift(posOrders[i])
+        }
+    }
+    let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (?)`, posOrdersVal);
+    if (!updatePosOrder.error) {
+        let posPaymentDetail = {
+            order_id: orderId,
+            payment_type_id,
+            payment_amount,
+            change_amount,
+            folio_id,
+            card_no,
+            house_use_id,
+            total_amount,
+            created_by: userId
+        };
+        for (let i in posPaymentDetail) {
+            if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
+        }
+        let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
+        if (!insertPosPaymentDetail.error) {
+            Printing({orderId: orderId, payment: payment_amount});
+            return {success: true, response: insertPosPaymentDetail.data};
+        } else {
+            return {success: false, response: insertPosPaymentDetail.error}
+        }
+    } else {
+        return {success: false, response: updatePosOrder.error}
+    }
+};
+let paymentHasDone = function (param) {
+    if (param.success) {
+        setTimeout(function () {
+            window.location.href = '/'
+        }, 3000);
+    } else {
+        alert(JSON.stringify(param.response))
+    }
+}
 let rupiahJS = function (val) {
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -24,7 +115,7 @@ let loadMealTime = function () {
     MealTime = {};
     El.mealTime.html('<code style="margin-right: 5px">Meal Time</code>');
     if (!mealTime.error) {
-        mealTime.data.forEach(function(e){
+        mealTime.data.forEach(function (e) {
             MealTime[e.id] = e
             El.mealTime.append(`
                 <label class="badge btn-info" style="font-weight: lighter">
@@ -98,7 +189,7 @@ let loadMenu = function (filter) {
             Menu = menu.data.map(function (e) {
                 e.menu_price_ = rupiahJS(e.menu_price);
                 let el = $(`
-                    <div class="col-lg-3 col-sm-4 col-xs-6 menu-item" 
+                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item" 
                         menu-id="${e.id}" menu-name="${e.name}"
                         menu-class="${e.menu_class_id}" 
                         menu-sub-class="${e.menu_group_id}">
@@ -119,10 +210,21 @@ let loadMenu = function (filter) {
             });
             El.menu.find('.menu-bg').height(El.menu.find('.menu-bg').parent().width());
             El.menu.find('.menu-item').on('click', function () {
-                El.myModalQty.find('button#submit').removeAttr('disabled');
-                El.myModalQty.find('h4').html($(this).data('name'));
-                El.myModalQty.modal('show');
-                El.myModalQty.data($(this).data());
+                El.modalQty.find('button#submit').removeAttr('disabled');
+                El.modalQty.find('h4').html($(this).data('name'));
+                El.modalQty.modal('show');
+                El.modalQty.data($(this).data());
+            });
+            El.menuFinder.on('blur', function () {
+                loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
+            });
+            El.modalQty.find('button#submit').on('click', function () {
+                let qty = El.modalQty.find('input#qty').data('value');
+                let item = El.modalQty.data();
+                if (parseInt(qty) > 0) {
+                    El.modalQty.find('button#submit').attr('disabled', 1);
+                    addOrderMenu(item, parseInt(qty));
+                }
             });
         }
     } else {
@@ -205,6 +307,49 @@ let loadOrderSummary = function () {
     El.orderTotTax.html(rupiahJS(row.taxes));
     El.orderTotSum.data('value', row.totals);
     El.orderTotSum.html(rupiahJS(row.totals));
+    $('.modal-body div#info').html(`
+        <div class="row">
+            <div class="col-lg-6">
+                <span>Total</span>
+            </div>
+            <div class="col-lg-6 text-right">
+                <span style="margin-right: 13px;" for="subtotal">${rupiahJS(row.subtotals)}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <span style="margin-left: 15px;">Discount</span>
+            </div>
+            <div class="col-lg-6 text-right">
+                <span style="margin-right: 13px;" for="discount">${rupiahJS(row.discounts)}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <span style="margin-left: 15px;">Service Charge</span>
+            </div>
+            <div class="col-lg-6 text-right">
+                <span style="margin-right: 13px;" for="service">${rupiahJS(row.services)}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <span style="margin-left: 15px;">Tax</span>
+            </div>
+            <div class="col-lg-6 text-right">
+                <span style="margin-right: 13px;" for="tax">${rupiahJS(row.taxes)}</span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <span>Grand Total</span>
+            </div>
+            <div class="col-lg-6 text-right">
+                <span style="margin-right: 13px;" for="total">${rupiahJS(row.totals)}</span>
+            </div>
+        </div>
+        <hr style="margin-top: 5px; margin-bottom: 10px"/>
+    `);
 }
 let addOrderMenu = function (data, qty = 1) {
     let {id, menu_class_id, outlet_id} = data;
@@ -321,7 +466,41 @@ let addOrderMenu = function (data, qty = 1) {
             "total_amount_": rupiahJS(menu_price)
         }
     });
-    El.myModalQty.modal('hide');
+    El.modalQty.modal('hide');
+};
+let cashPayment = function () {
+    let modal = El.modalCash;
+    let total = El.orderTotFood.data('value');
+    let discount = El.orderTotDiscount.data('value');
+    let service = El.orderTotService.data('value');
+    let tax = El.orderTotTax.data('value');
+    let grandtotal = El.orderTotSum.data('value');
+    let change = 0;
+    //
+    let btnSubmit = modal.find('#submit');
+    let lblChange = modal.find('#change');
+    let inputAmount = modal.find('#amount');
+    inputAmount.on('blur', function () {
+        let value = $(this).data('value');
+        change = parseFloat(value) - parseFloat(grandtotal);
+        if (change >= 0) {
+            btnSubmit.removeAttr('disabled')
+            lblChange.html(rupiahJS(change));
+        } else {
+            btnSubmit.attr('disabled', 1)
+            lblChange.html(rupiahJS(0));
+        }
+    });
+    btnSubmit.on('click', function () {
+        btnSubmit.attr('disabled', 1);
+        let pay = Payment({
+            payment_type_id: 1,
+            grandtotal: grandtotal,
+            payment_amount: inputAmount.data('value'),
+            change_amount: change,
+        });
+        paymentHasDone(pay);
+    })
 };
 $(document).ready(function () {
     loadMealTime();
@@ -331,16 +510,6 @@ $(document).ready(function () {
     loadOrder();
     loadOrderMenu();
     loadOrderSummary();
-    El.myModalQty.find('button#submit').on('click', function () {
-        let qty = El.myModalQty.find('input#qty').data('value');
-        let item = El.myModalQty.data();
-        if (parseInt(qty) > 0) {
-            El.myModalQty.find('button#submit').attr('disabled', 1);
-            addOrderMenu(item, parseInt(qty));
-        }
-    });
-    El.menuFinder.on('blur', function () {
-        loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
-    });
+    cashPayment();
     App.virtualKeyboard();
 });
