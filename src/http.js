@@ -311,6 +311,7 @@ const http = function (pool, compile) {
             res.redirect('/login');
         }
     });
+    //
     app.get('/openCashDraw', async function (req, res, next) {
         //todo: open cash draw script here..
         if (1) {
@@ -357,6 +358,29 @@ const http = function (pool, compile) {
                 error: true,
                 message: 'Cashier report with ' + JSON.stringify({posCashierId}) + ' cannot be printed',
                 data : {posCashierId}
+            })
+        }
+    });
+    app.get('/printKitchen', async function (req, res, next) {
+        let {orderId, reprint, printer} = req.query;
+        if (printer) {
+            //todo: manual print for menu items command here..
+        } else if (reprint) {
+            //todo: automatic print for reprint menu items command here..
+        } else {
+            //todo: automatic print for menu items command here..
+        }
+        if (1) {
+            res.send({
+                error: false,
+                message: 'Menu items has been printed with ' + JSON.stringify({orderId, reprint, printer}),
+                data : {orderId, reprint, printer}
+            })
+        } else {
+            res.send({
+                error: true,
+                message: 'Menu items with ' + JSON.stringify({orderId, reprint, printer}) + ' cannot be printed',
+                data : {orderId, reprint, printer}
             })
         }
     });
