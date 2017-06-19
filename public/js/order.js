@@ -75,7 +75,7 @@ let Payment = function (param, splitted) {
     let {
         order_notes, payment_type_id, payment_amount,
         change_amount, folio_id, card_no, house_use_id,
-        total_amount
+        total_amount, status
     } = param;
     let userId = App.user.id;
     let tranBatchId = App.posCashier.id;
@@ -84,7 +84,7 @@ let Payment = function (param, splitted) {
     let datetime = getDate.data.now;
     //
     let posOrders = {
-        status: 2,
+        status: status || 2,
         order_notes,
         modified_by: userId,
         modified_date: datetime,
@@ -101,26 +101,32 @@ let Payment = function (param, splitted) {
     }
     let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (?)`, posOrdersVal);
     if (!updatePosOrder.error) {
-        let posPaymentDetail = {
-            order_id: orderId,
-            payment_type_id,
-            payment_amount,
-            change_amount,
-            folio_id,
-            card_no,
-            house_use_id,
-            total_amount,
-            created_by: userId
-        };
-        for (let i in posPaymentDetail) {
-            if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
-        }
-        let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
-        if (!insertPosPaymentDetail.error) {
+        console.log('setaaaatuss!!', status)
+        if (status === 4) {
             Printing({orderId: orderId, payment: payment_amount});
-            return {success: true, response: insertPosPaymentDetail.data};
+            return {success: true, response: updatePosOrder.data};
         } else {
-            return {success: false, response: insertPosPaymentDetail.error}
+            let posPaymentDetail = {
+                order_id: orderId,
+                payment_type_id,
+                payment_amount,
+                change_amount,
+                folio_id,
+                card_no,
+                house_use_id,
+                total_amount,
+                created_by: userId
+            };
+            for (let i in posPaymentDetail) {
+                if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
+            }
+            let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
+            if (!insertPosPaymentDetail.error) {
+                Printing({orderId: orderId, payment: payment_amount});
+                return {success: true, response: insertPosPaymentDetail.data};
+            } else {
+                return {success: false, response: insertPosPaymentDetail.error}
+            }
         }
     } else {
         return {success: false, response: updatePosOrder.error}
@@ -729,6 +735,32 @@ let houseUsePayment = function () {
         paymentHasDone(pay);
     });
 };
+let noPostPayment = function () {
+    let modal = El.modalNoPost;
+    let total = El.orderTotFood.data('value');
+    let discount = El.orderTotDiscount.data('value');
+    let service = El.orderTotService.data('value');
+    let tax = El.orderTotTax.data('value');
+    let grandtotal = El.orderTotSum.data('value');
+    //
+    let txAreaNote = modal.find('#note');
+    let btnSubmit = modal.find('#submit');
+    //
+    txAreaNote.on('change', function () {
+        if (txAreaNote.val()) {
+            btnSubmit.prop('disabled', false);
+        }
+    });
+    btnSubmit.prop('disabled', true);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            status: 4,
+            order_notes: txAreaNote.val()
+        });
+        paymentHasDone(pay);
+    });
+};
 $(document).ready(function () {
     loadMealTime();
     loadClass();
@@ -741,6 +773,7 @@ $(document).ready(function () {
     cardPayment();
     chargeToRoomPayment();
     houseUsePayment();
+    noPostPayment();
     El.openCashDraw.on('click', OpenCashDraw)
     App.virtualKeyboard();
 });
