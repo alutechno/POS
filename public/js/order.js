@@ -35,6 +35,7 @@ let delay = (function () {
     };
 })();
 let rupiahJS = function (val) {
+    val = val || "0"
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 };
@@ -99,9 +100,8 @@ let Payment = function (param, splitted) {
             posOrdersVal.unshift(posOrders[i])
         }
     }
-    let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (?)`, posOrdersVal);
+    let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (${posOrdersVal.join()})`);
     if (!updatePosOrder.error) {
-        console.log('setaaaatuss!!', status)
         if (status === 4) {
             Printing({orderId: orderId, payment: payment_amount});
             return {success: true, response: updatePosOrder.data};
@@ -141,6 +141,62 @@ let paymentHasDone = function (param) {
         alert(JSON.stringify(param.response))
     }
 };
+let initCheckListBoxes = function () {
+    $('.list-group.checked-list-box .list-group-item').each(function () {
+        let $widget = $(this),
+            $checkbox = $('<input type="checkbox" class="hidden" />'),
+            color = ($widget.data('color') ? $widget.data('color') : "primary"),
+            style = (
+                !$widget.data('style') || $widget.data('style') == "button" ? "btn-" : "list-group-item-"
+            ),
+            settings = {
+                on: {
+                    icon: 'glyphicon glyphicon-check'
+                },
+                off: {
+                    icon: 'glyphicon glyphicon-unchecked'
+                }
+            };
+
+        $widget.css('cursor', 'pointer')
+        $widget.append($checkbox);
+        $widget.on('click', function () {
+            $checkbox.prop('checked', !$checkbox.is(':checked'));
+            $checkbox.triggerHandler('change');
+            updateDisplay();
+        });
+        $checkbox.on('change', function () {
+            updateDisplay();
+        });
+
+        function updateDisplay() {
+            let isChecked = $checkbox.is(':checked');
+
+            $widget.data('state', (isChecked) ? "on" : "off");
+            $widget.find('.state-icon').removeClass().addClass('state-icon ' + settings[$widget.data('state')].icon);
+
+            if (isChecked) {
+                $widget.addClass(style + color + ' active');
+            } else {
+                $widget.removeClass(style + color + ' active');
+            }
+        }
+
+        function init() {
+            if ($widget.data('checked') == true) {
+                $checkbox.prop('checked', !$checkbox.is(':checked'));
+            }
+
+            updateDisplay();
+
+            if ($widget.find('.state-icon').length == 0) {
+                $widget.prepend('<span class="state-icon ' + settings[$widget.data('state')].icon + '"></span>');
+            }
+        }
+
+        init();
+    });
+}
 let loadMealTime = function () {
     let mealTime = SQL(`select * from ref_meal_time where DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time`);
     MealTime = {};
@@ -216,6 +272,11 @@ let loadMenu = function (filter) {
         let menu = SQL(`select * from inv_outlet_menus where status = 1 and outlet_id=${App.outlet.id} ${query} order by name`);
         Menu = [];
         if (!menu.error) {
+            let inputQty = El.modalQty.find('#qty');
+            let btnSubmit = El.modalQty.find('#submit');
+            let menuBg = El.menu.find('.menu-bg');
+            let menuFinder = El.menuFinder;
+            //
             El.menu.html('');
             Menu = menu.data.map(function (e) {
                 e.menu_price_ = rupiahJS(e.menu_price);
@@ -239,23 +300,31 @@ let loadMenu = function (filter) {
                 El.menu.append(el);
                 return e;
             });
-            El.menu.find('.menu-bg').height(El.menu.find('.menu-bg').parent().width());
+            //
+            menuBg.height(menuBg.parent().width());
+            //
             El.menu.find('.menu-item').on('click', function () {
-                El.modalQty.find('button#submit').prop('disabled', false);
+                inputQty.val('')
+                btnSubmit.prop('disabled', true);
                 El.modalQty.find('h4').html($(this).data('name'));
                 El.modalQty.modal('show');
                 El.modalQty.data($(this).data());
             });
-            El.menuFinder.on('blur', function () {
+            //
+            menuFinder.on('blur', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
-            El.modalQty.find('button#submit').on('click', function () {
-                let qty = El.modalQty.find('input#qty').data('value');
-                let item = El.modalQty.data();
+            inputQty.on('blur', function () {
+                let qty = inputQty.data('value');
+                btnSubmit.prop('disabled', true);
                 if (parseInt(qty) > 0) {
-                    El.modalQty.find('button#submit').prop('disabled', true);
-                    addOrderMenu(item, parseInt(qty));
+                    btnSubmit.prop('disabled', false);
                 }
+            })
+            btnSubmit.on('click', function () {
+                let qty = inputQty.data('value');
+                let item = El.modalQty.data();
+                addOrderMenu(item, parseInt(qty));
             });
         }
     } else {
@@ -319,15 +388,15 @@ let loadOrderSummary = function () {
             sum(a.sub_total_amount) subtotals, sum(a.discount_total_amount) discounts, 
             sum(b.service_amount) services, sum(c.tax_amount) taxes, sum(a.due_amount) totals
         from pos_orders a
-        join (
+        left join (
             select order_id, tax_amount service_amount from pos_order_taxes where tax_id = 1
         ) b on b.order_id = a.id
-        join (
+        left join (
             select order_id, sum(tax_amount) tax_amount from pos_order_taxes where tax_id != 1
         ) c on c.order_id = a.id
-        where id in (?);
-    `, orderIds);
-    let row = summary.data[0]
+        where id in (${orderIds})
+    `);
+    let row = summary.data[0];
     El.orderTotFood.data('value', row.subtotals);
     El.orderTotFood.html(rupiahJS(row.subtotals));
     El.orderTotDiscount.data('value', row.discounts);
@@ -498,6 +567,69 @@ let addOrderMenu = function (data, qty = 1) {
         }
     });
     El.modalQty.modal('hide');
+};
+let mergeOrder = function () {
+    let modal = El.modalMerge;
+    let pattern = '#check-list-box li';
+    let grandtotal = El.orderTotSum.data('value');
+    let ulCheckListBox = modal.find('#check-list-box');
+    let lblHomeTotal = modal.find('#home-total');
+    let lblGrandtotal = modal.find('#grandtotal');
+    let btnSubmit = modal.find('#submit');
+    let paths = Object.keys(Order);
+    //
+    let tableList = SQL(`
+        select * from (
+            select
+                a.id,a.table_no,a.cover, b.id order_id, b.num_of_cover guest,
+                b.sub_total_amount, b.discount_total_amount, b.tax_total_amount,
+                b.due_amount
+            from mst_pos_tables a
+            left join pos_orders b on a.id=b.table_id and b.status in (0,1)
+            where a.outlet_id=?
+            group by a.id order by b.id DESC
+        ) x
+        where order_id is not null and order_id not in (${Object.keys(Order).join()})
+        order by table_no, id
+    `, App.outlet.id);
+    ulCheckListBox.html('');
+    tableList.data.forEach(function (e) {
+        let li = $(`
+            <li id="merge-w-${e.order_id}" class="list-group-item" data-color="info">
+                Table #${e.table_no}
+                <span class='badge badge-default badge-pill'>${rupiahJS(e.due_amount)}</span>
+            </li>
+        `);
+        li.data('!', e);
+        ulCheckListBox.append(li)
+    });
+    lblHomeTotal.html(rupiahJS(grandtotal));
+    lblGrandtotal.html(rupiahJS(grandtotal));
+    btnSubmit.prop('disabled', true);
+    modal.find(pattern).on('click', function (event) {
+        event.preventDefault();
+        let a = [];
+        let to = setTimeout(function () {
+            let others = 0;
+            let actives = modal.find(pattern + '.active');
+            actives.each(function (idx, li) {
+                let data = $(this).data('!');
+                others += parseFloat(data.due_amount || 0);
+                a.push(data.order_id);
+            });
+            lblGrandtotal.html(rupiahJS(parseFloat(grandtotal) + others));
+            if (actives.length) {
+                btnSubmit.prop('disabled', false);
+            } else {
+                btnSubmit.prop('disabled', true);
+            }
+            paths = Object.keys(Order).concat(a)
+        }, 500)
+    });
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        window.location.href = '/order/' + paths.join('-')
+    });
 };
 let cashPayment = function () {
     let modal = El.modalCash;
@@ -710,8 +842,8 @@ let houseUsePayment = function () {
             house_use_id = (data.folio_id);
             lblCostCenter.html(data.cost_center);
             lblHouseUseInfo.html(data.house_use);
-            lblCurrentBalance.html(rupiahJS(data.current_transc_amount || 0));
-            lblMaxSpent.html(rupiahJS(data.max_spent_monthly || 0));
+            lblCurrentBalance.html(rupiahJS(data.current_transc_amount));
+            lblMaxSpent.html(rupiahJS(data.max_spent_monthly));
             lblPeriod.html(data.period);
             let balance = parseFloat(data.max_spent_monthly || 0) - parseFloat(data.current_transc_amount || 0);
             if (balance > 0) {
@@ -769,11 +901,14 @@ $(document).ready(function () {
     loadOrder();
     loadOrderMenu();
     loadOrderSummary();
+    mergeOrder();
     cashPayment();
     cardPayment();
     chargeToRoomPayment();
     houseUsePayment();
     noPostPayment();
-    El.openCashDraw.on('click', OpenCashDraw)
+    //
+    initCheckListBoxes();
+    El.openCashDraw.on('click', OpenCashDraw);
     App.virtualKeyboard();
 });
