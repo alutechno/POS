@@ -1,5 +1,6 @@
 let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
+    HouseUse = {}, Charge2Room = {},
     El = {
         menu: $('div#menu'),
         order: $('div#order'),
@@ -14,6 +15,7 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         orderTotTax: $('td#order-tot-tax'),
         orderTotSum: $('td#order-tot-sum'),
         openCashDraw: $('button#open-cash-draw'),
+        paymentBtn: $('a.payment-btn'),
         modalQty: $('div#modal-qty'),
         modalCash: $('div#modal-cash'),
         modalCard: $('div#modal-card'),
@@ -80,9 +82,9 @@ let Payment = function (param, splitted) {
     } = param;
     let userId = App.user.id;
     let tranBatchId = App.posCashier.id;
-    let orderId = Object.keys(Order)[0];
+    let orderId = orderIds.split(',')[0];
     let getDate = SQL('select NOW() now');
-    let datetime = getDate.data.now;
+    let datetime = getDate.data[0].now;
     //
     let posOrders = {
         status: status || 2,
@@ -92,7 +94,7 @@ let Payment = function (param, splitted) {
         closing_batch_id: tranBatchId
     };
     let posOrdersArr = [];
-    let posOrdersVal = [orderIds];
+    let posOrdersVal = [];
     for (let i in posOrders) {
         if (posOrders[i] === undefined) delete posOrders[i];
         else {
@@ -100,7 +102,7 @@ let Payment = function (param, splitted) {
             posOrdersVal.unshift(posOrders[i])
         }
     }
-    let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (${posOrdersVal.join()})`);
+    let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (${orderIds})`, posOrdersVal);
     if (!updatePosOrder.error) {
         if (status === 4) {
             Printing({orderId: orderId, payment: payment_amount});
@@ -407,49 +409,6 @@ let loadOrderSummary = function () {
     El.orderTotTax.html(rupiahJS(row.taxes));
     El.orderTotSum.data('value', row.totals);
     El.orderTotSum.html(rupiahJS(row.totals));
-    $('.modal-body div#info').html(`
-        <div class="row">
-            <div class="col-lg-6">
-                <span>Total</span>
-            </div>
-            <div class="col-lg-6 text-right">
-                <span style="margin-right: 13px;" for="subtotal">${rupiahJS(row.subtotals)}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <span style="margin-left: 15px;">Discount</span>
-            </div>
-            <div class="col-lg-6 text-right">
-                <span style="margin-right: 13px;" for="discount">${rupiahJS(row.discounts)}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <span style="margin-left: 15px;">Service Charge</span>
-            </div>
-            <div class="col-lg-6 text-right">
-                <span style="margin-right: 13px;" for="service">${rupiahJS(row.services)}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <span style="margin-left: 15px;">Tax</span>
-            </div>
-            <div class="col-lg-6 text-right">
-                <span style="margin-right: 13px;" for="tax">${rupiahJS(row.taxes)}</span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-6">
-                <span>Grand Total</span>
-            </div>
-            <div class="col-lg-6 text-right">
-                <span style="margin-right: 13px;" for="total">${rupiahJS(row.totals)}</span>
-            </div>
-        </div>
-        <hr style="margin-top: 5px; margin-bottom: 10px"/>
-    `);
 }
 let addOrderMenu = function (data, qty = 1) {
     let {id, menu_class_id, outlet_id} = data;
@@ -558,7 +517,7 @@ let addOrderMenu = function (data, qty = 1) {
         row: {
             "menu_outlet_id": data.id,
             "total_amount": menu_price,
-            "order_id": Object.keys(Order)[0],
+            "order_id": orderIds.split(',')[0],
             "order_qty": qty,
             "id": orderItemId,
             "name": data.name,
@@ -612,6 +571,7 @@ let mergeOrder = function () {
         let to = setTimeout(function () {
             let others = 0;
             let actives = modal.find(pattern + '.active');
+            grandtotal = El.orderTotSum.data('value');
             actives.each(function (idx, li) {
                 let data = $(this).data('!');
                 others += parseFloat(data.due_amount || 0);
@@ -628,8 +588,22 @@ let mergeOrder = function () {
     });
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
+        let home = paths[0];
+        let keys = paths.slice(1);
+        let getDate = SQL('select NOW() now');
+        let datetime = getDate.data[0].now;
+        keys.forEach(function (key) {
+            SQL(
+                `insert into pos_included_orders set order_id=?,included_order_id=?,created_by=? on duplicate key update modified_date=?,modified_by=?`,
+                [ home, key, App.user.id, datetime, App.user.id ]
+            )
+        });
         window.location.href = '/order/' + paths.join('-')
     });
+    //
+    $('a[href="#modal-merge"]').on('click', function () {
+        El.modalMerge.find('li.active').click();
+    })
 };
 let cashPayment = function () {
     let modal = El.modalCash;
@@ -760,6 +734,7 @@ let chargeToRoomPayment = function () {
     let houseGuest = SQL(`select * from v_in_house_guest`);
     selectCustomer.html('<option value="">- Choose -</option>');
     houseGuest.data.forEach(function (e) {
+        Charge2Room[e.folio_id] = e;
         let el = $(`<option value="${e.folio_id}">[${e.room_type} / ${e.room_no}] - ${e.cust_firt_name} ${e.cust_last_name}</option>`);
         selectCustomer.append(el);
     });
@@ -829,6 +804,7 @@ let houseUsePayment = function () {
     `);
     selectHouseUse.html('<option value="">- Choose -</option>');
     houseUseList.data.forEach(function (e) {
+        HouseUse[e.house_use_id] = e;
         let el = $(`<option value="${e.house_use_id}">[${e.code}] - ${e.pos_cost_center_name} / ${e.name}</option>`);
         selectHouseUse.append(el);
     });
@@ -893,6 +869,772 @@ let noPostPayment = function () {
         paymentHasDone(pay);
     });
 };
+let splitPayment = function () {
+    let m = El.modalSplit;
+    let grandtotal = El.orderTotSum.data('value');
+    let close = m.find('#close');
+    let next = m.find('#submit');
+    let mode = m.find('#mode');
+    let modeCounter = m.find('#mode-counter');
+    let noState = m.find('#no-state');
+    let state = m.find('#state');
+    let payments = m.find('.payment-state');
+    let modeLabel0 = m.find('#mode-label-0');
+    let modeLabel1 = m.find('#mode-label-1');
+    let balance = m.find('#balance');
+    let recordList = $('<div>');
+    //
+    let count = 0;
+    let manualMode = m.find('#manual-mode');
+    let manualState = m.find('#manual-state');
+    let eventState = m.find('#event-state');
+    let itemState = m.find('#item-state');
+    let recordPayment = function (i, value) {
+        return $(`
+        <div class="row">
+            <div class="col-sm-6">
+                <span style="margin-left: 10px;">Payment #${i}</span>
+            </div>
+            <div class="col-sm-6 text-right">
+                <span style="margin-right: 13px;">
+                    ${rupiahJS(value)}
+                </span>
+            </div>
+        </div>
+    `);
+    };
+    let payment = function (i) {
+        let pay = $(`
+			<div id="split-${i}" class=col-sm-12>
+				<div class="row">
+					<div id="split-${i}-mode" class="col-sm-12">
+						<div class="form-group row">
+							<div class="col-sm-2"><h5>Method</h5></div>
+							<div class="col-sm-4">
+								<select class="form-control"">
+									<option> - Choose - </option>
+									<option value="cash">Cash</option>
+									<option value="card">Card</option>
+									<option value="charge2room">Charge to room</option>
+									<option value="houseuse">House use</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-12"><hr style="margin: 0px 0px 10px;"/></div>
+					<div id="split-${i}-pay" class="col-sm-12"></div>
+				</div>
+			</div>
+        `);
+        let select = pay.find('select');
+        select.on('change', function () {
+            let el = $(this);
+            let payDialog = pay.find(`#split-${i}-pay`);
+
+            next.disable();
+            payDialog.html('');
+            if (el.val() == 'cash') {
+                payDialog.append(payWithCash(`split-${i}-cash`));
+            } else if (el.val() == 'card') {
+                payDialog.append(payWithCard(`split-${i}-card`));
+            } else if (el.val() == 'charge2room') {
+                payDialog.append(payWithCharge2Room(`split-${i}-charge`));
+            } else if (el.val() == 'houseuse') {
+                payDialog.append(payWithHouseUse(`split-${i}-house`));
+            }
+        });
+        return pay;
+    };
+    let payWithCash = function (id) {
+        let limit = parseInt(modeCounter.val());
+        let pay = $(`
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay with</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-paywith" type="currency" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <span>Change</span>
+                        </div>
+                        <div class="col-sm-6 pull-right">
+                            <span id="${id}-change" class="pull-right" style="margin-right: 13px;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        let change = pay.find(`#${id}-change`);
+        let paywith = pay.find(`#${id}-paywith`);
+        let amount = pay.find(`#${id}-amount`);
+        paywith.keyboard({layout: 'num'});
+        paywith.css('text-align', 'end');
+        paywith.on('change', function () {
+            let el = $(this);
+            let val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+            next.disable();
+
+            let a = parseFloat(el.data('value'));
+            let b = parseFloat(amount.data('value'));
+            if ((a > 0) && (a >= b)) {
+                if (limit == count) {
+                    if (a >= balance.val()) {
+                        change.attr('val', a - b);
+                        change.html(rupiahJS(a - b))
+                        next.enable();
+                    }
+                } else {
+                    change.attr('val', a - b);
+                    change.html(rupiahJS(a - b))
+                    next.enable();
+                }
+            }
+        });
+        amount.keyboard({layout: 'num'});
+        amount.css('text-align', 'end');
+        amount.on('change', function () {
+            let el = $(this);
+            let val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+            next.disable();
+
+            let a = parseFloat(el.data('value'));
+            let b = parseFloat(paywith.data('value'));
+            if ((a > 0) && (b >= a)) {
+                if (limit == count) {
+                    if (a >= balance.val()) {
+                        change.attr('val', b - a);
+                        change.html(rupiahJS(b - a))
+                        next.enable();
+                    }
+                } else {
+                    change.attr('val', b - a);
+                    change.html(rupiahJS(b - a))
+                    next.enable();
+                }
+            }
+        });
+        //
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+        return pay;
+    }
+    let payWithCard = function (id) {
+        let limit = parseInt(modeCounter.val());
+        let options = El.modalCard.find('#bank-type').html();
+        let pay = $(`
+            <div class="row">
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <span>Type</span>
+                        <select class="form-control" id="${id}-select">
+                            <option value="credit">Credit</option>
+                            <option value="debit">Debit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-9">
+                    <div class="form-group">
+                        <span>Bank</span>
+                        <select class="form-control" id="${id}-card_type">
+                            ${options}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <input id="${id}-swiper" type="force-text" class="form-control"
+                           placeholder="Tap here, then swipe the card">
+                    <br/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-7">
+                    <div class="form-group">
+                        <span for="usr">Number:</span>
+                        <input id="${id}-cardno" type="text" class="form-control">
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="form-group">
+                        <span for="usr">Name:</span>
+                        <input id="${id}-customer" type="text" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+        `);
+        let amount = pay.find(`#${id}-amount`);
+        let select = pay.find(`#${id}-select`);
+        let cardType = pay.find(`#${id}-card_type`);
+        let cardNo = pay.find(`#${id}-cardno`);
+        let customer = pay.find(`#${id}-customer`);
+        let swiper = pay.find(`#${id}-swiper`);
+        let validate = function () {
+            let typeVal = select.val();
+            let customerVal = customer.val();
+            let cardNoVal = cardNo.val();
+            let cardTypeVal = parseInt(cardType.val());
+            let amountVal = parseFloat(amount.data('value'));
+            next.disable();
+            if (typeVal == 'credit') {
+                if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            } else {
+                customer.val('');
+                if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            }
+        }
+        //
+        amount.keyboard({layout: 'num'});
+        amount.css('text-align', 'end');
+        amount.on('change', function () {
+            let el = $(this);
+            let val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+            //
+            let typeVal = select.val();
+            let customerVal = customer.val();
+            let cardNoVal = cardNo.val();
+            let cardTypeVal = parseInt(cardType.val());
+            let amountVal = parseInt(el.data('value'));
+            next.disable();
+            if (typeVal == 'credit') {
+                customer.parent().show();
+                if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            } else {
+                customer.val('');
+                customer.parent().hide();
+                if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            }
+        });
+        cardNo.keyboard({layout: 'qwerty'});
+        customer.keyboard({layout: 'qwerty'});
+        swiper.keydown(function (e) {
+            if (e.keyCode == 13) {
+                e.preventDefault();
+            }
+            return
+        });
+        swiper.on('keyup', function () {
+            let el = $(this);
+            delay(function () {
+                let arr = swipeCard(el.val());
+                customer.val('');
+                if (arr.length) {
+                    cardNo.val(arr[0]);
+                    if (select.val() == 'credit') {
+                        customer.val(arr[1]);
+                    } else {
+                    }
+                }
+                el.val('');
+            }, 1000);
+        });
+        select.on('change', validate);
+        cardType.on('change', validate)
+        cardNo.on('change', validate);
+        customer.on('change', validate);
+
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+
+        return pay;
+    }
+    let payWithCharge2Room = function (id) {
+        let limit = parseInt(modeCounter.val());
+        let options = El.modalCharge2Room.find('#customer').html();
+        let pay = $(`
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <span>Customer</span>
+                        <select class="form-control" id="${id}-select">
+                            ${options}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span>Check In</span>
+                    <span> : </span>
+                    <span id="${id}-check_in_date"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Departure</span>
+                    <span> : </span>
+                    <span id="${id}-departure_date"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Cash Bases</span>
+                    <span> : </span>
+                    <span id="${id}-is_cash_bases"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Room Only</span>
+                    <span> : </span>
+                    <span id="${id}-is_room_only"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Reservation Type</span>
+                    <span> : </span>
+                    <span id="${id}-reservation_type"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Room No</span>
+                    <span> : </span>
+                    <span id="${id}-room_no"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Room Rate</span>
+                    <span> : </span>
+                    <span id="${id}-room_rate_code"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>Room Type</span>
+                    <span> : </span>
+                    <span id="${id}-room_type"></span>
+                </div>
+                <div class="col-sm-6">
+                    <span>VIP Type</span>
+                    <span> : </span>
+                    <span id="${id}-vip_type"></span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+        `);
+        let amount = pay.find(`#${id}-amount`);
+        let select = pay.find(`#${id}-select`);
+        //
+        amount.keyboard({layout: 'num'});
+        amount.css('text-align', 'end');
+        amount.on('change', function () {
+            let el = $(this);
+            let val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+            next.disable();
+            if (parseFloat(el.data('value')) > 0) {
+                if (limit == count) {
+                    if (parseFloat(el.data('value')) >= balance.val()) {
+                        if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
+                            next.enable();
+                        }
+                    }
+                } else if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
+                    next.enable();
+                }
+            }
+        });
+        select.on('change', function () {
+            let i = $(this).val();
+            let d = Charge2Room.current = Charge2Room[i];
+            if (d) {
+                pay.find(`#${id}-check_in_date`).html(d.check_in_date);
+                pay.find(`#${id}-departure_date`).html(d.departure_date);
+                pay.find(`#${id}-is_cash_bases`).html(d.is_cash_bases);
+                pay.find(`#${id}-is_room_only`).html(d.is_room_only);
+                pay.find(`#${id}-reservation_type`).html(d.reservation_type);
+                pay.find(`#${id}-room_no`).html(d.room_no);
+                pay.find(`#${id}-room_rate_code`).html(d.room_rate_code + '/' + d.room_rate_name);
+                pay.find(`#${id}-room_type`).html(d.room_type + '/' + d.room_type_name);
+                pay.find(`#${id}-vip_type`).html(d.vip_type);
+                if (d.is_cash_bases.toLowerCase() === 'n') {
+                    if (parseFloat(amount.data('value')) > 0) {
+                        if (limit == count) {
+                            if (parseFloat(amount.data('value')) >= balance.val()) {
+                                next.enable();
+                            }
+                        } else {
+                            next.enable();
+                        }
+                    }
+                }
+            }
+        });
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+        return pay;
+    }
+    let payWithHouseUse = function (id) {
+        let limit = parseInt(modeCounter.val());
+        let options = El.modalHouseUse.find('#house-use').html();
+        let pay = $(`
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <span>House use</span>
+                        <select class="form-control" id="${id}-select">
+                            ${options}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <span>Period</span>
+                    <span> : </span>
+                    <span id="${id}-period"></span>
+                </div>
+                <div class="col-sm-12">
+                    <span>House use</span>
+                    <span> : </span>
+                    <span id="${id}-house_use"></span>
+                </div>
+                <div class="col-sm-12">
+                    <span>Cost Center</span>
+                    <span> : </span>
+                    <span id="${id}-cost_center"></span>
+                </div>
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <span>Monthly Spent</span>
+                        </div>
+                        <div class="col-sm-6 pull-right">
+                            <span id="${id}-max_spent_monthly" class="pull-right"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <span>Current Transaction Amount</span>
+                        </div>
+                        <div class="col-sm-6 pull-right">
+                            <span id="${id}-current_transc_amount" class="pull-right"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+        `);
+        //
+        let amount = pay.find(`#${id}-amount`);
+        let select = pay.find(`#${id}-select`);
+
+        select.on('change', function () {
+            let i = $(this).val();
+            next.disable();
+            if (parseInt(i)) {
+                let d = HouseUse.current = HouseUse[i];
+                d.current_transc_amount = d.current_transc_amount || 0;
+                d.max_spent_monthly = d.max_spent_monthly || 0;
+                if (d) {
+                    pay.find(`#${id}-cost_center`).html(d.cost_center);
+                    pay.find(`#${id}-house_use`).html(d.house_use);
+                    pay.find(`#${id}-current_transc_amount`).html(rupiahJS(d.current_transc_amount));
+                    pay.find(`#${id}-max_spent_monthly`).html(rupiahJS(d.max_spent_monthly));
+                    pay.find(`#${id}-period`).html(d.period || `/* NO PERIOD! */`);
+                    //
+                    let spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
+                    let paywith = parseFloat(amount.data('value'));
+                    if (d.period && paywith && (spent >= paywith)) {
+                        if (limit == count) {
+                            if (paywith >= parseFloat(balance.val())) {
+                                next.enable();
+                            }
+                        } else {
+                            next.enable();
+                        }
+                    }
+                }
+            }
+        });
+        amount.keyboard({layout: 'num'});
+        amount.css('text-align', 'end');
+        amount.on('change', function () {
+            let el = $(this);
+            let val = el.val();
+            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
+            el.data('display',
+                parseFloat(val.replace(/\,/g, ""))
+                .toFixed(2).toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            );
+            el.attr('value', el.data('display'));
+            el.val(el.data('display'));
+            next.disable();
+            //
+            let d = HouseUse.current || {};
+            let spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
+            let paywith = parseFloat(el.data('value'));
+            if (d.period && paywith && (spent >= paywith)) {
+                if (limit == count) {
+                    if (paywith >= parseFloat(balance.val())) {
+                        next.enable();
+                    }
+                } else {
+                    next.enable();
+                }
+            }
+        });
+
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+        return pay;
+    }
+    //
+    balance.val = function (value) {
+        if (value) {
+            balance.html(rupiahJS(value));
+            $(this).attr('val', value);
+        }
+        let val = $(this).attr('val');
+        return parseFloat(val);
+    };
+    close.enable = function () {
+        close.removeAttr('disabled');
+    };
+    close.disable = function () {
+        close.attr('disabled', 1);
+    };
+    next.enable = function () {
+        next.removeAttr('disabled');
+    };
+    next.disable = function () {
+        next.attr('disabled', 1);
+    };
+    next.on('click', function () {
+        noState.hide();
+        state.show();
+        next.disable();
+        let activePayment = payments.filter(function (i, e) {
+            return ($(this).is(':visible'))
+        });
+        if (activePayment.length) {
+            let limit = parseInt(modeCounter.val());
+            let bayar = parseFloat(activePayment.find('[id*="-amount"]').data('value'));
+            let nextBalance = balance.val() - parseFloat(bayar);
+            let an = activePayment.find('[id*="-mode"]').find('select').val();
+            let d = {};
+            if (an == 'cash') {
+                d.payment_type_id = 1;
+                d.payment_amount = activePayment.find('[id*="-cash-paywith"]').data('value');
+                d.grandtotal = activePayment.find('[id*="-cash-amount"]').data('value');
+                d.change_amount = activePayment.find('[id*="-cash-change"]').attr('val');
+            } else if (an == 'card') {
+                d.payment_type_id = activePayment.find('[id*="-card-card_type"]').val();
+                d.payment_amount = activePayment.find('[id*="-card-amount"]').data('value');
+                d.grandtotal = d.payment_amount;
+                d.change_amount = 0;
+                d.card_no = activePayment.find('[id*="-cardno"]').val();
+            } else if (an == 'charge2room') {
+                d.payment_type_id = 16;
+                d.payment_amount = activePayment.find('[id*="-charge-amount"]').data('value');
+                d.grandtotal = d.payment_amount;
+                d.change_amount = 0;
+                d.folio_id = activePayment.find('[id*="-charge-select"]').val();
+            } else if (an == 'houseuse') {
+                d.payment_type_id = 17;
+                d.payment_amount = activePayment.find('[id*="-amount"]').data('value');
+                d.grandtotal = d.payment_amount;
+                d.change_amount = 0;
+                d.house_use_id = activePayment.find('[id*="-house-select"]').val();
+            }
+
+            if (nextBalance > 0) {
+                next.disable();
+                balance.val(nextBalance);
+                balance.html(rupiahJS(nextBalance));
+                recordList.append(recordPayment(count, bayar));
+
+                console.info('Splitbill > saving & printing start #' + count);
+                let pay = Payment(d);
+                if (pay.success) {
+                    activePayment.hide();
+                    next.enable();
+                    next.click();
+                    console.info('Splitbill > saving & printing done #' + count);
+                } else {
+                    console.error('Splitbill > saving & printing error #' + count);
+                    alert(`Error occurrence, result : ${JSON.stringify(pay.response)}`);
+                }
+            } else if ((nextBalance <= 0) || (count == limit)) {
+                next.disable();
+                balance.val(nextBalance);
+                balance.html(rupiahJS(nextBalance));
+                recordList.append(recordPayment(count, bayar));
+
+                console.info('Splitbill > saving & printing start #' + count);
+                let pay = Payment(d);
+                if (pay.success) {
+                    activePayment.hide();
+                    mode.val('')
+                    close.enable();
+                    state.hide();
+                    noState.hide();
+                    console.info('Splitbill > saving & printing done #' + count);
+                    console.info('Splitbill > finished!');
+                    paymentHasDone(pay);
+                } else {
+                    console.error('Splitbill > saving & printing error #' + count);
+                    alert(`Error occurrence, result : ${JSON.stringify(res.result)}`);
+                }
+            }
+        } else {
+            itemState.hide();
+            eventState.hide();
+            manualState.hide();
+            count += 1;
+            if (mode.val() == 'manual') {
+                modeLabel0.html('Manual');
+                modeLabel1.html(`${count} of ${modeCounter.val()}`);
+                manualState.show();
+                manualState.html('');
+                manualState.append(payment(count));
+            }
+        }
+    });
+    mode.on('change', function () {
+        let v = $(this).val();
+        modeCounter.parent().prev().hide();
+        modeCounter.hide();
+        next.disable();
+        close.disable();
+        if (v) {
+            if (v == 'manual') {
+                modeCounter.parent().prev().show();
+                modeCounter.show();
+                if (parseFloat(modeCounter.val())) {
+                    next.enable();
+                }
+            }
+        }
+    });
+    modeCounter.on('change', function () {
+        next.disable();
+        if (mode.val() == 'manual' && parseFloat(modeCounter.val())) {
+            next.enable();
+        }
+    })
+    //
+    m.on('show.bs.modal', function () {
+        balance.val(grandtotal)
+        modeCounter.val('');
+        recordList.html('');
+        modeCounter.parent().prev().hide()
+        modeCounter.hide();
+        noState.show();
+        state.hide();
+        count = 0;
+    });
+    modeCounter.keyboard({layout: 'num'});
+    m.modal({backdrop: 'static', keyboard: false});
+    recordList.insertBefore(balance.closest('.row'));
+    m.modal('hide');
+};
 $(document).ready(function () {
     loadMealTime();
     loadClass();
@@ -901,14 +1643,62 @@ $(document).ready(function () {
     loadOrder();
     loadOrderMenu();
     loadOrderSummary();
-    mergeOrder();
     cashPayment();
+    mergeOrder();
     cardPayment();
     chargeToRoomPayment();
     houseUsePayment();
     noPostPayment();
+    splitPayment();
     //
     initCheckListBoxes();
+    El.paymentBtn.on('click', function () {
+        El.modalMerge.find('#home-total').html(El.orderTotSum.html())
+        El.modalMerge.find('#grandtotal').html(El.orderTotSum.html())
+        $('.modal-body div#info').html(`
+            <div class="row">
+                <div class="col-lg-6">
+                    <span>Total</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="subtotal">${El.orderTotFood.html()}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span style="margin-left: 15px;">Discount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="discount">${El.orderTotDiscount.html()}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span style="margin-left: 15px;">Service Charge</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="service">${El.orderTotService.html()}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span style="margin-left: 15px;">Tax</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="tax">${El.orderTotTax.html()}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span>Grand Total</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="total">${El.orderTotSum.html()}</span>
+                </div>
+            </div>
+            <hr style="margin-top: 5px; margin-bottom: 10px"/>
+        `);
+    })
     El.openCashDraw.on('click', OpenCashDraw);
     App.virtualKeyboard();
 });
