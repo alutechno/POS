@@ -313,12 +313,12 @@ const http = function (pool, compile) {
         if (1) {
             res.send({
                 error: false,
-                data: 'Cash draw opened.'
+                message: 'Cash draw opened.'
             })
         } else {
             res.send({
                 error: true,
-                data: 'Cannot opening cash draw!'
+                message: 'Cannot opening cash draw!'
             })
         }
     });

@@ -13,6 +13,7 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         orderTotService: $('td#order-tot-service'),
         orderTotTax: $('td#order-tot-tax'),
         orderTotSum: $('td#order-tot-sum'),
+        openCashDraw: $('button#open-cash-draw'),
         modalQty: $('div#modal-qty'),
         modalCash: $('div#modal-cash'),
         modalCard: $('div#modal-card'),
@@ -36,6 +37,23 @@ let delay = (function () {
 let rupiahJS = function (val) {
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+};
+let OpenCashDraw = function () {
+    $.ajax({
+        method: 'GET',
+        url: '/openCashDraw',
+        async: false,
+        complete: function (xhr, is) {
+            if (is == 'success') {
+                if (xhr.responseJSON) {
+                    if (!xhr.responseJSON.error) {
+                        alert(xhr.responseJSON.message)
+                        console.info(xhr.responseJSON.message);
+                    } else console.error(xhr.responseJSON.message);
+                } else console.error(xhr.response);
+            } else console.error('Server down!');
+        }
+    });
 };
 let Printing = function (param) {
     $.ajax({
@@ -723,5 +741,6 @@ $(document).ready(function () {
     cardPayment();
     chargeToRoomPayment();
     houseUsePayment();
+    El.openCashDraw.on('click', OpenCashDraw)
     App.virtualKeyboard();
 });
