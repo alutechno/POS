@@ -605,7 +605,6 @@ let chargeToRoomPayment = function () {
     selectCustomer.html('<option value="">- Choose -</option>');
     houseGuest.data.forEach(function (e) {
         let el = $(`<option value="${e.folio_id}">[${e.room_type} / ${e.room_no}] - ${e.cust_firt_name} ${e.cust_last_name}</option>`);
-        el.data(e);
         selectCustomer.append(el);
     });
     selectCustomer.on('change', function(){
@@ -634,9 +633,77 @@ let chargeToRoomPayment = function () {
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
-            note: data.note,
+            order_notes: txAreaNote.val(),
             folio_id: data.folio_id,
             payment_type_id: 16,
+            grandtotal: grandtotal,
+            payment_amount: grandtotal,
+            change_amount: 0
+        });
+        paymentHasDone(pay);
+    });
+};
+let houseUsePayment = function () {
+    let modal = El.modalHouseUse;
+    let total = El.orderTotFood.data('value');
+    let discount = El.orderTotDiscount.data('value');
+    let service = El.orderTotService.data('value');
+    let tax = El.orderTotTax.data('value');
+    let grandtotal = El.orderTotSum.data('value');
+    let house_use_id, data;
+    //
+    let selectHouseUse = modal.find('#house-use');
+    let lblPeriod = modal.find('#period');
+    let lblHouseUseInfo = modal.find('#house-use-info');
+    let lblCostCenter = modal.find('#cost-center');
+    let lblMaxSpent = modal.find('#max-spent');
+    let lblCurrentBalance = modal.find('#current-balance');
+    let txAreaNote = modal.find('#note');
+    let btnSubmit = modal.find('#submit');
+    //
+    let houseUseList = SQL(`
+        select
+            a.*, b.current_transc_amount, b.house_use,
+            a.id house_use_id, b.period, b.cost_center,
+            c.name pos_cost_center_name
+        from mst_house_use a
+        left join v_house_use_spent_monthly b on a.id = b.house_use_id and b.period = DATE_FORMAT(NOW(), '%Y%m')
+        left join mst_pos_cost_center c on c.id = a.pos_cost_center_id
+        where a.status = 1
+    `);
+    selectHouseUse.html('<option value="">- Choose -</option>');
+    houseUseList.data.forEach(function (e) {
+        let el = $(`<option value="${e.house_use_id}">[${e.code}] - ${e.pos_cost_center_name} / ${e.name}</option>`);
+        selectHouseUse.append(el);
+    });
+    selectHouseUse.on('change', function(){
+        let val1 = selectHouseUse.val();
+        data = 0;
+        if (val1) {
+            data = houseUseList.data.filter(function(e){
+                return e.house_use_id == val1 ? 1 : 0;
+            })[0];
+            house_use_id = (data.folio_id);
+            lblCostCenter.html(data.cost_center);
+            lblHouseUseInfo.html(data.house_use);
+            lblCurrentBalance.html(rupiahJS(data.current_transc_amount || 0));
+            lblMaxSpent.html(rupiahJS(data.max_spent_monthly || 0));
+            lblPeriod.html(data.period);
+            let balance = parseFloat(data.max_spent_monthly || 0) - parseFloat(data.current_transc_amount || 0);
+            if (balance > 0) {
+                if (data.period && (balance - parseFloat(grandtotal) >= 0)) {
+                    btnSubmit.prop('disabled', false);
+                }
+            }
+        }
+    });
+    btnSubmit.prop('disabled', true);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            order_notes: txAreaNote.val(),
+            house_use_id: data.house_use_id,
+            payment_type_id: 17,
             grandtotal: grandtotal,
             payment_amount: grandtotal,
             change_amount: 0
@@ -655,5 +722,6 @@ $(document).ready(function () {
     cashPayment();
     cardPayment();
     chargeToRoomPayment();
+    houseUsePayment();
     App.virtualKeyboard();
 });
