@@ -217,7 +217,7 @@ let loadMenu = function (filter) {
             });
             El.menu.find('.menu-bg').height(El.menu.find('.menu-bg').parent().width());
             El.menu.find('.menu-item').on('click', function () {
-                El.modalQty.find('button#submit').removeAttr('disabled');
+                El.modalQty.find('button#submit').prop('disabled', false);
                 El.modalQty.find('h4').html($(this).data('name'));
                 El.modalQty.modal('show');
                 El.modalQty.data($(this).data());
@@ -229,7 +229,7 @@ let loadMenu = function (filter) {
                 let qty = El.modalQty.find('input#qty').data('value');
                 let item = El.modalQty.data();
                 if (parseInt(qty) > 0) {
-                    El.modalQty.find('button#submit').attr('disabled', 1);
+                    El.modalQty.find('button#submit').prop('disabled', true);
                     addOrderMenu(item, parseInt(qty));
                 }
             });
@@ -491,15 +491,15 @@ let cashPayment = function () {
         let value = $(this).data('value');
         change = parseFloat(value) - parseFloat(grandtotal);
         if (change >= 0) {
-            btnSubmit.removeAttr('disabled')
+            btnSubmit.prop('disabled', false)
             lblChange.html(rupiahJS(change));
         } else {
-            btnSubmit.attr('disabled', 1)
+            btnSubmit.prop('disabled', true)
             lblChange.html(rupiahJS(0));
         }
     });
     btnSubmit.on('click', function () {
-        btnSubmit.attr('disabled', 1);
+        btnSubmit.prop('disabled', true);
         let pay = Payment({
             payment_type_id: 1,
             grandtotal: grandtotal,
