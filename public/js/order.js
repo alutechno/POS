@@ -26,6 +26,17 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         modalAddNote: $('div#modal-add-note'),
         modalVoid: $('div#modal-void')
     };
+let delay = (function () {
+    let timer = 0;
+    return function (callback, ms) {
+        clearTimeout(timer);
+        timer = setTimeout(callback, ms);
+    };
+})();
+let rupiahJS = function (val) {
+    return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
+    .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+};
 let Printing = function (param) {
     $.ajax({
         method: 'GET',
@@ -105,10 +116,6 @@ let paymentHasDone = function (param) {
     } else {
         alert(JSON.stringify(param.response))
     }
-}
-let rupiahJS = function (val) {
-    return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
-    .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 };
 let loadMealTime = function () {
     let mealTime = SQL(`select * from ref_meal_time where DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time`);
@@ -500,7 +507,71 @@ let cashPayment = function () {
             change_amount: change,
         });
         paymentHasDone(pay);
-    })
+    });
+};
+let cardPayment = function () {
+    let modal = El.modalCard;
+    let total = El.orderTotFood.data('value');
+    let discount = El.orderTotDiscount.data('value');
+    let service = El.orderTotService.data('value');
+    let tax = El.orderTotTax.data('value');
+    let grandtotal = El.orderTotSum.data('value');
+    //
+    let selectBankType = modal.find('#bank-type');
+    let selectCcType = modal.find('#cc-type');
+    let inputCardSwiper = modal.find('#card-swiper');
+    let inputCardNo = modal.find('#card-no');
+    let inputCustomerName = modal.find('#customer-name');
+    let btnSubmit = modal.find('#submit');
+    let validation = function () {
+        let val1 = selectBankType.val();
+        let val2 = inputCardNo.val();
+        let val3 = inputCustomerName.val();
+        btnSubmit.prop('disabled', true);
+        if (val1 && val3 && val3) {
+            btnSubmit.prop('disabled', false);
+        }
+    };
+    //
+    let bankList = SQL(`select id, code, name, description from ref_payment_method where category = 'CC' and status = '1' order by name`);
+    selectBankType.html('<option value="">- Choose -</option>');
+    bankList.data.forEach(function (bank) {
+        selectBankType.append(`<option value="${bank.id}">${bank.code} - ${bank.name}</option>`);
+    });
+    inputCardSwiper.keydown(function (e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+        }
+        return
+    });
+    inputCardSwiper.on('keyup', function () {
+        let el = $(this);
+        delay(function () {
+            let arr = swipeCard(el.val());
+            inputCustomerName.val('');
+            if (arr.length) {
+                inputCardNo.val(arr[0]);
+                if (selectCcType.val() == 'credit') {
+                    inputCustomerName.val(arr[1]);
+                } else {
+                }
+            }
+            el.val('');
+        }, 1000);
+    });
+    inputCardNo.on('change', validation);
+    inputCustomerName.on('change', validation);
+    selectBankType.on('change', validation);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            payment_type_id: selectBankType.val(),
+            grandtotal: grandtotal,
+            payment_amount: grandtotal,
+            change_amount: 0,
+        });
+        paymentHasDone(pay);
+    });
 };
 $(document).ready(function () {
     loadMealTime();
@@ -511,5 +582,6 @@ $(document).ready(function () {
     loadOrderMenu();
     loadOrderSummary();
     cashPayment();
+    cardPayment();
     App.virtualKeyboard();
 });
