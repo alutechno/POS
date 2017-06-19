@@ -532,6 +532,7 @@ let cardPayment = function () {
         if (selectCcType.val() == 'credit') {
             if (val1 && val3 && val3) btnSubmit.prop('disabled', false);
         } else {
+            inputCustomerName.val('');
             if (val1 && val2) btnSubmit.prop('disabled', false);
         }
     };
@@ -578,6 +579,71 @@ let cardPayment = function () {
         paymentHasDone(pay);
     });
 };
+let chargeToRoomPayment = function () {
+    let modal = El.modalCharge2Room;
+    let total = El.orderTotFood.data('value');
+    let discount = El.orderTotDiscount.data('value');
+    let service = El.orderTotService.data('value');
+    let tax = El.orderTotTax.data('value');
+    let grandtotal = El.orderTotSum.data('value');
+    let folio_id, data;
+    //
+    let selectCustomer = modal.find('#customer');
+    let lblCheckInDate = modal.find('#check-in-date');
+    let lblDepartureDate = modal.find('#departure-date');
+    let lblIsCashBases = modal.find('#is-cash-bases');
+    let lblIsRoomOnly = modal.find('#is-room-only');
+    let lblReservationType = modal.find('#reservation-type');
+    let lblRoomNo = modal.find('#room-no');
+    let lblRoomRateCode = modal.find('#room-rate-code');
+    let lblRoomType = modal.find('#room-type');
+    let lblVipType = modal.find('#vip-type');
+    let txAreaNote = modal.find('#note');
+    let btnSubmit = modal.find('#submit');
+    //
+    let houseGuest = SQL(`select * from v_in_house_guest`);
+    selectCustomer.html('<option value="">- Choose -</option>');
+    houseGuest.data.forEach(function (e) {
+        let el = $(`<option value="${e.folio_id}">[${e.room_type} / ${e.room_no}] - ${e.cust_firt_name} ${e.cust_last_name}</option>`);
+        el.data(e);
+        selectCustomer.append(el);
+    });
+    selectCustomer.on('change', function(){
+        let val1 = selectCustomer.val();
+        data = 0;
+        if (val1) {
+            data = houseGuest.data.filter(function(e){
+                return e.folio_id == val1 ? 1 : 0;
+            })[0];
+            folio_id = (data.folio_id);
+            lblCheckInDate.html(data.check_in_date);
+            lblDepartureDate.html(data.departure_date);
+            lblIsCashBases.html(data.is_cash_bases);
+            lblIsRoomOnly.html(data.is_room_only);
+            lblReservationType.html(data.reservation_type);
+            lblRoomNo.html(data.room_no);
+            lblRoomRateCode.html(data.room_rate_code + '/' + data.room_rate_name);
+            lblRoomType.html(data.room_type + '/' + data.room_type_name);
+            lblVipType.html(data.vip_type);
+            if (data.is_cash_bases.toLowerCase() === 'n') {
+                btnSubmit.prop('disabled', false);
+            }
+        }
+    });
+    btnSubmit.prop('disabled', true);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            note: data.note,
+            folio_id: data.folio_id,
+            payment_type_id: 16,
+            grandtotal: grandtotal,
+            payment_amount: grandtotal,
+            change_amount: 0
+        });
+        paymentHasDone(pay);
+    });
+};
 $(document).ready(function () {
     loadMealTime();
     loadClass();
@@ -588,5 +654,6 @@ $(document).ready(function () {
     loadOrderSummary();
     cashPayment();
     cardPayment();
+    chargeToRoomPayment();
     App.virtualKeyboard();
 });
