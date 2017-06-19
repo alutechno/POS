@@ -1659,7 +1659,127 @@ let saveOrderNote = function () {
             modal.modal('hide')
         }
     });
-}
+};
+let manualPrint = function () {
+    let modal = El.modalPrint;
+    let btnPrint = modal.find('#print');
+    let btnRePrint = modal.find('#reprint');
+    let btnManualPrint = modal.find('#manualprint');
+    let btnTogglePrint = modal.find('#printtoogle');
+    let divDefaultPrint = modal.find('#printContentDefault');
+    let divManualPrint = modal.find('#printContentManual');
+    let tbodyDefaultPrint = divDefaultPrint.find('table tbody');
+    let ulCheckListBox = divManualPrint.find('#check-list-box');
+    let ngAjax = function (data, callback) {
+        $.ajax({
+            method: 'GET',
+            url: '/printKitchen',
+            data: data,
+            complete: function (xhr, is) {
+                if (is == 'success') {
+                    if (xhr.responseJSON) {
+                        if (!xhr.responseJSON.error) callback(xhr.responseJSON.message);
+                        else console.error(xhr.responseJSON.message);
+                    } else console.error(xhr.response);
+                } else console.error('Server down!');
+            }
+        })
+    };
+    //
+    modal.on('show.bs.modal', function () {
+        btnPrint.show();
+        btnRePrint.show();
+        btnManualPrint.hide();
+        btnTogglePrint.html('Manual Print');
+        divManualPrint.hide();
+        divDefaultPrint.show();
+        btnPrint.removeAttr('disabled');
+        btnRePrint.removeAttr('disabled');
+        btnManualPrint.removeAttr('disabled');
+        //
+        tbodyDefaultPrint.html('');
+        ulCheckListBox.html('');
+        let orders = SQL(`
+        select 
+            c.name menu,b.order_qty,f.name printer
+            from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c
+            left join mst_kitchen_section f on c.print_kitchen_section_id=f.id
+            where a.id=b.order_id
+            and b.outlet_menu_id=c.id
+            and a.waiter_user_id=d.id
+            and a.outlet_id=e.id
+            and order_id in (${orderIds});
+        `);
+        orders.data.forEach(function(e){
+            tbodyDefaultPrint.append(`
+            <tr>
+                <td>${e.order_qty}</td>
+                <td>${e.menu}</td>
+                <td>${e.printer || '?'}</td>
+            </tr>
+        `)
+        })
+        let printers = SQL(`select id, kitchen_id, code, name from mst_kitchen_section`);
+        printers.data.forEach(function(e){
+            let li = $(`
+                <li id="printer${e.id}" class="list-group-item" data-color="info" name="${e.name}" code="${e.code}">
+                    <span style="margin-left: 10px">${e.code.toUpperCase()}</span>
+                    <span class='badge badge-default badge-pill'>${e.name}</span>
+                </li>
+            `);
+            li.data('!', e);
+            ulCheckListBox.append(li)
+
+        });
+        initCheckListBoxes();
+    });
+    btnTogglePrint.on('click', function () {
+        if (btnTogglePrint.attr('state') == 'default') {
+            btnManualPrint.show();
+            btnPrint.hide();
+            btnRePrint.hide();
+            btnTogglePrint.html('Back');
+            btnTogglePrint.attr('state', 'manual');
+            divManualPrint.show();
+            divDefaultPrint.hide();
+        } else {
+            btnPrint.show();
+            btnRePrint.show();
+            btnManualPrint.hide();
+            btnTogglePrint.html('Manual Print');
+            btnTogglePrint.attr('state', 'default');
+            divManualPrint.hide();
+            divDefaultPrint.show();
+        }
+    })
+    btnPrint.on('click', function () {
+        btnPrint.attr('disabled', 1);
+        ngAjax({orderId: Object.keys(Order)}, function () {
+            modal.modal('hide');
+        })
+    });
+    btnRePrint.on('click', function () {
+        btnRePrint.attr('disabled', 1);
+        ngAjax({reprint: 1, orderId: Object.keys(Order)}, function () {
+            modal.modal('hide');
+        });
+    });
+    btnManualPrint.on('click', function () {
+        let active = modal.find('#check-list-box li.active');
+        if (active.length) {
+            btnManualPrint.attr('disabled', 1);
+        }
+        active.each(function (idx, li) {
+            let list = ulCheckListBox.find('li');
+            let id = list.attr('id').replace('printer-', '');
+            let code = list.attr('code');
+            let printer = list.attr('name');
+            ngAjax({orderId: Object.keys(Order), printer}, function () {
+                modal.modal('hide');
+            });
+        });
+    });
+};
 $(document).ready(function () {
     loadMealTime();
     loadClass();
@@ -1676,6 +1796,7 @@ $(document).ready(function () {
     noPostPayment();
     splitPayment();
     saveOrderNote();
+    manualPrint();
     //
     initCheckListBoxes();
     El.paymentBtn.on('click', function () {
