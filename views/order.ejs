@@ -841,16 +841,11 @@
 				<h4 class="modal-title" id="modal-label">Menu Note</h4>
 			</div>
 			<div class="modal-body">
-				<form id="subscribe-email-form"
-					  action="http://localhost:8888/media-pos-php/main/save_note/95"
-					  method="post">
-										<textarea class="form-control" name="note"
-												  id="note"></textarea>
-					<!--<form id="subscribe-email-form" action="/notifications/subscribe/" method="post">-->
+				<textarea class="form-control" name="note" id="note"></textarea>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="submit" class="btn btn-primary">Save changes</button>
+				<button id="submit" type="submit" class="btn btn-primary">Submit</button>
 			</div>
 			</form>
 		</div>

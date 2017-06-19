@@ -1635,6 +1635,31 @@ let splitPayment = function () {
     recordList.insertBefore(balance.closest('.row'));
     m.modal('hide');
 };
+let saveOrderNote = function () {
+    let modal = El.modalAddNote;
+    let txAreaNote = modal.find('#note');
+    let btnSubmit = modal.find('#submit');
+    $('a[href="#modal-add-note"]').on('click', function () {
+        let orderNote = SQL('select order_notes from pos_orders where id=?', orderIds.split(',')[0]);
+        txAreaNote.val(orderNote.data[0].order_notes);
+    });
+    //
+    txAreaNote.on('change', function () {
+        if (txAreaNote.val()) {
+            btnSubmit.prop('disabled', false);
+        }
+    });
+    btnSubmit.prop('disabled', true);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let updateOrderNote = SQL('update pos_orders set order_notes=? where id=?', [
+            txAreaNote.val(), orderIds.split(',')[0]
+        ]);
+        if (!updateOrderNote.error) {
+            modal.modal('hide')
+        }
+    });
+}
 $(document).ready(function () {
     loadMealTime();
     loadClass();
@@ -1650,6 +1675,7 @@ $(document).ready(function () {
     houseUsePayment();
     noPostPayment();
     splitPayment();
+    saveOrderNote();
     //
     initCheckListBoxes();
     El.paymentBtn.on('click', function () {
