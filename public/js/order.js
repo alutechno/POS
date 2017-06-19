@@ -498,6 +498,7 @@ let cashPayment = function () {
             lblChange.html(rupiahJS(0));
         }
     });
+    btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
@@ -528,8 +529,10 @@ let cardPayment = function () {
         let val2 = inputCardNo.val();
         let val3 = inputCustomerName.val();
         btnSubmit.prop('disabled', true);
-        if (val1 && val3 && val3) {
-            btnSubmit.prop('disabled', false);
+        if (selectCcType.val() == 'credit') {
+            if (val1 && val3 && val3) btnSubmit.prop('disabled', false);
+        } else {
+            if (val1 && val2) btnSubmit.prop('disabled', false);
         }
     };
     //
@@ -559,9 +562,11 @@ let cardPayment = function () {
             el.val('');
         }, 1000);
     });
+    selectCcType.on('change', validation);
     inputCardNo.on('change', validation);
     inputCustomerName.on('change', validation);
     selectBankType.on('change', validation);
+    btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
