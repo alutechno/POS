@@ -31,5 +31,8 @@ module.exports = {
         uploadDir: `${home}/uploads`,
         maxFilesSize: 5000000,
         fieldName: 'uploads',
-    }
+    },
+    REPORT_BIRT: 'http://localhost:8080/birt/frameset?__report=report/pos/',
+    BIRT: 'http://localhost:8080/birt/output?__report=report/pos/struk_order.rptdesign&__format=pdf',
+    BIRT_CLOSE_CASHIER: 'http://localhost:8080/birt/output?__report=report/pos/close_cashier.rptdesign&dpi=96&__format=pdf&pageoverflow=0&_overwrite=false&transc_id=',
 };

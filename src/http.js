@@ -26,6 +26,9 @@ const http = function (pool, compile) {
         httpOnly: true
     };
     //
+    locals.BIRT = Glob.BIRT;
+    locals.REPORT_BIRT = Glob.REPORT_BIRT;
+    locals.BIRT_CLOSE_CASHIER = Glob.BIRT_CLOSE_CASHIER;
     locals.name = name;
     locals.version = version;
     locals.description = description;
@@ -337,6 +340,23 @@ const http = function (pool, compile) {
                 error: true,
                 message: 'Billing with ' + JSON.stringify({orderId, payment}) + ' cannot be printed',
                 data : {orderId, payment}
+            })
+        }
+    });
+    app.get('/printCashierReport', async function (req, res, next) {
+        let {posCashierId} = req.query;
+        //todo: generate pdf printed file here..
+        if (1) {
+            res.send({
+                error: false,
+                message: 'Cashier report has been printed with ' + JSON.stringify({posCashierId}),
+                data : {posCashierId}
+            })
+        } else {
+            res.send({
+                error: true,
+                message: 'Cashier report with ' + JSON.stringify({posCashierId}) + ' cannot be printed',
+                data : {posCashierId}
             })
         }
     });
