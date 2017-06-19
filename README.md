@@ -1,5 +1,5 @@
 ### Requirements
-> Node js version >= 7, choose nodejs with included async/await natively
+> Node js version >= 6.11, or choose nodejs with included async/await natively
 
 ### Installation
 ```sh

@@ -9,5 +9,6 @@ if (cluster.isMaster) {
     	console.log(process.pid.toString(), `> Worker id ${worker.process.pid} died!`);
     });
 } else {
+	require('async-to-gen/register');
 	require(`${__dirname}/../src/app`)();
 }
