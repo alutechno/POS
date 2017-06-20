@@ -165,8 +165,8 @@
 											<i class="fa fa-print"></i>
 											Print Order
 										</a>
-										<a class="btn btn-app bg-grey" id="open-menu">
-											<i class="fa fa-edit" data-toggle="modal" href="#myModalOpenMenu"></i>
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-open-menu" id="open-menu">
+											<i class="fa fa-edit" data-toggle="modal"></i>
 											Open Menu
 										</a>
 									</div>
@@ -563,8 +563,7 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modal-merge" tabindex="-1" role="dialog"
-	 aria-labelledby="modal-label">
+<div class="modal fade" id="modal-merge" tabindex="-1" role="dialog" aria-labelledby="modal-label">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -656,193 +655,68 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modal-open-menu" tabindex="-1" role="dialog"
-	 aria-labelledby="modal-label">
-	<div class="modal-dialog modal-lg" role="document">
+<div class="modal fade" id="modal-open-menu" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="modal-label">Open Menu</h4>
+				<h4 class="modal-title">Open Menu</h4>
 			</div>
-			<div class="modal-body">
-				<form id="subscribe-email-form"
-					  action="http://localhost:8888/media-pos-php/main/openmenu/95"
-					  method="post">
-					<input type="hidden" name="bill"
-						   value="CHK-29 /1 ">
-					<input type="hidden" name="outlet"
-						   value="1">
-					<input type="hidden" name="table" value="95">
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div class="row">
 
-					<table class="table table-striped">
-						<thead>
-						<tr>
-							<th>Meal Time</th>
-							<th>Menu Type</th>
-							<th>Menu Group</th>
-							<th>Menu Name</th>
-							<th>Qty</th>
-							<th>Price</th>
-						</tr>
-						</thead>
-						<tbody>
-						<tr>
-							<td>
-								<select class="form-control" name="meal_time_id" id="meal_time_id">
-									<option
-											value="1">Breakfast
-									</option>
-									<option
-											value="2">Lunch
-									</option>
-									<option
-											value="3">Dinners
-									</option>
-									<option
-											value="4" selected>Supper
-									</option>
-									<option
-											value="5">All Time
-									</option>
-								</select>
-							</td>
-							<td>
-								<select class="form-control" name="menu_class_id"
-										id="menu_class_id">
-									<option
-											value="1">Food
-									</option>
-									<option
-											value="2">Beverage
-									</option>
-									<option
-											value="3">Cigarette
-									</option>
-									<option
-											value="4">Others
-									</option>
-									<option
-											value="5">Setmenu/Combo
-									</option>
-									<option
-											value="6">Promo Food
-									</option>
-									<option
-											value="7">Promo Beverage
-									</option>
-									<option
-											value="8">Buffet
-									</option>
-								</select>
-							</td>
-							<td>
-								<select class="form-control" name="menu_group_id"
-										id="menu_group_id">
-									<option
-											value="1">Breakfast Menu
-									</option>
-									<option
-											value="2">Appetizers
-									</option>
-									<option
-											value="3">Soups
-									</option>
-									<option
-											value="4">Main Course
-									</option>
-									<option
-											value="5">Snacks & Sandwiches
-									</option>
-									<option
-											value="6">Western Dishes
-									</option>
-									<option
-											value="7">Indonesian & Asian
-									</option>
-									<option
-											value="8">Noddles
-									</option>
-									<option
-											value="9">Pastas
-									</option>
-									<option
-											value="10">Dessert
-									</option>
-									<option
-											value="11">Special Promotion
-									</option>
-									<option
-											value="12">Side Orders
-									</option>
-									<option
-											value="13">Selection Lunch & Dinner
-									</option>
-									<option
-											value="14">Local Food
-									</option>
-									<option
-											value="15">Bakery & Pastries
-									</option>
-									<option
-											value="16">Buffet
-									</option>
-									<option
-											value="17">Open Food
-									</option>
-									<option
-											value="18">Food Testing
-									</option>
-									<option
-											value="19">Juice - Food
-									</option>
-									<option
-											value="20">Tea & Tisanes - Food
-									</option>
-									<option
-											value="21">Coffees - Food
-									</option>
-									<option
-											value="22">Milkshakes - Food
-									</option>
-									<option
-											value="23">Soft Drink
-									</option>
-									<option
-											value="24">Mineral Water
-									</option>
-									<option
-											value="25">Squash
-									</option>
-									<option
-											value="26">Beer
-									</option>
-									<option
-											value="27">Relaxing Massage
-									</option>
-									<option
-											value="28">Spa Treatment
-									</option>
-									<option
-											value="29">Lobster
-									</option>
-								</select>
-							</td>
-							<td><input type="text" class="form-control" name="menu_name"
-									   id="menu_name"/></td>
-							<td><input type="text" class="form-control" name="menu_qty"
-									   id="menu_qty" value="1"/></td>
-							<td><input type="text" class="form-control" name="menu_price"
-									   id="menu_price"/></td>
-						</tr>
-						</tbody>
-					</table>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Close
-						</button>
-						<button type="submit" class="btn btn-primary">Add Menu</button>
+				</div>
+				<div class="row">
+					<div class="col-lg-3">
+						<div class="form-group">
+							<span>Meal Time</span>
+							<select class="form-control" id="open-meal-time"></select>
+						</div>
 					</div>
-				</form>
+					<div class="col-lg-4">
+						<div class="form-group">
+							<span>Menu Class</span>
+							<select class="form-control" id="open-menu-class"></select>
+						</div>
+					</div>
+					<div class="col-lg-5">
+						<div class="form-group">
+							<span>Menu Sub Class</span>
+							<select class="form-control" id="open-menu-sub-class"></select>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-7">
+						<div class="form-group">
+							<span>Name</span>
+							<input class="form-control" id="open-menu-name" type="text">
+						</div>
+					</div>
+					<div class="col-lg-5">
+						<div class="form-group">
+							<span>Price</span>
+							<input class="form-control" id="open-menu-price" type="currency">
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-8">
+						<div class="form-group">
+							<span>Kitchen</span>
+							<select class="form-control" id="open-print-to-kitchen"></select>
+						</div>
+					</div>
+					<div class="col-lg-4">
+						<div class="form-group">
+							<span>Qty</span>
+							<input class="form-control" id="open-menu-qty" type="currency">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
 			</div>
 		</div>
 	</div>

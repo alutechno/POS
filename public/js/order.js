@@ -304,7 +304,7 @@ let loadMenu = function (filter) {
                 e.menu_price_ = rupiahJS(e.menu_price);
                 let el = $(`
                     <div class="col-lg-3 col-sm-4 col-xs-4 menu-item" 
-                        menu-id="${e.id}" menu-name="${e.name}"
+                        menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
                         menu-class="${e.menu_class_id}" 
                         menu-sub-class="${e.menu_group_id}">
                         <div class="small-box">
@@ -324,6 +324,7 @@ let loadMenu = function (filter) {
             });
             //
             menuBg.height(menuBg.parent().width());
+            menuFinder.off('blur');
             menuFinder.on('blur', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
@@ -359,7 +360,7 @@ let loadMenu = function (filter) {
         if (filter.subClass) selector += `[menu-sub-class=${filter.subClass}]`;
         else selector += `[menu-sub-class]`;
 
-        if (filter.name) selector += `[menu-name*='${filter.name}']`;
+        if (filter.name) selector += `[menu-name*='${filter.name.toLowerCase()}']`;
         else selector += `[menu-name]`;
         El.menu.find('.menu-item').hide();
         El.menu.find(selector).show();
@@ -1927,7 +1928,123 @@ let openMenu = function () {
         El.btnOpenMenu.hide();
         return;
     }
+    let m = El.modalOpenMenu;
+    let slctMealTime = m.find('#open-meal-time');
+    let slctMenuCls = m.find('#open-menu-class');
+    let slctMenuSubCls = m.find('#open-menu-sub-class');
+    let slctPrintToKitchen = m.find('#open-print-to-kitchen');
+    let inputMenuName = m.find('#open-menu-name');
+    let inputMenuPrice = m.find('#open-menu-price');
+    let inputMenuQty = m.find('#open-menu-qty');
+    let btnSubmit = m.find('#submit');
+    let validation = function () {
+        let val1 = slctMealTime.val();
+        let val2 = slctMenuCls.val();
+        let val3 = slctMenuSubCls.val();
+        let val4 = inputMenuName.val();
+        let val5 = slctPrintToKitchen.val();
+        let val6 = inputMenuPrice.data('value');
+        let val7 = inputMenuQty.data('value');
+        btnSubmit.prop('disabled', true);
+        if (val1 && val2 && val3 && val4 && val5 && parseFloat(val6) > 0 && parseFloat(val7) > 0) {
+            btnSubmit.prop('disabled', false);
+        }
+    }
+    //
     El.btnOpenMenu.show();
+    let mealTime = SQL(`select * from ref_meal_time`);
+    slctMealTime.html('<option value="">- Choose -</option>');
+    if (!mealTime.error) {
+        mealTime.data.forEach(function (e) {
+            slctMealTime.append(`
+                <option value="${e.id}">${e.code} - ${e.name}</option>
+            `)
+        })
+    }
+    //
+    let printers = SQL(`
+        select
+            a.id, a.kitchen_id, a.code, a.name, b.name kitchen_name
+        from mst_kitchen_section a
+        left join mst_kitchen b on b.id = a.kitchen_id
+        where a.status = 1
+    `);
+    slctPrintToKitchen.html('<option value="">- Choose -</option>');
+    if (!printers.error) {
+        printers.data.forEach(function (e) {
+            slctPrintToKitchen.append(`
+                <option value="${e.kitchen_id},${e.id}">${e.kitchen_name} - ${e.name}</option>
+            `);
+        })
+    }
+    //
+    slctMenuCls.html(`<option value="">- Choose -</option>`);
+    MenuClass.forEach(function (e) {
+        let el = $(`<option value="${e.id}">${e.code} - ${e.name}</option>`);
+        el.data(e);
+        slctMenuCls.append(el)
+    });
+    //
+    slctMenuSubCls.html(`<option value="">- Choose -</option>`);
+    MenuSubClass.forEach(function (e) {
+        let el = $(`<option value="${e.id}">${e.code} - ${e.name}</option>`);
+        el.data(e);
+        slctMenuSubCls.append(el)
+    });
+    m.on('show.bs.modal', function () {
+        slctMealTime.val('');
+        slctMenuCls.val('');
+        slctMenuSubCls.val('');
+        slctPrintToKitchen.val('');
+        inputMenuName.val('');
+        inputMenuPrice.val('');
+        inputMenuQty.val('');
+        btnSubmit.prop('disabled', true);
+    });
+    slctMealTime.on('change', validation);
+    slctMenuCls.on('change', validation);
+    slctMenuSubCls.on('change', validation);
+    slctPrintToKitchen.on('change', validation);
+    inputMenuName.on('blur', validation);
+    inputMenuPrice.on('blur', validation);
+    inputMenuQty.on('blur', validation);
+    btnSubmit.on('click', function () {
+        let e = slctPrintToKitchen.val().split(',');
+        let newMenu = {
+            //code: '',
+            name: inputMenuName.val(),
+            //short_name: '',
+            //description: '',
+            outlet_id: App.outlet.id,
+            status: '1',
+            menu_class_id: slctMenuCls.val(),
+            menu_group_id: slctMenuSubCls.val(),
+            meal_time_id: slctMealTime.val(),
+            menu_price: parseFloat(inputMenuPrice.data('value')),
+            //unit_cost,
+            //menu_type,
+            //product_id,
+            //recipe_id,
+            //recipe_qty,
+            //is_promo_enabled,
+            //is_export_cost,
+            //is_print_after_total,
+            //is_disable_change_price,
+            is_tax_included: 'N',
+            is_sevice_included: 'N',
+            print_kitchen_id: e[0],
+            print_kitchen_section_id: e[1],
+            created_by: App.user.id,
+            image: ''
+        };
+        let insertOutletMenu = SQL('insert into inv_outlet_menus set ?', newMenu);
+        if (!insertOutletMenu.error) {
+            newMenu.id = insertOutletMenu.data.insertId;
+            m.modal('hide');
+            addOrderMenu(newMenu, inputMenuQty.val());
+            loadMenu()
+        }
+    });
 }
 $(document).ready(function () {
     let {
