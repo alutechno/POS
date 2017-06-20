@@ -27,7 +27,20 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         modalPrint: $('div#modal-print'),
         modalOpenMenu: $('div#modal-open-menu'),
         modalAddNote: $('div#modal-add-note'),
-        modalVoid: $('div#modal-void')
+        modalVoid: $('div#modal-void'),
+        btnPayCash: $('a#pay-cash'),
+        btnPayCard: $('a#pay-card'),
+        btnPayChargeToRoom: $('a#pay-charge-to-room'),
+        btnPayHouseUse: $('a#pay-house-use'),
+        btnPayCityLedger: $('a#pay-city-ledger'),
+        btnPayVoucher: $('a#pay-voucher'),
+        btnPaySplit: $('a#pay-split'),
+        btnPayNoPost: $('a#pay-no-post'),
+        btnMergeTable: $('a#merge-tables'),
+        btnOpenCashDraw: $('button#open-cash-draw'),
+        btnOrderNote: $('a#order-note'),
+        btnPrintOrder: $('a#print-order'),
+        btnOpenMenu: $('a#open-menu')
     };
 let delay = (function () {
     let timer = 0;
@@ -41,21 +54,28 @@ let rupiahJS = function (val) {
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 };
-let OpenCashDraw = function () {
-    $.ajax({
-        method: 'GET',
-        url: '/openCashDraw',
-        async: false,
-        complete: function (xhr, is) {
-            if (is == 'success') {
-                if (xhr.responseJSON) {
-                    if (!xhr.responseJSON.error) {
-                        alert(xhr.responseJSON.message)
-                        console.info(xhr.responseJSON.message);
-                    } else console.error(xhr.responseJSON.message);
-                } else console.error(xhr.response);
-            } else console.error('Server down!');
-        }
+let openCashDraw = function () {
+    if (!App.role.cashdraw) {
+        El.btnOpenCashDraw.hide();
+        return;
+    }
+    El.btnOpenCashDraw.show();
+    El.openCashDraw.on('click', function () {
+        $.ajax({
+            method: 'GET',
+            url: '/openCashDraw',
+            async: false,
+            complete: function (xhr, is) {
+                if (is == 'success') {
+                    if (xhr.responseJSON) {
+                        if (!xhr.responseJSON.error) {
+                            alert(xhr.responseJSON.message)
+                            console.info(xhr.responseJSON.message);
+                        } else console.error(xhr.responseJSON.message);
+                    } else console.error(xhr.response);
+                } else console.error('Server down!');
+            }
+        });
     });
 };
 let Printing = function (param) {
@@ -304,30 +324,31 @@ let loadMenu = function (filter) {
             });
             //
             menuBg.height(menuBg.parent().width());
-            //
-            El.menu.find('.menu-item').on('click', function () {
-                inputQty.val('')
-                btnSubmit.prop('disabled', true);
-                El.modalQty.find('h4').html($(this).data('name'));
-                El.modalQty.modal('show');
-                El.modalQty.data($(this).data());
-            });
-            //
             menuFinder.on('blur', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
-            inputQty.on('blur', function () {
-                let qty = inputQty.data('value');
-                btnSubmit.prop('disabled', true);
-                if (parseInt(qty) > 0) {
-                    btnSubmit.prop('disabled', false);
-                }
-            })
-            btnSubmit.on('click', function () {
-                let qty = inputQty.data('value');
-                let item = El.modalQty.data();
-                addOrderMenu(item, parseInt(qty));
-            });
+            //
+            if (App.role.ordermenu) {
+                El.menu.find('.menu-item').on('click', function () {
+                    inputQty.val('')
+                    btnSubmit.prop('disabled', true);
+                    El.modalQty.find('h4').html($(this).data('name'));
+                    El.modalQty.modal('show');
+                    El.modalQty.data($(this).data());
+                });
+                inputQty.on('blur', function () {
+                    let qty = inputQty.data('value');
+                    btnSubmit.prop('disabled', true);
+                    if (parseInt(qty) > 0) {
+                        btnSubmit.prop('disabled', false);
+                    }
+                })
+                btnSubmit.on('click', function () {
+                    let qty = inputQty.data('value');
+                    let item = El.modalQty.data();
+                    addOrderMenu(item, parseInt(qty));
+                });
+            }
         }
     } else {
         let selector = '';
@@ -365,24 +386,91 @@ let loadOrder = function () {
 
 };
 let loadOrderMenu = function () {
+    let mVoid, m = El.modalVoid;
+    let inputQty = m.find('input');
+    let btnSubmit = m.find('#submit');
     let orderMenu = SQL(`
         select
             @rownum := @rownum + 1 as no,
-            a.outlet_menu_id, a.price_amount, sum(a.total_amount) total_amount, a.order_id, 
-            sum(a.order_qty) as order_qty, a.id, b.name, format(sum(a.total_amount),2) as total_amount_
-        from pos_orders_line_item a
-        join inv_outlet_menus b on b.id = a.outlet_menu_id
+            o.outlet_menu_id, b.name, o.price_amount, o.order_id, o.menu_class_id,
+            o.order_qty, if (v.order_void < 0, v.order_void, 0) order_void,
+            (o.total_amount + if (v.total_amount < 0, v.total_amount, 0)) total_amount,
+            format(o.total_amount + if (v.total_amount < 0, v.total_amount, 0),2) total_amount_
+        from (
+            select
+                a.menu_class_id, a.outlet_menu_id, a.price_amount, sum(a.total_amount) total_amount, a.order_id,
+                sum(a.order_qty) as order_qty
+            from pos_orders_line_item a
+            where order_qty > 0 and order_id in (${Object.keys(Order).join()})
+            group by order_id, outlet_menu_id
+        ) o
+        left join (
+            select
+                a.outlet_menu_id, sum(a.order_qty) as order_void,
+                sum(a.total_amount) total_amount
+            from pos_orders_line_item a
+            where order_qty < 0 and order_id in (${Object.keys(Order).join()})
+            group by order_id, outlet_menu_id
+        ) v on o.outlet_menu_id = v.outlet_menu_id
+        join inv_outlet_menus b on b.id = o.outlet_menu_id
         cross join (select @rownum := 0) r
-        where order_id in (${Object.keys(Order).join()})
-        group by order_id, a.created_date, outlet_menu_id
         order by no
     `);
     OrderMenu = [];
     if (!orderMenu.error) {
-        OrderMenu = orderMenu.data;
+        OrderMenu = orderMenu.data.map(function(e){
+            e.order_void_ = e.order_void ? e.order_void * -1 : ''
+            return e;
+        });
     }
-    El.orderMenu.bootstrapTable('load', OrderMenu);
+    window.appendFn = function (value, row, index) {
+        return (
+            `<div class="pull-right">
+                <a class="remove" href="#modal-void" title="Void">
+                    <i class="glyphicon glyphicon-remove text-danger"></i>
+                </a>
+            </div>`
+        );
+    };
+    window.eventFn = {
+        'click .remove': function (e, value, row) {
+            m.modal('show');
+            m.find('#modal-label').html(row.name)
+            inputQty.val('');
+            btnSubmit.prop('disabled', true);
+            mVoid = row;
+            //alert('You click remove action, row: ' + JSON.stringify(row));
+        }
+    };
+    inputQty.off('blur');
+    inputQty.on('blur', function(){
+        let val = inputQty.data('value');
 
+        btnSubmit.prop('disabled', true);
+        val = parseInt(val);
+        if (val) {
+            if ((mVoid.order_qty + mVoid.order_void) >= val) {
+                btnSubmit.prop('disabled', false);
+            }
+        }
+    });
+    btnSubmit.off('click');
+    btnSubmit.on('click', function(){
+        let val = inputQty.data('value');
+        val = parseInt(val) * -1;
+        addOrderMenu({
+            id: mVoid.outlet_menu_id,
+            menu_class_id: mVoid.menu_class_id,
+            outlet_id: App.outlet.id,
+            menu_price: mVoid.price_amount,
+            name: mVoid.name
+        }, val)
+        m.modal('hide');
+    })
+    El.orderMenu.bootstrapTable('load', OrderMenu);
+    if (!App.role.voidmenu) {
+        El.orderMenu.bootstrapTable('hideColumn', 'void');
+    }
 };
 let loadOrderSummary = function () {
     let summary = SQL(`
@@ -511,23 +599,28 @@ let addOrderMenu = function (data, qty = 1) {
     addDiscountPatched();
     updateOrderTaxes();
     updateItem();
+    loadOrderMenu();
     loadOrderSummary();
-    El.orderMenu.bootstrapTable('insertRow', {
-        index: OrderMenu.length,
-        row: {
-            "menu_outlet_id": data.id,
-            "total_amount": menu_price,
-            "order_id": orderIds.split(',')[0],
-            "order_qty": qty,
-            "id": orderItemId,
-            "name": data.name,
-            "no": OrderMenu.length + 1,
-            "total_amount_": rupiahJS(menu_price)
-        }
-    });
     El.modalQty.modal('hide');
+    //El.orderMenu.bootstrapTable('insertRow', {
+    //    index: OrderMenu.length,
+    //    row: {
+    //        "menu_outlet_id": data.id,
+    //        "total_amount": menu_price,
+    //        "order_id": orderIds.split(',')[0],
+    //        "order_qty": qty,
+    //        "id": orderItemId,
+    //        "name": data.name,
+    //        "no": OrderMenu.length + 1,
+    //        "total_amount_": rupiahJS(menu_price)
+    //    }
+    //});
 };
 let mergeOrder = function () {
+    if (!App.role.join) {
+        El.btnMergeTable.hide();
+        return;
+    }
     let modal = El.modalMerge;
     let pattern = '#check-list-box li';
     let grandtotal = El.orderTotSum.data('value');
@@ -536,6 +629,8 @@ let mergeOrder = function () {
     let lblGrandtotal = modal.find('#grandtotal');
     let btnSubmit = modal.find('#submit');
     let paths = Object.keys(Order);
+    //
+    El.btnMergeTable.show();
     //
     let tableList = SQL(`
         select * from (
@@ -606,6 +701,10 @@ let mergeOrder = function () {
     })
 };
 let cashPayment = function () {
+    if (!App.role.cash) {
+        El.btnPayCash.hide();
+        return;
+    }
     let modal = El.modalCash;
     let total = El.orderTotFood.data('value');
     let discount = El.orderTotDiscount.data('value');
@@ -617,6 +716,8 @@ let cashPayment = function () {
     let btnSubmit = modal.find('#submit');
     let lblChange = modal.find('#change');
     let inputAmount = modal.find('#amount');
+    //
+    El.btnPayCash.show();
     inputAmount.on('blur', function () {
         let value = $(this).data('value');
         change = parseFloat(value) - parseFloat(grandtotal);
@@ -641,6 +742,10 @@ let cashPayment = function () {
     });
 };
 let cardPayment = function () {
+    if (!App.role.card) {
+        El.btnPayCard.hide();
+        return;
+    }
     let modal = El.modalCard;
     let total = El.orderTotFood.data('value');
     let discount = El.orderTotDiscount.data('value');
@@ -666,6 +771,8 @@ let cardPayment = function () {
             if (val1 && val2) btnSubmit.prop('disabled', false);
         }
     };
+    //
+    El.btnPayCard.show();
     //
     let bankList = SQL(`select id, code, name, description from ref_payment_method where category = 'CC' and status = '1' order by name`);
     selectBankType.html('<option value="">- Choose -</option>');
@@ -710,6 +817,10 @@ let cardPayment = function () {
     });
 };
 let chargeToRoomPayment = function () {
+    if (!App.role.chargeroom) {
+        El.btnPayChargeToRoom.hide();
+        return
+    }
     let modal = El.modalCharge2Room;
     let total = El.orderTotFood.data('value');
     let discount = El.orderTotDiscount.data('value');
@@ -730,6 +841,8 @@ let chargeToRoomPayment = function () {
     let lblVipType = modal.find('#vip-type');
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
+    //
+    El.btnPayChargeToRoom.show()
     //
     let houseGuest = SQL(`select * from v_in_house_guest`);
     selectCustomer.html('<option value="">- Choose -</option>');
@@ -775,6 +888,10 @@ let chargeToRoomPayment = function () {
     });
 };
 let houseUsePayment = function () {
+    if (!App.role.houseuse) {
+        El.btnPayHouseUse.hide();
+        return
+    };
     let modal = El.modalHouseUse;
     let total = El.orderTotFood.data('value');
     let discount = El.orderTotDiscount.data('value');
@@ -791,6 +908,8 @@ let houseUsePayment = function () {
     let lblCurrentBalance = modal.find('#current-balance');
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
+    //
+    El.btnPayHouseUse.show();
     //
     let houseUseList = SQL(`
         select
@@ -844,6 +963,10 @@ let houseUsePayment = function () {
     });
 };
 let noPostPayment = function () {
+    if (!App.role.nopost) {
+        El.btnPayNoPost.hide();
+        return
+    };
     let modal = El.modalNoPost;
     let total = El.orderTotFood.data('value');
     let discount = El.orderTotDiscount.data('value');
@@ -854,6 +977,7 @@ let noPostPayment = function () {
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
     //
+    El.btnPayNoPost.show();
     txAreaNote.on('change', function () {
         if (txAreaNote.val()) {
             btnSubmit.prop('disabled', false);
@@ -870,6 +994,10 @@ let noPostPayment = function () {
     });
 };
 let splitPayment = function () {
+    if (!App.role.split) {
+        El.btnPaySplit.hide();
+        return;
+    }
     let m = El.modalSplit;
     let grandtotal = El.orderTotSum.data('value');
     let close = m.find('#close');
@@ -1486,6 +1614,8 @@ let splitPayment = function () {
         return pay;
     }
     //
+    El.btnPaySplit.show();
+    //
     balance.val = function (value) {
         if (value) {
             balance.html(rupiahJS(value));
@@ -1621,9 +1751,10 @@ let splitPayment = function () {
     })
     //
     m.on('show.bs.modal', function () {
-        balance.val(grandtotal)
+        balance.val(grandtotal);
         modeCounter.val('');
         recordList.html('');
+        next.disable();
         modeCounter.parent().prev().hide()
         modeCounter.hide();
         noState.show();
@@ -1631,19 +1762,24 @@ let splitPayment = function () {
         count = 0;
     });
     modeCounter.keyboard({layout: 'num'});
-    m.modal({backdrop: 'static', keyboard: false});
     recordList.insertBefore(balance.closest('.row'));
+    m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
 };
 let saveOrderNote = function () {
+    if (!App.role.note) {
+        El.btnOrderNote.hide();
+        return;
+    }
     let modal = El.modalAddNote;
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
-    $('a[href="#modal-add-note"]').on('click', function () {
+    //
+    El.btnOrderNote.show();
+    El.btnOrderNote.on('click', function () {
         let orderNote = SQL('select order_notes from pos_orders where id=?', orderIds.split(',')[0]);
         txAreaNote.val(orderNote.data[0].order_notes);
     });
-    //
     txAreaNote.on('change', function () {
         if (txAreaNote.val()) {
             btnSubmit.prop('disabled', false);
@@ -1661,6 +1797,10 @@ let saveOrderNote = function () {
     });
 };
 let manualPrint = function () {
+    if (!App.role.printorder) {
+        El.btnPrintOrder.hide();
+        return;
+    }
     let modal = El.modalPrint;
     let btnPrint = modal.find('#print');
     let btnRePrint = modal.find('#reprint');
@@ -1686,6 +1826,8 @@ let manualPrint = function () {
         })
     };
     //
+    El.btnPrintOrder.show();
+    //
     modal.on('show.bs.modal', function () {
         btnPrint.show();
         btnRePrint.show();
@@ -1700,8 +1842,8 @@ let manualPrint = function () {
         tbodyDefaultPrint.html('');
         ulCheckListBox.html('');
         let orders = SQL(`
-        select 
-            c.name menu,b.order_qty,f.name printer
+            select 
+                c.name menu,b.order_qty,f.name printer
             from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c
             left join mst_kitchen_section f on c.print_kitchen_section_id=f.id
             where a.id=b.order_id
@@ -1780,7 +1922,22 @@ let manualPrint = function () {
         });
     });
 };
+let openMenu = function () {
+    if (!App.role.openmenu) {
+        El.btnOpenMenu.hide();
+        return;
+    }
+    El.btnOpenMenu.show();
+}
 $(document).ready(function () {
+    let {
+        nopost, cash, chargeroom, card,
+        voucher, cityledger, join,
+        printorder, openmenu, note,
+        split, cashdraw, voidmenu,
+        houseuse
+    } = App.role;
+    //
     loadMealTime();
     loadClass();
     loadSubClass();
@@ -1797,6 +1954,8 @@ $(document).ready(function () {
     splitPayment();
     saveOrderNote();
     manualPrint();
+    openCashDraw();
+    openMenu();
     //
     initCheckListBoxes();
     El.paymentBtn.on('click', function () {
@@ -1846,6 +2005,5 @@ $(document).ready(function () {
             <hr style="margin-top: 5px; margin-bottom: 10px"/>
         `);
     })
-    El.openCashDraw.on('click', OpenCashDraw);
     App.virtualKeyboard();
 });
