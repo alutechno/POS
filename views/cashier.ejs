@@ -16,23 +16,23 @@
 				<div class="row">
 					<div class="col-lg-6">
 						<label>Outlet :</label>
-						<span><%- locals.outlet.name %></span>
+						<span><%- client.outlet.name %></span>
 					</div>
 					<div class="col-lg-6">
 						<label>Cashier Name :</label>
-						<span><%- locals.user.full_name %></span>
+						<span><%- client.user.full_name %></span>
 					</div>
 					<div class="col-lg-6">
 						<label>Shift :</label>
-						<span><%- locals.posCashier.shift_name %> (<%- locals.posCashier.should_start_time %> ~ <%- locals.posCashier.should_end_time %>)</span>
+						<span><%- client.posCashier.shift_name %> (<%- client.posCashier.should_start_time %> ~ <%- client.posCashier.should_end_time %>)</span>
 					</div>
 					<div class="col-lg-6">
 						<label>Date :</label>
-						<span><%- locals.time %></span>
+						<span><%- client.time %></span>
 					</div>
 					<div class="col-lg-6">
 						<label>Time In :</label>
-						<span><%- locals.posCashier.start_time %></span>
+						<span><%- client.posCashier.start_time %></span>
 					</div>
 				</div>
 				<hr style="border: 2px solid"/>
@@ -59,7 +59,7 @@
 				<h4 class="modal-title">Shift Revenue</h4>
 			</div>
 			<div class="modal-body">
-				<iframe src="<%- locals.BIRT_CLOSE_CASHIER + locals.posCashier.id %>"
+				<iframe src="<%- client.BIRT_CLOSE_CASHIER + client.posCashier.id %>"
 						style="border: none; width: 100%; height: 100%;"
 				></iframe>
 			</div>

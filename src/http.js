@@ -19,7 +19,8 @@ const {env, name, description, version, session, port, home, config} = Glob;
 const http = function (pool, compile) {
     let del = 'password,default_module,default_menu,status,created_date,modified_date,created_by,modified_by';
     let app = express();
-    let locals = app.locals;
+    app.locals.client = {};
+    let locals = app.locals.client;
     let cookie = {
         path: '/',
         maxAge: session.maxAge,
@@ -45,7 +46,7 @@ const http = function (pool, compile) {
     /** **************************************************************************
      ** commonly middleware setup
      ** **************************************************************************/
-    app.use(cookieParser())
+    app.use(cookieParser());
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(express.static(path.join(Glob.home, 'public')));
@@ -149,13 +150,13 @@ const http = function (pool, compile) {
         locals.page = 'Table';
         res.render('table')
     });
-    app.get('/order/:id', function (req, res, next) {
-        locals.page = 'Order';
-        res.render('order')
-    });
     app.get('/cashier', function (req, res, next) {
         locals.page = 'Cashier';
         res.render('cashier')
+    });
+    app.get('/order/:id', function (req, res, next) {
+        locals.page = 'Order';
+        res.render('order')
     });
     app.get('/login', async function (req, res, next) {
         let outlets = await compile('SELECT * FROM mst_outlet WHERE status = 1 ORDER BY name');
@@ -170,7 +171,18 @@ const http = function (pool, compile) {
         locals.outlets = outlets;
         locals.message = locals.message || "Please fill form input..";
         res.clearCookie(name);
-        res.render('login');
+        if (req.xhr || req.headers.accept.indexOf('json') > -1) {
+            res.json({
+                error: {
+                    code: 'Unauthorized',
+                    status: 401,
+                    message: 'You need to login for access this'
+                },
+                data: null
+            });
+        } else {
+            res.render('login');
+        }
     });
     app.get('/logout', async function (req, res, next) {
         res.clearCookie(name);
