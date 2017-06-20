@@ -22,6 +22,7 @@ module.exports = {
     name: ENV.NAME || JSON.parse(fs.readFileSync(`${home}/package.json`)).name,
     description: ENV.npm_package_description || JSON.parse(fs.readFileSync(`${home}/package.json`)).description,
     version: ENV.npm_package_version || JSON.parse(fs.readFileSync(`${home}/package.json`)).version,
+    author: ENV.npm_package_author || JSON.parse(fs.readFileSync(`${home}/package.json`)).author,
     ip: getIp(),
     port: port,
     home: home,

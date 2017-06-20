@@ -15,7 +15,7 @@ const {STATUS_CODES} = require('http'),
     Crypt = require(`${Glob.home}/utils/crypt`),
     Upload = require(`${Glob.home}/utils/upload`)(Glob.upload);
 //
-const {env, name, description, version, session, port, home, config} = Glob;
+const {env, name, description, author, version, session, port, home, config} = Glob;
 const http = function (pool, compile) {
     let del = 'password,default_module,default_menu,status,created_date,modified_date,created_by,modified_by';
     let app = express();
@@ -33,6 +33,7 @@ const http = function (pool, compile) {
     locals.name = name;
     locals.version = version;
     locals.description = description;
+    locals.author = author;
     //
     /** **************************************************************************
      ** express.js setup
