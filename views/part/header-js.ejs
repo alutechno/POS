@@ -20,7 +20,7 @@
     window.trim = function (str) {
         return str.replace(/\t\t+|\n\n+|\s\s+/g, ' ').trim()
     };
-    window.App = <%- JSON.stringify(locals) %>;
+    window.App = <%- JSON.stringify(client) %>;
     window.SQL = function (query, params) {
         query = trim(query);
         var a = $.ajax({
@@ -30,10 +30,14 @@
             data: {query, params},
             complete: function (xhr, is) {
                 if (is === 'success') {
-                    var error = xhr.responseJSON.error;
-                    if (xhr.responseJSON.error) {
-                        console.error(error.code, {query, params, error})
-                    }
+                    var res = xhr.responseJSON;
+                    if (res) {
+                        if (res.error) {
+                            console.error(res.error.code, {query, params, error:res.error})
+                        }
+					} else {
+						console.error('Undefined json response', xhr.responseText)
+					}
                 } else {
                     console.error('Something wrong with host..')
                 }
@@ -43,6 +47,32 @@
     };
     ["LOGIN", "cache", "_locals", "settings", "LOGIN", "filename"].forEach(function(s){delete window.App[s]});
     //
+    App.role = {};
+	App.getRole = function () {
+	    var q = `
+			select
+				a.id, a.menu_id, a.object, a.label, b.name menu_name,
+				b.state menu_state, c.role_id, c.role_name
+			from menu_detail a
+			left join menu b on b.id = a.menu_id
+			left join (
+				select
+					a.*, b.name role_name
+				from role_menu a
+				left join role b on b.id = a.role_id
+			) c on c.menu_detail_id = a.id
+			where b.group_id = 15 and b.parent and role_id=?
+		`;
+	    if (App.user) {
+            var authorize = SQL(q, App.user.role_id);
+            if (!authorize.error) {
+                authorize.data.forEach(function (e) {
+                    var k = trim(e.menu_name).replace(/\s/g, '').toLowerCase();
+                    App.role[k] = e;
+                });
+            }
+		}
+    }
 	App.mealTimeMenu = true;
     if (App.time) {
         App.time = new Date(App.time);
@@ -51,3 +81,4 @@
 		}, 1000)
 	}
 </script>
+
