@@ -1,4 +1,5 @@
 let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
+    Taxes = [], Summary = [],
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
     HouseUse = {}, Charge2Room = {},
     El = {
@@ -9,11 +10,7 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         menuSubClass: $('select#menu-sub-class'),
         menuFinder: $('input#menu-finder'),
         orderMenu: $('table#order-menu'),
-        orderTotFood: $('td#order-tot-food'),
-        orderTotDiscount: $('td#order-tot-discount'),
-        orderTotService: $('td#order-tot-service'),
-        orderTotTax: $('td#order-tot-tax'),
-        orderTotSum: $('td#order-tot-sum'),
+        tableSummary: $('table#order-summary'),
         openCashDraw: $('button#open-cash-draw'),
         paymentBtn: $('a.payment-btn'),
         modalQty: $('div#modal-qty'),
@@ -38,6 +35,7 @@ let Menu, MealTime, MenuClass, MenuSubClass, Order, OrderMenu,
         btnPayNoPost: $('a#pay-no-post'),
         btnMergeTable: $('a#merge-tables'),
         btnOpenCashDraw: $('button#open-cash-draw'),
+        btnPrintBilling: $('button#print-billing'),
         btnOrderNote: $('a#order-note'),
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
@@ -153,6 +151,27 @@ let Payment = function (param, splitted) {
     } else {
         return {success: false, response: updatePosOrder.error}
     }
+};
+let getSummary = function (key) {
+    let obj = {};
+    let total = 0;
+    let discount = 0;
+    let taxes = 0;
+    Taxes.forEach(function (el) {
+        taxes += el.tax_amount;
+        obj[el.tax_name.toLowerCase().replace(/\s/g, '')] = {
+            label: el.tax_name, value: el.tax_amount
+        }
+    });
+    Summary.forEach(function (el) {
+        total += el.price;
+        discount += el.discount;
+    })
+    obj.discount = {label: 'Discount', value: discount};
+    obj.total = {label: 'Total', value: total};
+    obj.grandtotal = {label: 'Grand Total', value: total - discount + taxes};
+    if (obj.hasOwnProperty(key)) return obj[key];
+    return obj;
 };
 let paymentHasDone = function (param) {
     if (param.success) {
@@ -301,11 +320,12 @@ let loadMenu = function (filter) {
             //
             El.menu.html('');
             Menu = menu.data.map(function (e) {
+                e.url_ = 'http://103.43.47.115:3000';
                 e.menu_price_ = rupiahJS(e.menu_price);
                 let el = $(`
-                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item"
+                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item" 
                         menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
-                        menu-class="${e.menu_class_id}"
+                        menu-class="${e.menu_class_id}" 
                         menu-sub-class="${e.menu_group_id}">
                         <div class="small-box">
                             <div class="small-box-footer menu">
@@ -319,6 +339,11 @@ let loadMenu = function (filter) {
                     </div>
                 `);
                 el.data(e);
+                if (e.image) {
+                    el.find('.menu-bg').css('background-image', `url(${e.url_}/${e.image})`)
+                } else {
+                    el.find('.menu-bg').css('background-image', `url(${e.url_}/container/img/menu/food.jpg)`)
+                }
                 El.menu.append(el);
                 return e;
             });
@@ -419,7 +444,7 @@ let loadOrderMenu = function () {
     `);
     OrderMenu = [];
     if (!orderMenu.error) {
-        OrderMenu = orderMenu.data.map(function(e){
+        OrderMenu = orderMenu.data.map(function (e) {
             e.order_void_ = e.order_void ? e.order_void * -1 : ''
             return e;
         });
@@ -444,7 +469,7 @@ let loadOrderMenu = function () {
         }
     };
     inputQty.off('blur');
-    inputQty.on('blur', function(){
+    inputQty.on('blur', function () {
         let val = inputQty.data('value');
 
         btnSubmit.prop('disabled', true);
@@ -456,7 +481,7 @@ let loadOrderMenu = function () {
         }
     });
     btnSubmit.off('click');
-    btnSubmit.on('click', function(){
+    btnSubmit.on('click', function () {
         let val = inputQty.data('value');
         val = parseInt(val) * -1;
         addOrderMenu({
@@ -474,37 +499,45 @@ let loadOrderMenu = function () {
     }
 };
 let loadOrderSummary = function () {
-    /*let summary = SQL(`
+    let queries = SQL(`
         select
-            sum(a.sub_total_amount) subtotals, sum(a.discount_total_amount) discounts,
-            sum(b.service_amount) services, sum(c.tax_amount) taxes, sum(a.due_amount) totals
-        from pos_orders a
-        left join (
-            select order_id, tax_amount service_amount from pos_order_taxes where tax_id = 1
-        ) b on b.order_id = a.id
-        left join (
-            select order_id, tax_amount from pos_order_taxes where tax_id = 2
-        ) c on c.order_id = a.id
-        where id in (${orderIds})
-    `);
-    let row = summary.data[0];
-    El.orderTotFood.data('value', row.subtotals);
-    El.orderTotFood.html(rupiahJS(row.subtotals));
-    El.orderTotDiscount.data('value', row.discounts);
-    El.orderTotDiscount.html(rupiahJS(row.discounts));
-    El.orderTotService.data('value', row.services);
-    El.orderTotService.html(rupiahJS(row.services));
-    El.orderTotTax.data('value', row.taxes);
-    El.orderTotTax.html(rupiahJS(row.taxes));
-    El.orderTotSum.data('value', row.totals);
-    El.orderTotSum.html(rupiahJS(row.totals));*/
-	let summary = SQL(`select tax_id,sum(a.tax_amount) tax_amount,b.name tax_name
-		from pos_order_taxes a,mst_pos_taxes b
-		where a.tax_id=b.id
-		and a.order_id in (${orderIds})
-		group by tax_id`);
-	
-}
+            tax_id, sum(a.tax_amount) tax_amount, b.name tax_name
+        from pos_order_taxes a, mst_pos_taxes b 
+        where a.tax_id=b.id and a.order_id in (${orderIds})
+        group by tax_id;
+        
+        select
+            b.name, sum(price_amount * order_qty) price,
+            IFNULL(sum(c.discount_amount),0) discount
+        from pos_orders_line_item a 
+        left join pos_patched_discount c on a.id=c.order_line_item_id, ref_outlet_menu_class b 
+        where a.menu_class_id=b.id and a.order_id in (${orderIds})
+        group by b.name
+    `)
+    Taxes = queries.data[0];
+    Summary = queries.data[1];
+    let sum = getSummary();
+    let parent = El.tableSummary.find('tbody')
+
+    parent.html('');
+    Summary.forEach(function (el) {
+        parent.append(`
+            <tr>
+                <td colspan="3" align="left">${el.name}</td>
+                <td align="right">${rupiahJS(el.price)}</td>
+            </tr>
+        `)
+    });
+    ['discount', 'servicecharge', 'tax', 'grandtotal'].forEach(function (e) {
+        let {label, value} = sum[e];
+        parent.append(`
+            <tr>
+                <td colspan="3" align="left">${label}</td>
+                <td align="right">${rupiahJS(value)}</td>
+            </tr>
+        `);
+    });
+};
 let addOrderMenu = function (data, qty = 1) {
     let {id, menu_class_id, outlet_id} = data;
     let menu_price = data.menu_price * qty;
@@ -630,7 +663,7 @@ let mergeOrder = function () {
     }
     let modal = El.modalMerge;
     let pattern = '#check-list-box li';
-    let grandtotal = El.orderTotSum.data('value');
+    let grandtotal = getSummary('grandtotal').value;
     let ulCheckListBox = modal.find('#check-list-box');
     let lblHomeTotal = modal.find('#home-total');
     let lblGrandtotal = modal.find('#grandtotal');
@@ -673,7 +706,7 @@ let mergeOrder = function () {
         let to = setTimeout(function () {
             let others = 0;
             let actives = modal.find(pattern + '.active');
-            grandtotal = El.orderTotSum.data('value');
+            grandtotal = getSummary('grandtotal').value;
             actives.each(function (idx, li) {
                 let data = $(this).data('!');
                 others += parseFloat(data.due_amount || 0);
@@ -697,7 +730,7 @@ let mergeOrder = function () {
         keys.forEach(function (key) {
             SQL(
                 `insert into pos_included_orders set order_id=?,included_order_id=?,created_by=? on duplicate key update modified_date=?,modified_by=?`,
-                [ home, key, App.user.id, datetime, App.user.id ]
+                [home, key, App.user.id, datetime, App.user.id]
             )
         });
         window.location.href = '/order/' + paths.join('-')
@@ -713,11 +746,11 @@ let cashPayment = function () {
         return;
     }
     let modal = El.modalCash;
-    let total = El.orderTotFood.data('value');
-    let discount = El.orderTotDiscount.data('value');
-    let service = El.orderTotService.data('value');
-    let tax = El.orderTotTax.data('value');
-    let grandtotal = El.orderTotSum.data('value');
+    let total = getSummary('total').value;
+    let discount = getSummary('discount').value;
+    let service = getSummary('servicecharge').value;
+    let tax = getSummary('tax').value;
+    let grandtotal = getSummary('grandtotal').value;
     let change = 0;
     //
     let btnSubmit = modal.find('#submit');
@@ -754,11 +787,11 @@ let cardPayment = function () {
         return;
     }
     let modal = El.modalCard;
-    let total = El.orderTotFood.data('value');
-    let discount = El.orderTotDiscount.data('value');
-    let service = El.orderTotService.data('value');
-    let tax = El.orderTotTax.data('value');
-    let grandtotal = El.orderTotSum.data('value');
+    let total = getSummary('total').value;
+    let discount = getSummary('discount').value;
+    let service = getSummary('servicecharge').value;
+    let tax = getSummary('tax').value;
+    let grandtotal = getSummary('grandtotal').value;
     //
     let selectBankType = modal.find('#bank-type');
     let selectCcType = modal.find('#cc-type');
@@ -829,11 +862,11 @@ let chargeToRoomPayment = function () {
         return
     }
     let modal = El.modalCharge2Room;
-    let total = El.orderTotFood.data('value');
-    let discount = El.orderTotDiscount.data('value');
-    let service = El.orderTotService.data('value');
-    let tax = El.orderTotTax.data('value');
-    let grandtotal = El.orderTotSum.data('value');
+    let total = getSummary('total').value;
+    let discount = getSummary('discount').value;
+    let service = getSummary('servicecharge').value;
+    let tax = getSummary('tax').value;
+    let grandtotal = getSummary('grandtotal').value;
     let folio_id, data;
     //
     let selectCustomer = modal.find('#customer');
@@ -858,11 +891,11 @@ let chargeToRoomPayment = function () {
         let el = $(`<option value="${e.folio_id}">[${e.room_type} / ${e.room_no}] - ${e.cust_firt_name} ${e.cust_last_name}</option>`);
         selectCustomer.append(el);
     });
-    selectCustomer.on('change', function(){
+    selectCustomer.on('change', function () {
         let val1 = selectCustomer.val();
         data = 0;
         if (val1) {
-            data = houseGuest.data.filter(function(e){
+            data = houseGuest.data.filter(function (e) {
                 return e.folio_id == val1 ? 1 : 0;
             })[0];
             folio_id = (data.folio_id);
@@ -898,13 +931,14 @@ let houseUsePayment = function () {
     if (!App.role.houseuse) {
         El.btnPayHouseUse.hide();
         return
-    };
+    }
+    ;
     let modal = El.modalHouseUse;
-    let total = El.orderTotFood.data('value');
-    let discount = El.orderTotDiscount.data('value');
-    let service = El.orderTotService.data('value');
-    let tax = El.orderTotTax.data('value');
-    let grandtotal = El.orderTotSum.data('value');
+    let total = getSummary('total').value;
+    let discount = getSummary('discount').value;
+    let service = getSummary('servicecharge').value;
+    let tax = getSummary('tax').value;
+    let grandtotal = getSummary('grandtotal').value;
     let house_use_id, data;
     //
     let selectHouseUse = modal.find('#house-use');
@@ -934,11 +968,11 @@ let houseUsePayment = function () {
         let el = $(`<option value="${e.house_use_id}">[${e.code}] - ${e.pos_cost_center_name} / ${e.name}</option>`);
         selectHouseUse.append(el);
     });
-    selectHouseUse.on('change', function(){
+    selectHouseUse.on('change', function () {
         let val1 = selectHouseUse.val();
         data = 0;
         if (val1) {
-            data = houseUseList.data.filter(function(e){
+            data = houseUseList.data.filter(function (e) {
                 return e.house_use_id == val1 ? 1 : 0;
             })[0];
             house_use_id = (data.folio_id);
@@ -973,13 +1007,13 @@ let noPostPayment = function () {
     if (!App.role.nopost) {
         El.btnPayNoPost.hide();
         return
-    };
+    }
     let modal = El.modalNoPost;
-    let total = El.orderTotFood.data('value');
-    let discount = El.orderTotDiscount.data('value');
-    let service = El.orderTotService.data('value');
-    let tax = El.orderTotTax.data('value');
-    let grandtotal = El.orderTotSum.data('value');
+    let total = getSummary('total').value;
+    let discount = getSummary('discount').value;
+    let service = getSummary('servicecharge').value;
+    let tax = getSummary('tax').value;
+    let grandtotal = getSummary('grandtotal').value;
     //
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
@@ -1006,7 +1040,7 @@ let splitPayment = function () {
         return;
     }
     let m = El.modalSplit;
-    let grandtotal = El.orderTotSum.data('value');
+    let grandtotal = getSummary('grandtotal').value;
     let close = m.find('#close');
     let next = m.find('#submit');
     let mode = m.find('#mode');
@@ -1849,7 +1883,7 @@ let manualPrint = function () {
         tbodyDefaultPrint.html('');
         ulCheckListBox.html('');
         let orders = SQL(`
-            select
+            select 
                 c.name menu,b.order_qty,f.name printer
             from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c
             left join mst_kitchen_section f on c.print_kitchen_section_id=f.id
@@ -1859,7 +1893,7 @@ let manualPrint = function () {
             and a.outlet_id=e.id
             and order_id in (${orderIds});
         `);
-        orders.data.forEach(function(e){
+        orders.data.forEach(function (e) {
             tbodyDefaultPrint.append(`
             <tr>
                 <td>${e.order_qty}</td>
@@ -1869,7 +1903,7 @@ let manualPrint = function () {
         `)
         })
         let printers = SQL(`select id, kitchen_id, code, name from mst_kitchen_section`);
-        printers.data.forEach(function(e){
+        printers.data.forEach(function (e) {
             let li = $(`
                 <li id="printer${e.id}" class="list-group-item" data-color="info" name="${e.name}" code="${e.code}">
                     <span style="margin-left: 10px">${e.code.toUpperCase()}</span>
@@ -2051,7 +2085,18 @@ let openMenu = function () {
             loadMenu()
         }
     });
-}
+};
+let printBilling = function () {
+    //if (!App.role.printbill) {
+    //    El.btnPrintBilling.hide();
+    //    return;
+    //}
+    El.btnPrintBilling.show();
+    El.btnPrintBilling.on('click', function () {
+        let orderId = orderIds.split(',')[0];
+        Printing({orderId: orderId, payment: 0});
+    })
+};
 $(document).ready(function () {
     let {
         nopost, cash, chargeroom, card,
@@ -2079,18 +2124,22 @@ $(document).ready(function () {
     manualPrint();
     openCashDraw();
     openMenu();
+    printBilling();
     //
     initCheckListBoxes();
     El.paymentBtn.on('click', function () {
-        El.modalMerge.find('#home-total').html(El.orderTotSum.html())
-        El.modalMerge.find('#grandtotal').html(El.orderTotSum.html())
+        let gt = rupiahJS(getSummary('grandtotal').value);
+        El.modalMerge.find('#home-total').html(gt)
+        El.modalMerge.find('#grandtotal').html(gt)
         $('.modal-body div#info').html(`
             <div class="row">
                 <div class="col-lg-6">
                     <span>Total</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="subtotal">${El.orderTotFood.html()}</span>
+                    <span style="margin-right: 13px;" for="subtotal">
+                        ${rupiahJS(getSummary('total').value)}
+                    </span>
                 </div>
             </div>
             <div class="row">
@@ -2098,7 +2147,9 @@ $(document).ready(function () {
                     <span style="margin-left: 15px;">Discount</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="discount">${El.orderTotDiscount.html()}</span>
+                    <span style="margin-right: 13px;" for="discount">
+                        ${rupiahJS(getSummary('discount').value)}
+                    </span>
                 </div>
             </div>
             <div class="row">
@@ -2106,7 +2157,9 @@ $(document).ready(function () {
                     <span style="margin-left: 15px;">Service Charge</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="service">${El.orderTotService.html()}</span>
+                    <span style="margin-right: 13px;" for="service">
+                        ${rupiahJS(getSummary('servicecharge').value)}
+                    </span>
                 </div>
             </div>
             <div class="row">
@@ -2114,7 +2167,9 @@ $(document).ready(function () {
                     <span style="margin-left: 15px;">Tax</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="tax">${El.orderTotTax.html()}</span>
+                    <span style="margin-right: 13px;" for="tax">
+                        ${rupiahJS(getSummary('tax').value)}
+                    </span>
                 </div>
             </div>
             <div class="row">
@@ -2122,7 +2177,9 @@ $(document).ready(function () {
                     <span>Grand Total</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="total">${El.orderTotSum.html()}</span>
+                    <span style="margin-right: 13px;" for="total">
+                        ${gt}
+                    </span>
                 </div>
             </div>
             <hr style="margin-top: 5px; margin-bottom: 10px"/>

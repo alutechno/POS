@@ -96,9 +96,13 @@
 											<i class="fa fa-arrow-down" aria-hidden="true"></i>
 											Merge
 										</a>
-										<button class="btn btn-app btn-warning" id="open-cash-draw" id="open-cash-draw">
+										<button class="btn btn-app btn-warning" id="open-cash-draw">
 											<i class="fa fa-th-large"></i>
-											Cash draw
+											Cash Draw
+										</button>
+										<button class="btn btn-app btn-warning" id="print-billing">
+											<i class="fa fa-print"></i>
+											Print Bill
 										</button>
 									</div>
 								</div>
@@ -123,30 +127,8 @@
 											</tr>
 											</thead>
 										</table>
-										<table class="table table-striped">
-											<tbody>
-											<tr>
-												<td colspan="3" align="left">Total Food</td>
-												<td align="right" id="order-tot-food">?</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Discount Food</td>
-												<td align="right" id="order-tot-discount">?</td>
-											</tr>
-
-											<tr>
-												<td colspan="3" align="left">Total Service Charge</td>
-												<td align="right" id="order-tot-service">?</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Total Tax</td>
-												<td align="right" id="order-tot-tax">?</td>
-											</tr>
-											<tr>
-												<td colspan="3" align="left">Grand Total</td>
-												<td align="right" id="order-tot-sum">?</td>
-											</tr>
-											</tbody>
+										<table class="table table-striped" id="order-summary">
+											<tbody></tbody>
 										</table>
 									</div>
 								</div>
