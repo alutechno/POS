@@ -303,9 +303,9 @@ let loadMenu = function (filter) {
             Menu = menu.data.map(function (e) {
                 e.menu_price_ = rupiahJS(e.menu_price);
                 let el = $(`
-                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item" 
+                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item"
                         menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
-                        menu-class="${e.menu_class_id}" 
+                        menu-class="${e.menu_class_id}"
                         menu-sub-class="${e.menu_group_id}">
                         <div class="small-box">
                             <div class="small-box-footer menu">
@@ -474,16 +474,16 @@ let loadOrderMenu = function () {
     }
 };
 let loadOrderSummary = function () {
-    let summary = SQL(`
-        select 
-            sum(a.sub_total_amount) subtotals, sum(a.discount_total_amount) discounts, 
+    /*let summary = SQL(`
+        select
+            sum(a.sub_total_amount) subtotals, sum(a.discount_total_amount) discounts,
             sum(b.service_amount) services, sum(c.tax_amount) taxes, sum(a.due_amount) totals
         from pos_orders a
         left join (
             select order_id, tax_amount service_amount from pos_order_taxes where tax_id = 1
         ) b on b.order_id = a.id
         left join (
-            select order_id, sum(tax_amount) tax_amount from pos_order_taxes where tax_id != 1
+            select order_id, tax_amount from pos_order_taxes where tax_id = 2
         ) c on c.order_id = a.id
         where id in (${orderIds})
     `);
@@ -497,7 +497,13 @@ let loadOrderSummary = function () {
     El.orderTotTax.data('value', row.taxes);
     El.orderTotTax.html(rupiahJS(row.taxes));
     El.orderTotSum.data('value', row.totals);
-    El.orderTotSum.html(rupiahJS(row.totals));
+    El.orderTotSum.html(rupiahJS(row.totals));*/
+	let summary = SQL(`select tax_id,sum(a.tax_amount) tax_amount,b.name tax_name
+		from pos_order_taxes a,mst_pos_taxes b
+		where a.tax_id=b.id
+		and a.order_id in (${orderIds})
+		group by tax_id`);
+	
 }
 let addOrderMenu = function (data, qty = 1) {
     let {id, menu_class_id, outlet_id} = data;
@@ -1843,7 +1849,7 @@ let manualPrint = function () {
         tbodyDefaultPrint.html('');
         ulCheckListBox.html('');
         let orders = SQL(`
-            select 
+            select
                 c.name menu,b.order_qty,f.name printer
             from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c
             left join mst_kitchen_section f on c.print_kitchen_section_id=f.id

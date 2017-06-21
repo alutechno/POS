@@ -192,7 +192,7 @@ const http = function (pool, compile) {
     app.post('/sql', async function (req, res, next) {
         let {query, params} = req.body;
         let data = [], error = null, result = await compile(query, params);
-        if (result.constructor == Error) {
+		if (result.constructor == Error) {
             error = result;
         } else {
             data = result
@@ -228,13 +228,13 @@ const http = function (pool, compile) {
                 SELECT @now := now();
                 SELECT id, name, description, status, start_time, DATE(stime), end_time, DATE(etime)
                 FROM (
-                    SELECT 
+                    SELECT
                         a.*,
                         TIMESTAMP(
                             date_add(
                                 DATE(@now),
-                                INTERVAL 
-                                    CASE 
+                                INTERVAL
+                                    CASE
                                         WHEN start_time < end_time THEN 0
                                         WHEN start_time > end_time AND @now >= start_time THEN 0
                                         WHEN start_time > end_time THEN -1
@@ -244,9 +244,9 @@ const http = function (pool, compile) {
                         ) stime,
                         TIMESTAMP(
                             date_add(
-                                DATE(@now), 
-                                    INTERVAL 
-                                    CASE 
+                                DATE(@now),
+                                    INTERVAL
+                                    CASE
                                         when start_time > end_time and @now >= start_time then 1
                                         else 0
                                     END
