@@ -561,7 +561,7 @@ let addOrderMenu = function (data, qty = 1) {
     };
     let addDiscountPatched = function () {
         let day = SQL('select LOWER(DAYNAME(NOW())) a');
-        let promos = SQL(`select * from pos_menus_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
+        let promos = SQL(`select * from pos_menu_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
         promos.data.forEach(function (promo) {
             let discount = 0;
             if (promo.discount_amount > 0) {
