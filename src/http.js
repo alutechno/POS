@@ -119,7 +119,7 @@ const http = function (pool, compile) {
                 if (((now.getTime() - time) / 1000) > 10) {
                     /* update session if diff == 10 second */
                     let token = Crypt.en(JSON.stringify({id, time: now.getTime(), outlet, posCashier}));
-                    let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
+                    let updateUserQuery = 'UPDATE user SET token2 = ? WHERE id = ?';
                     let updateUser = await compile(updateUserQuery, [token, id]);
                     if (updateUser.constructor === Error) throw updateUser;
 
@@ -301,7 +301,7 @@ const http = function (pool, compile) {
             let time = new Date().getTime();
             let posCashier = getExistShift[0].id;
             let token = Crypt.en(JSON.stringify({id, time, outlet, posCashier}));
-            let updateUserQuery = 'UPDATE user SET token = ? WHERE id = ?';
+            let updateUserQuery = 'UPDATE user SET token2 = ? WHERE id = ?';
             let updateUser = await compile(updateUserQuery, [token, id]);
             if (updateUser.constructor === Error) throw updateUser;
             getUser[0].token = token;
