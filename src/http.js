@@ -9,7 +9,9 @@ const fs = require('fs'),
     mysql = require('promise-mysql');
 //
 const {STATUS_CODES} = require('http'),
+	{ execSync } = require('child_process'),
     Glob = require(`./glob`),
+	request=require('request'),
     httpCode = require(`${Glob.home}/utils/http.code`),
     Code4 = require(`${Glob.home}/utils/code4`),
     Crypt = require(`${Glob.home}/utils/crypt`),
@@ -341,21 +343,23 @@ const http = function (pool, compile) {
     });
     app.get('/printBill', async function (req, res, next) {
         let {orderId, payment} = req.query;
-        //todo: generate pdf printed file here..
-        //todo: open cash draw script here..
-        if (1) {
-            res.send({
+		let stream=request.get(locals.BIRT+'&no_bill='+orderId+'&payment='+payment)
+		.on('error', function(err) {
+			res.send({
+                error: true,
+                message: 'Cannot print bill'
+            })
+		})
+		.pipe(fs.createWriteStream('./bills/bill_'+orderId+'.pdf'));
+		stream.on('finish', function () {
+			//exec foxit reader command `foxitReader.exe /t './bills/bill_'+orderId+'.pdf'`
+			//let exec=execSync('');
+			res.send({
                 error: false,
                 message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
                 data : {orderId, payment}
             })
-        } else {
-            res.send({
-                error: true,
-                message: 'Billing with ' + JSON.stringify({orderId, payment}) + ' cannot be printed',
-                data : {orderId, payment}
-            })
-        }
+		});
     });
     app.get('/printCashierReport', async function (req, res, next) {
         let {posCashierId} = req.query;
