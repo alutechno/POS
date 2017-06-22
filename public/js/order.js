@@ -568,7 +568,7 @@ let addOrderMenu = function (data, qty = 1) {
         orderItemId = orderItem.data.insertId;
     };
     let addDiscountPatched = function () {
-        let day = SQL('select LOWER(DAYNAME(NOW())) a');
+		let day = SQL('select LOWER(DAYNAME(NOW())) a');
         let promos = SQL(`select * from pos_menu_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
         promos.data.forEach(function (promo) {
             let discount = 0;
@@ -577,14 +577,14 @@ let addOrderMenu = function (data, qty = 1) {
             } else {
                 discount = menu_price / 100 * promo.discount_percent;
             }
-            totalDiscount += discount;
+            totalDiscount += discount * qty;
 
             let newPatchDiscount = {
                 order_line_item_id: orderItemId,
                 menu_class_id: menu_class_id,
                 outlet_menu_id: id,
                 promo_id: promo.id,
-                discount_amount: discount,
+                discount_amount: discount*qty,
                 created_by: App.user.id
             }
             let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
