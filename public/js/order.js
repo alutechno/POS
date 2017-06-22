@@ -254,7 +254,9 @@ let loadMealTime = function () {
     }
 };
 let loadClass = function () {
-    let menuClass = SQL('select * from ref_outlet_menu_class where status = 1 order by name');
+    let menuClass = SQL(`select a.*
+		from ref_outlet_menu_class a,pos_avail_menu_class b
+		where a.id=b.menu_class_id and a.status=1 and b.outlet_Id=`+App.outlet.id+' order by a.name');
     MenuClass = [];
 
     if (!menuClass.error) {
@@ -276,8 +278,14 @@ let loadClass = function () {
     })
 };
 let loadSubClass = function (filter) {
+	console.log(filter)
     if (filter === undefined) {
-        let menuSubClass = SQL('select * from ref_outlet_menu_group where status = 1 order by name');
+        let menuSubClass = SQL(`select c.*
+			from ref_outlet_menu_class a,pos_avail_menu_class b,ref_outlet_menu_group c
+			where a.id=b.menu_class_id
+			and a.id=c.menu_class_id
+			and c.status=1
+			and b.outlet_Id=`+App.outlet.id+' order by c.name');
         MenuSubClass = [];
         if (!menuSubClass.error) {
             El.menuSubClass.html(`<option value="">All</option>`);
@@ -323,9 +331,9 @@ let loadMenu = function (filter) {
                 e.url_ = 'http://103.43.47.115:3000';
                 e.menu_price_ = rupiahJS(e.menu_price);
                 let el = $(`
-                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item" 
+                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item"
                         menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
-                        menu-class="${e.menu_class_id}" 
+                        menu-class="${e.menu_class_id}"
                         menu-sub-class="${e.menu_group_id}">
                         <div class="small-box">
                             <div class="small-box-footer menu">
@@ -502,15 +510,15 @@ let loadOrderSummary = function () {
     let queries = SQL(`
         select
             tax_id, sum(a.tax_amount) tax_amount, b.name tax_name
-        from pos_order_taxes a, mst_pos_taxes b 
+        from pos_order_taxes a, mst_pos_taxes b
         where a.tax_id=b.id and a.order_id in (${orderIds})
         group by tax_id;
-        
+
         select
             b.name, sum(price_amount * order_qty) price,
             IFNULL(sum(c.discount_amount),0) discount
-        from pos_orders_line_item a 
-        left join pos_patched_discount c on a.id=c.order_line_item_id, ref_outlet_menu_class b 
+        from pos_orders_line_item a
+        left join pos_patched_discount c on a.id=c.order_line_item_id, ref_outlet_menu_class b
         where a.menu_class_id=b.id and a.order_id in (${orderIds})
         group by b.name
     `)
@@ -1883,7 +1891,7 @@ let manualPrint = function () {
         tbodyDefaultPrint.html('');
         ulCheckListBox.html('');
         let orders = SQL(`
-            select 
+            select
                 c.name menu,b.order_qty,f.name printer
             from pos_orders a,pos_orders_line_item b,user d,mst_outlet e,inv_outlet_menus c
             left join mst_kitchen_section f on c.print_kitchen_section_id=f.id
