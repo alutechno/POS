@@ -368,7 +368,7 @@ const http = function (pool, compile) {
                 else {
                     res.send({
                         error: false,
-                        message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
+                        message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
                         data: {orderId, payment}
                     })
                 }
@@ -376,7 +376,7 @@ const http = function (pool, compile) {
                 console.log(process.pid.toString(), '> WINDOWS COMMAND :', e.message);
                 res.send({
                     error: true,
-                    message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
+                    message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
                     data: {orderId, payment}
                 })
             }
@@ -411,7 +411,7 @@ const http = function (pool, compile) {
                 console.log(process.pid.toString(), '> WINDOWS COMMAND :', e.message);
                 res.send({
                     error: true,
-                    message: 'Cashier report has been printed with ' + JSON.stringify({posCashierId}),
+                    message: 'Cashier report with ' + JSON.stringify({posCashierId}) + ' cannot be printed',
                     data: {posCashierId}
                 })
             }

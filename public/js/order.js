@@ -278,7 +278,6 @@ let loadClass = function () {
     })
 };
 let loadSubClass = function (filter) {
-	console.log(filter)
     if (filter === undefined) {
         let menuSubClass = SQL(`select c.*
 			from ref_outlet_menu_class a,pos_avail_menu_class b,ref_outlet_menu_group c
