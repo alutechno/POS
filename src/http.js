@@ -360,7 +360,7 @@ const http = function (pool, compile) {
         });
         let stream = getting.pipe(fs.createWriteStream('./bills/bill_' + orderId + '.pdf'));
         stream.on('finish', function () {
-            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/FoxitReader.exe" /t "${home}/bills/bill_${orderId}.pdf"`;
+            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe" /t "${home}/bills/bill_${orderId}.pdf"`;
             console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
             try {
                 let cmd = execSync(command);
@@ -395,7 +395,7 @@ const http = function (pool, compile) {
         });
         let stream = getting.pipe(fs.createWriteStream('./bills/pos_shift_' + posCashierId + '.pdf'));
         stream.on('finish', function () {
-            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/FoxitReader.exe" /t "${home}/bills/pos_shift_${posCashierId}.pdf"`;
+            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe" /t "${home}/bills/pos_shift_${posCashierId}.pdf"`;
             console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
             try {
                 let cmd = execSync(command);
