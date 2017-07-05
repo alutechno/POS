@@ -22,9 +22,6 @@ $ pm2 start app.json
 
 ### Next todo
 * Print menu orders command (server side), see `GET /printKitchen` route
-* Print billing command (server side), see `GET /printBill` route
-* Open cash draw command (server side), see `GET /openCashDraw` route
-* Print cashier report command (server side), see `GET /printCashierReport` route
 * Close cashier query (please fix SQL query at `public/js/cashier.js`)
 * Additional tax / service (please add at `public/js/order.js`)
 * Transform sql to transactional for `add order menu` and `payment`
