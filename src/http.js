@@ -9,9 +9,9 @@ const fs = require('fs'),
     mysql = require('promise-mysql');
 //
 const {STATUS_CODES} = require('http'),
-	{ execSync } = require('child_process'),
+    {execSync} = require('child_process'),
     Glob = require(`./glob`),
-	request=require('request'),
+    request = require('request'),
     httpCode = require(`${Glob.home}/utils/http.code`),
     Code4 = require(`${Glob.home}/utils/code4`),
     Crypt = require(`${Glob.home}/utils/crypt`),
@@ -194,7 +194,7 @@ const http = function (pool, compile) {
     app.post('/sql', async function (req, res, next) {
         let {query, params} = req.body;
         let data = [], error = null, result = await compile(query, params);
-		if (result.constructor == Error) {
+        if (result.constructor == Error) {
             error = result;
         } else {
             data = result
@@ -283,15 +283,15 @@ const http = function (pool, compile) {
                 let code = await compile(`SELECT CONCAT('PCS/', DATE_FORMAT(CURRENT_DATE, '%Y%m%d')) id;`);
                 //let code = await compile(`SELECT CONCAT('PCS/', curr_item_code('', DATE_FORMAT(CURRENT_DATE, '%Y%m%d'))) id;`);
                 let insertionData = {
-                    code : code[0].id,
-                    user_id : id,
-                    working_shift_id : getShift[1][0].id,
-                    outlet_id : outlet,
-                    start_time : now[0].val,
-                    created_date : now[0].val,
-                    begin_saldo : null,
-                    closing_saldo : null,
-                    created_by : id
+                    code: code[0].id,
+                    user_id: id,
+                    working_shift_id: getShift[1][0].id,
+                    outlet_id: outlet,
+                    start_time: now[0].val,
+                    created_date: now[0].val,
+                    begin_saldo: null,
+                    closing_saldo: null,
+                    created_by: id
                 };
                 let insertion = await compile(`INSERT INTO pos_cashier_transaction SET ?`, insertionData);
                 if (insertion.constructor === Error) throw insertion;
@@ -328,13 +328,19 @@ const http = function (pool, compile) {
     });
     //
     app.get('/openCashDraw', async function (req, res, next) {
-        //todo: open cash draw script here..
-        if (1) {
-            res.send({
-                error: false,
-                message: 'Cash draw opened.'
-            })
-        } else {
+        let command = `copy ${home}/bin/open.txt LPT2`;
+        console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
+        try {
+            let cmd = execSync(command);
+            if (!cmd) throw (cmd);
+            else {
+                res.send({
+                    error: false,
+                    message: 'Cash draw opened.'
+                })
+            }
+        } catch (e) {
+            console.log(process.pid.toString(), '>', e.message);
             res.send({
                 error: true,
                 message: 'Cannot opening cash draw!'
@@ -343,40 +349,73 @@ const http = function (pool, compile) {
     });
     app.get('/printBill', async function (req, res, next) {
         let {orderId, payment} = req.query;
-		let stream=request.get(locals.BIRT+'&no_bill='+orderId+'&payment='+payment)
-		.on('error', function(err) {
-			res.send({
+        let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment=' + payment);
+        getting.on('error', function (e) {
+            console.log(process.pid.toString(), '> GET REQUEST :', e.message);
+            res.send({
                 error: true,
-                message: 'Cannot print bill'
+                message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
+                data: {orderId, payment}
             })
-		})
-		.pipe(fs.createWriteStream('./bills/bill_'+orderId+'.pdf'));
-		stream.on('finish', function () {
-			//exec foxit reader command `foxitReader.exe /t './bills/bill_'+orderId+'.pdf'`
-			//let exec=execSync('');
-			res.send({
-                error: false,
-                message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
-                data : {orderId, payment}
-            })
-		});
+        });
+        let stream = getting.pipe(fs.createWriteStream('./bills/bill_' + orderId + '.pdf'));
+        stream.on('finish', function () {
+            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/FoxitReader.exe" /t "${home}/bills/bill_${orderId}.pdf"`;
+            console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
+            try {
+                let cmd = execSync(command);
+                if (!cmd) throw (cmd);
+                else {
+                    res.send({
+                        error: false,
+                        message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
+                        data: {orderId, payment}
+                    })
+                }
+            } catch (e) {
+                console.log(process.pid.toString(), '> WINDOWS COMMAND :', e.message);
+                res.send({
+                    error: true,
+                    message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
+                    data: {orderId, payment}
+                })
+            }
+        });
     });
     app.get('/printCashierReport', async function (req, res, next) {
         let {posCashierId} = req.query;
-        //todo: generate pdf printed file here..
-        if (1) {
-            res.send({
-                error: false,
-                message: 'Cashier report has been printed with ' + JSON.stringify({posCashierId}),
-                data : {posCashierId}
-            })
-        } else {
+        let getting = request.get(locals.BIRT_CLOSE_CASHIER + posCashierId);
+        getting.on('error', function (e) {
+            console.log(process.pid.toString(), '> GET REQUEST :', e.message);
             res.send({
                 error: true,
                 message: 'Cashier report with ' + JSON.stringify({posCashierId}) + ' cannot be printed',
-                data : {posCashierId}
+                data: {posCashierId}
             })
-        }
+        });
+        let stream = getting.pipe(fs.createWriteStream('./bills/pos_shift_' + posCashierId + '.pdf'));
+        stream.on('finish', function () {
+            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/FoxitReader.exe" /t "${home}/bills/pos_shift_${posCashierId}.pdf"`;
+            console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
+            try {
+                let cmd = execSync(command);
+                if (!cmd) throw (cmd);
+                else {
+                    res.send({
+                        error: false,
+                        message: 'Cashier report has been printed with ' + JSON.stringify({posCashierId}),
+                        data: {posCashierId}
+                    })
+                }
+            } catch (e) {
+                console.log(process.pid.toString(), '> WINDOWS COMMAND :', e.message);
+                res.send({
+                    error: true,
+                    message: 'Cashier report has been printed with ' + JSON.stringify({posCashierId}),
+                    data: {posCashierId}
+                })
+            }
+        });
     });
     app.get('/printKitchen', async function (req, res, next) {
         let {orderId, reprint, printer} = req.query;
@@ -391,13 +430,13 @@ const http = function (pool, compile) {
             res.send({
                 error: false,
                 message: 'Menu items has been printed with ' + JSON.stringify({orderId, reprint, printer}),
-                data : {orderId, reprint, printer}
+                data: {orderId, reprint, printer}
             })
         } else {
             res.send({
                 error: true,
                 message: 'Menu items with ' + JSON.stringify({orderId, reprint, printer}) + ' cannot be printed',
-                data : {orderId, reprint, printer}
+                data: {orderId, reprint, printer}
             })
         }
     });
