@@ -1,5 +1,7 @@
 .idea/
 bills/
+*bill_*.pdf
+*pos_shift_*.pdf
 log/
 test/
 trash/
