@@ -328,7 +328,8 @@ const http = function (pool, compile) {
     });
     //
     app.get('/openCashDraw', async function (req, res, next) {
-        let command = `copy ${home}\\bin\\open.txt LPT2`;
+        let file = `${home}/bin/open.txt`;
+        let command = `copy ${file.replace(/\//g, '\\')} LPT2`;
         console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
         try {
             let cmd = execSync(command);
@@ -358,9 +359,11 @@ const http = function (pool, compile) {
                 data: {orderId, payment}
             })
         });
-        let stream = getting.pipe(fs.createWriteStream('./bills/bill_' + orderId + '.pdf'));
+        let file = `${home}/bills/bill_${orderId}.pdf'`;
+        let stream = getting.pipe(fs.createWriteStream(file.replace(/\//g, '\\')));
         stream.on('finish', function () {
-            let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe" /t "${home}/bills/bill_${orderId}.pdf"`;
+            let executable = 'C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe';
+            let command = `"${executable.replace(/\//g, '\\')}" /t "${file.replace(/\//g, '\\')}"`;
             console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
             try {
                 let cmd = execSync(command);
@@ -393,7 +396,8 @@ const http = function (pool, compile) {
                 data: {posCashierId}
             })
         });
-        let stream = getting.pipe(fs.createWriteStream('./bills/pos_shift_' + posCashierId + '.pdf'));
+        let file = `${home}/bills/pos_shift_${posCashierId}.pdf'`;
+        let stream = getting.pipe(fs.createWriteStream(file.replace(/\//g, '\\')));
         stream.on('finish', function () {
             let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe" /t "${home}/bills/pos_shift_${posCashierId}.pdf"`;
             console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
