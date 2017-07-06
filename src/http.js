@@ -328,7 +328,7 @@ const http = function (pool, compile) {
     });
     //
     app.get('/openCashDraw', async function (req, res, next) {
-        let command = `copy ${home}/bin/open.txt LPT2`;
+        let command = `copy ${home}\\bin\\open.txt LPT2`;
         console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
         try {
             let cmd = execSync(command);
