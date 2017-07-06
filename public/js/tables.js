@@ -17,6 +17,8 @@ $(document).ready(function () {
     `);
     let parent = $('#tables-container');
     let guestModal = $('#myModalGuest');
+    let button = guestModal.find('button#submit');
+    let inputGuest = guestModal.find('input#guest');
     data.forEach(function (d) {
         let {id, posId, table_no} = d;
         let href = posId ? `/order/${posId || ''}` : '#myModalGuest';
@@ -58,7 +60,16 @@ $(document).ready(function () {
             }
         })
     }
-    guestModal.find('button#submit').on('click', function(){
+    guestModal.on('show.bs.modal', function () {
+        button.prop('disabled', true);
+    });
+    inputGuest.on('blur', function () {
+        let val = parseInt(inputGuest.val());
+        if (val > 0) {
+            button.prop('disabled', false);
+        }
+    });
+    button.on('click', function(){
         //todo: make this transaction like!
         let count = SQL('select count(id)+1 as no_bill from pos_orders where outlet_id=?', outletId);
         let code = "CHK-" + count.data[0].no_bill;
