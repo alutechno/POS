@@ -137,6 +137,7 @@ let Payment = function (param, splitted) {
                 total_amount,
                 created_by: userId
             };
+            console.log(posPaymentDetail);
             for (let i in posPaymentDetail) {
                 if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
             }
@@ -174,7 +175,6 @@ let getSummary = function (key) {
     obj.subtotal = {label: 'Sub Total', value: subtotal};
     obj.grandtotal = {label: 'Grand Total', value: subtotal + taxes};
     if (obj.hasOwnProperty(key)) return obj[key];
-    console.log(obj)
     return obj;
 };
 let paymentHasDone = function (param) {
@@ -505,6 +505,12 @@ let loadOrderMenu = function () {
         m.modal('hide');
     })
     El.orderMenu.bootstrapTable('load', OrderMenu);
+    if (OrderMenu.length) {
+        El.paymentBtn.removeAttr('disabled');
+        El.btnPrintBilling.removeAttr('disabled');
+        El.btnOrderNote.removeAttr('disabled');
+        El.btnPrintOrder.removeAttr('disabled');
+    }
     if (!App.role.voidmenu) {
         El.orderMenu.bootstrapTable('hideColumn', 'void');
     }
@@ -764,18 +770,20 @@ let cashPayment = function () {
         return;
     }
     let modal = El.modalCash;
-    let total = getSummary('total').value;
-    let discount = getSummary('discount').value;
-    let service = getSummary('servicecharge').value;
-    let tax = getSummary('tax').value;
-    let grandtotal = getSummary('grandtotal').value;
-    let change = 0;
-    //
     let btnSubmit = modal.find('#submit');
     let lblChange = modal.find('#change');
     let inputAmount = modal.find('#amount');
+    let total, discount, service, tax, grandtotal, change;
     //
     El.btnPayCash.show();
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
+        change = 0;
+    });
     inputAmount.on('blur', function () {
         let value = $(this).data('value');
         change = parseFloat(value) - parseFloat(grandtotal);
@@ -805,18 +813,16 @@ let cardPayment = function () {
         return;
     }
     let modal = El.modalCard;
-    let total = getSummary('total').value;
-    let discount = getSummary('discount').value;
-    let service = getSummary('servicecharge').value;
-    let tax = getSummary('tax').value;
-    let grandtotal = getSummary('grandtotal').value;
-    //
     let selectBankType = modal.find('#bank-type');
     let selectCcType = modal.find('#cc-type');
     let inputCardSwiper = modal.find('#card-swiper');
     let inputCardNo = modal.find('#card-no');
     let inputCustomerName = modal.find('#customer-name');
     let btnSubmit = modal.find('#submit');
+    //
+    El.btnPayCard.show();
+    //
+    let total, discount, service, tax, grandtotal;
     let validation = function () {
         let val1 = selectBankType.val();
         let val2 = inputCardNo.val();
@@ -829,13 +835,17 @@ let cardPayment = function () {
             if (val1 && val2) btnSubmit.prop('disabled', false);
         }
     };
-    //
-    El.btnPayCard.show();
-    //
     let bankList = SQL(`select id, code, name, description from ref_payment_method where category = 'CC' and status = '1' order by name`);
     selectBankType.html('<option value="">- Choose -</option>');
     bankList.data.forEach(function (bank) {
         selectBankType.append(`<option value="${bank.id}">${bank.code} - ${bank.name}</option>`);
+    });
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
     });
     inputCardSwiper.keydown(function (e) {
         if (e.keyCode == 13) {
@@ -880,13 +890,6 @@ let chargeToRoomPayment = function () {
         return
     }
     let modal = El.modalCharge2Room;
-    let total = getSummary('total').value;
-    let discount = getSummary('discount').value;
-    let service = getSummary('servicecharge').value;
-    let tax = getSummary('tax').value;
-    let grandtotal = getSummary('grandtotal').value;
-    let folio_id, data;
-    //
     let selectCustomer = modal.find('#customer');
     let lblCheckInDate = modal.find('#check-in-date');
     let lblDepartureDate = modal.find('#departure-date');
@@ -902,12 +905,20 @@ let chargeToRoomPayment = function () {
     //
     El.btnPayChargeToRoom.show()
     //
+    let total, discount, service, tax, grandtotal, folio_id, data;
     let houseGuest = SQL(`select * from v_in_house_guest`);
     selectCustomer.html('<option value="">- Choose -</option>');
     houseGuest.data.forEach(function (e) {
         Charge2Room[e.folio_id] = e;
         let el = $(`<option value="${e.folio_id}">[${e.room_type} / ${e.room_no}] - ${e.cust_firt_name} ${e.cust_last_name}</option>`);
         selectCustomer.append(el);
+    });
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
     });
     selectCustomer.on('change', function () {
         let val1 = selectCustomer.val();
@@ -950,15 +961,8 @@ let houseUsePayment = function () {
         El.btnPayHouseUse.hide();
         return
     }
-    ;
+
     let modal = El.modalHouseUse;
-    let total = getSummary('total').value;
-    let discount = getSummary('discount').value;
-    let service = getSummary('servicecharge').value;
-    let tax = getSummary('tax').value;
-    let grandtotal = getSummary('grandtotal').value;
-    let house_use_id, data;
-    //
     let selectHouseUse = modal.find('#house-use');
     let lblPeriod = modal.find('#period');
     let lblHouseUseInfo = modal.find('#house-use-info');
@@ -970,6 +974,7 @@ let houseUsePayment = function () {
     //
     El.btnPayHouseUse.show();
     //
+    let total, discount, service, tax, grandtotal, house_use_id, data;
     let houseUseList = SQL(`
         select
             a.*, b.current_transc_amount, b.house_use,
@@ -985,6 +990,13 @@ let houseUsePayment = function () {
         HouseUse[e.house_use_id] = e;
         let el = $(`<option value="${e.house_use_id}">[${e.code}] - ${e.pos_cost_center_name} / ${e.name}</option>`);
         selectHouseUse.append(el);
+    });
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
     });
     selectHouseUse.on('change', function () {
         let val1 = selectHouseUse.val();
@@ -1027,16 +1039,19 @@ let noPostPayment = function () {
         return
     }
     let modal = El.modalNoPost;
-    let total = getSummary('total').value;
-    let discount = getSummary('discount').value;
-    let service = getSummary('servicecharge').value;
-    let tax = getSummary('tax').value;
-    let grandtotal = getSummary('grandtotal').value;
-    //
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
     //
     El.btnPayNoPost.show();
+    //
+    let total, discount, service, tax, grandtotal;
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
+    });
     txAreaNote.on('change', function () {
         if (txAreaNote.val()) {
             btnSubmit.prop('disabled', false);
@@ -1058,7 +1073,6 @@ let splitPayment = function () {
         return;
     }
     let m = El.modalSplit;
-    let grandtotal = getSummary('grandtotal').value;
     let close = m.find('#close');
     let next = m.find('#submit');
     let mode = m.find('#mode');
@@ -1672,6 +1686,7 @@ let splitPayment = function () {
         }
         return pay;
     }
+    let grandtotal;
     //
     El.btnPaySplit.show();
     //
@@ -1807,9 +1822,10 @@ let splitPayment = function () {
         if (mode.val() == 'manual' && parseFloat(modeCounter.val())) {
             next.enable();
         }
-    })
+    });
     //
     m.on('show.bs.modal', function () {
+        grandtotal = getSummary('grandtotal').value
         balance.val(grandtotal);
         modeCounter.val('');
         recordList.html('');
@@ -2145,6 +2161,19 @@ $(document).ready(function () {
     printBilling();
     //
     initCheckListBoxes();
+    El.paymentBtn.attr('disabled', 1);
+    El.btnPrintBilling.attr('disabled', 1);
+    El.btnOrderNote.attr('disabled', 1);
+    El.btnPrintOrder.attr('disabled', 1);
+    El.btnPayNoPost.removeAttr('disabled');
+    if (OrderMenu) {
+        if (OrderMenu.length) {
+            El.paymentBtn.removeAttr('disabled');
+            El.btnPrintBilling.removeAttr('disabled');
+            El.btnOrderNote.removeAttr('disabled');
+            El.btnPrintOrder.removeAttr('disabled');
+        }
+    }
     El.paymentBtn.on('click', function () {
         let gt = rupiahJS(getSummary('grandtotal').value);
         El.modalMerge.find('#home-total').html(gt)
