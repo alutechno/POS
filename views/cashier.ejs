@@ -59,7 +59,7 @@
 				<h4 class="modal-title">Shift Revenue</h4>
 			</div>
 			<div class="modal-body">
-				<iframe src="<%- client.BIRT_CLOSE_CASHIER + client.posCashier.id %>"
+				<iframe src="<%- client.BIRT_CLOSE_CASHIER.replace('__format=pdf', '__format=html') + client.posCashier.id %>"
 						style="border: none; width: 100%; height: 100%;"
 				></iframe>
 			</div>
