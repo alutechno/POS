@@ -155,6 +155,7 @@ let Payment = function (param, splitted) {
 let getSummary = function (key) {
     let obj = {};
     let total = 0;
+    let subtotal = 0;
     let discount = 0;
     let taxes = 0;
     Taxes.forEach(function (el) {
@@ -167,10 +168,13 @@ let getSummary = function (key) {
         total += el.price;
         discount += el.discount;
     })
+    subtotal = total - discount;
     obj.discount = {label: 'Discount', value: discount};
     obj.total = {label: 'Total', value: total};
-    obj.grandtotal = {label: 'Grand Total', value: total - discount + taxes};
+    obj.subtotal = {label: 'Sub Total', value: subtotal};
+    obj.grandtotal = {label: 'Grand Total', value: subtotal + taxes};
     if (obj.hasOwnProperty(key)) return obj[key];
+    console.log(obj)
     return obj;
 };
 let paymentHasDone = function (param) {
@@ -256,7 +260,7 @@ let loadMealTime = function () {
 let loadClass = function () {
     let menuClass = SQL(`select a.*
 		from ref_outlet_menu_class a,pos_avail_menu_class b
-		where a.id=b.menu_class_id and a.status=1 and b.outlet_Id=`+App.outlet.id+' order by a.name');
+		where a.id=b.menu_class_id and a.status=1 and b.outlet_Id=` + App.outlet.id + ' order by a.name');
     MenuClass = [];
 
     if (!menuClass.error) {
@@ -284,7 +288,7 @@ let loadSubClass = function (filter) {
 			where a.id=b.menu_class_id
 			and a.id=c.menu_class_id
 			and c.status=1
-			and b.outlet_Id=`+App.outlet.id+' order by c.name');
+			and b.outlet_Id=` + App.outlet.id + ' order by c.name');
         MenuSubClass = [];
         if (!menuSubClass.error) {
             El.menuSubClass.html(`<option value="">All</option>`);
@@ -529,26 +533,31 @@ let loadOrderSummary = function () {
     parent.html('');
     Summary.forEach(function (el) {
         parent.append(`
-            <tr>
-                <td colspan="3" align="left">${el.name}</td>
+            <tr class="info text-italic">
+                <td colspan="3" align="left" style="font-style: italic;">${el.name}</td>
                 <td align="right">${rupiahJS(el.price)}</td>
             </tr>
         `)
     });
-    ['discount', 'servicecharge', 'tax', 'grandtotal'].forEach(function (e) {
+    ['total', 'discount', 'subtotal', 'servicecharge', 'tax', 'grandtotal'].forEach(function (e) {
+        let padder = ''
         let {label, value} = sum[e];
-        parent.append(`
+        let row = $(`
             <tr>
                 <td colspan="3" align="left">${label}</td>
                 <td align="right">${rupiahJS(value)}</td>
             </tr>
-        `);
+        `)
+        if (e.indexOf('total') < 0) {
+            $(row.find('td')[0]).css('padding-left', '25px');
+        }
+        parent.append(row);
     });
 };
 let addOrderMenu = function (data, qty = 1) {
-    let {id, menu_class_id, outlet_id} = data;
-    let menu_price = data.menu_price * qty;
-    let totalDiscount = 0, nettPrice = menu_price;
+    let {id, menu_class_id, outlet_id, menu_price} = data;
+    let amount = menu_price * qty;
+    let totalDiscount = 0;
     let order = Order[Object.keys(Order)[0]];
     let orderItemId, patchDiscountIds = [], orderTaxIds = {}, posOrder;
     //
@@ -559,38 +568,40 @@ let addOrderMenu = function (data, qty = 1) {
             outlet_menu_id: id,
             serving_status: 0,
             order_qty: qty,
-            price_amount: data.menu_price,
-            total_amount: menu_price,
+            price_amount: menu_price,
+            total_amount: amount,
             created_by: App.user.id
         }
         let orderItem = SQL('insert into pos_orders_line_item set ?', newLineItem);
         orderItemId = orderItem.data.insertId;
     };
     let addDiscountPatched = function () {
-		let day = SQL('select LOWER(DAYNAME(NOW())) a');
+        let day = SQL('select LOWER(DAYNAME(NOW())) a');
         let promos = SQL(`select * from pos_menu_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
         promos.data.forEach(function (promo) {
             let discount = 0;
             if (promo.discount_amount > 0) {
                 discount = promo.discount_amount
-            } else {
+            } else if (promo.discount_percent > 0) {
                 discount = menu_price / 100 * promo.discount_percent;
             }
-            totalDiscount += discount * qty;
+            discount = discount * qty;
+            totalDiscount += discount;
 
             let newPatchDiscount = {
                 order_line_item_id: orderItemId,
                 menu_class_id: menu_class_id,
                 outlet_menu_id: id,
                 promo_id: promo.id,
-                discount_amount: discount*qty,
+                discount_amount: discount,
                 created_by: App.user.id
             }
             let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
             patchDiscountIds.push(patchDiscount.data.insertId);
         })
-    }
+    };
     let updateOrderTaxes = function () {
+        let amount_w_discount = amount - totalDiscount;
         let outletTaxes = SQL('select is_sevice_included, is_tax_included from inv_outlet_menus where id = ?', id);
         let {is_tax_included, is_sevice_included} = outletTaxes.data[0];
         let orderTaxes = SQL('select * from pos_order_taxes where order_id = ?', order.id);
@@ -600,7 +611,7 @@ let addOrderMenu = function (data, qty = 1) {
                     return row.tax_id == 2 ? 1 : 0
                 });
                 if (rows[0]) {
-                    let taxAmount = rows[0].tax_amount + (menu_price * rows[0].tax_percent / 100);
+                    let taxAmount = rows[0].tax_amount + (amount_w_discount * rows[0].tax_percent / 100);
                     let updateOrderTax2 = SQL(
                         'update pos_order_taxes set tax_amount = ? where id = ? and tax_id = ?',
                         [taxAmount, rows[0].id, rows[0].tax_id]
@@ -613,7 +624,7 @@ let addOrderMenu = function (data, qty = 1) {
                     return row.tax_id == 1 ? 1 : 0
                 });
                 if (rows[0]) {
-                    let taxAmount = rows[0].tax_amount + (menu_price * rows[0].tax_percent / 100);
+                    let taxAmount = rows[0].tax_amount + (amount_w_discount * rows[0].tax_percent / 100);
                     let updateOrderTax1 = SQL(
                         'update pos_order_taxes set tax_amount = ? where id = ? and tax_id = ?',
                         [taxAmount, rows[0].id, rows[0].tax_id]
@@ -631,7 +642,7 @@ let addOrderMenu = function (data, qty = 1) {
         let totalTaxes = taxes.data[0].tax;
 
         posOrder = selectOrder.data[0]
-        sub_total_amount += menu_price;
+        sub_total_amount += amount;
         discount_total_amount += totalDiscount;
         SQL('update pos_orders set sub_total_amount=?, discount_total_amount=?, tax_total_amount=?, due_amount=? where id=?', [
             sub_total_amount,
@@ -653,13 +664,13 @@ let addOrderMenu = function (data, qty = 1) {
     //    index: OrderMenu.length,
     //    row: {
     //        "menu_outlet_id": data.id,
-    //        "total_amount": menu_price,
+    //        "total_amount": amount,
     //        "order_id": orderIds.split(',')[0],
     //        "order_qty": qty,
     //        "id": orderItemId,
     //        "name": data.name,
     //        "no": OrderMenu.length + 1,
-    //        "total_amount_": rupiahJS(menu_price)
+    //        "total_amount_": rupiahJS(amount)
     //    }
     //});
 };
@@ -2144,7 +2155,7 @@ $(document).ready(function () {
                     <span>Total</span>
                 </div>
                 <div class="col-lg-6 text-right">
-                    <span style="margin-right: 13px;" for="subtotal">
+                    <span style="margin-right: 13px;" for="total">
                         ${rupiahJS(getSummary('total').value)}
                     </span>
                 </div>
@@ -2156,6 +2167,16 @@ $(document).ready(function () {
                 <div class="col-lg-6 text-right">
                     <span style="margin-right: 13px;" for="discount">
                         ${rupiahJS(getSummary('discount').value)}
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span>Sub Total</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span style="margin-right: 13px;" for="subtotal">
+                        ${rupiahJS(getSummary('subtotal').value)}
                     </span>
                 </div>
             </div>
