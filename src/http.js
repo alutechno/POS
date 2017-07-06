@@ -359,7 +359,7 @@ const http = function (pool, compile) {
                 data: {orderId, payment}
             })
         });
-        let file = `${home}/bills/bill_${orderId}.pdf'`;
+        let file = `${home}/bills/bill_${orderId}.pdf`;
         let stream = getting.pipe(fs.createWriteStream(file.replace(/\//g, '\\')));
         stream.on('finish', function () {
             let executable = 'C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe';
@@ -396,7 +396,7 @@ const http = function (pool, compile) {
                 data: {posCashierId}
             })
         });
-        let file = `${home}/bills/pos_shift_${posCashierId}.pdf'`;
+        let file = `${home}/bills/pos_shift_${posCashierId}.pdf`;
         let stream = getting.pipe(fs.createWriteStream(file.replace(/\//g, '\\')));
         stream.on('finish', function () {
             let command = `"C:/Program Files (X86)/Foxit Software/Foxit Reader/Foxit Reader.exe" /t "${home}/bills/pos_shift_${posCashierId}.pdf"`;
