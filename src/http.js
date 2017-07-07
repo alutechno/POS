@@ -151,11 +151,15 @@ const http = function (pool, compile) {
     });
     app.get('/', function (req, res, next) {
         locals.page = 'Table';
-        res.render('table')
+        res.render('table');
     });
     app.get('/cashier', function (req, res, next) {
         locals.page = 'Cashier';
         res.render('cashier')
+    });
+    app.get('/billing', async function (req, res, next) {
+        locals.page = 'Billing';
+        res.render('billing')
     });
     app.get('/order/:id', function (req, res, next) {
         locals.page = 'Order';
