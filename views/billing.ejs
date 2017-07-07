@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<% include part/header-css.ejs %>
+	<% include part/header-js.ejs %>
+</head>
+<body class="hold-transition skin-blue fixed layout-top-nav sidebar-mini">
+<div class="wrapper">
+	<% include part/navbar.ejs %>
+	<div class="content-wrapper">
+		<div class="container">
+			<section class="content">
+				<div class="row">
+					<div class="col-lg-3 pull-right">
+						<input id="search" type="text" class="form-control" placeholder="Search"/>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12" style="margin-top:20px; overflow-y: auto; max-height: calc(100vh - 185px);">
+						<div class="row" id="bills">
+							<!---->
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+	<% include part/footer.ejs %>
+</div>
+<% include part/body-js.ejs %>
+<script src="/js/billing.js"></script>
+</body>
+</html>

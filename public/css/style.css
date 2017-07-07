@@ -94,3 +94,11 @@
     color: rgb(255, 255, 255);
     background-color: rgb(66, 139, 202);
 }
+.bill {
+    padding-top: 10px;
+}
+.bill > div{
+    border: 1px solid darkseagreen;
+    border-radius: 5px;
+    background-color: white;
+}
