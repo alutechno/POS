@@ -102,3 +102,9 @@
     border-radius: 5px;
     background-color: white;
 }
+.modal-dialog {
+    margin: auto;
+}
+.modal-body {
+    height: 600px !important;
+}
