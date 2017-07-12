@@ -128,8 +128,8 @@
 												<th data-field="void"
 													data-halign="center"
 													data-align="center"
-													data-formatter="appendFn"
-													data-events="eventFn">#</th>
+													data-formatter="miscFn1"
+													data-events="miscFn1Cfg">#</th>
 												<th data-field="no" data-halign="center" data-align="center">No</th>
 												<th data-field="name">Menu</th>
 												<th data-field="order_qty" data-halign="right" data-align="right">Q</th>
@@ -493,7 +493,7 @@
 	</div>
 </div>
 <div class="modal fade" id="modal-split" role="dialog">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h4 class="modal-title" id="modal-label">Split Billing</h4>
@@ -513,15 +513,15 @@
 					<div class="col-sm-12">
 						<div class="form-group row">
 							<h5 class="col-sm-2 control-label">
-								<span>Split bills</span>
+								<span>Split type</span>
 							</h5>
 							<div class="col-sm-4">
 								<select class="form-control" id="mode">
 									<option value="">- Choose one -</option>
-									<option value="manual">Manually</option>
+									<option value="amount">Amount</option>
+									<option value="item">Items</option>
 									<!--
 									<option value="event">Evently</option>
-									<option value="item">Items</option>
 									-->
 								</select>
 							</div>
@@ -530,6 +530,51 @@
 							</h5>
 							<div class="col-sm-2">
 								<input type="number" class="form-control" id="mode-counter"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-12" id="item-splitter">
+						<div class="row">
+							<div class="col-sm-6">
+								<table id="items"
+									   data-classes="table"
+									   data-toggle="table"
+									   data-height="200"
+									   data-click-to-select="true">
+									<thead>
+									<tr>
+										<th data-field="state" data-checkbox="true" data-formatter="miscFn2"></th>
+										<th data-field="name">Menu</th>
+										<th data-field="price_amount_" data-align="right" data-halign="center">Price</th>
+										<th data-field="sheet" data-align="right" data-halign="center">Sheet #</th>
+									</tr>
+									</thead>
+								</table>
+							</div>
+							<div class="col-sm-1 text-center" style="padding: 0;">
+								<button class="btn btn-md btn-default" id="to-right">
+									<i class="fa fa-arrow-right" aria-hidden="true"></i>
+								</button>
+							</div>
+							<div class="col-sm-5">
+								<table id="sheets"
+									   data-classes="table"
+									   data-toggle="table"
+									   data-height="200"
+									   data-click-to-select="true">
+									<thead>
+									<tr>
+										<th data-field="state" data-radio="true"></th>
+										<th data-field="name">Sheet #</th>
+										<th data-field="total_" data-align="right" data-halign="center">Total</th>
+										<th data-field="reset"
+											data-halign="center"
+											data-align="center"
+											data-formatter="miscFn3"
+											data-events="miscFn3Cfg"></th>
+									</tr>
+									</thead>
+								</table>
 							</div>
 						</div>
 					</div>
