@@ -61,10 +61,10 @@ let rupiahJS = function (val) {
     .toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 };
 let openCashDraw = function () {
-    /*if (!App.role.cashdraw) {
+    if (!App.role.cashdraw) {
         El.btnOpenCashDraw.hide();
         return;
-    }*/
+    }
     El.btnOpenCashDraw.show();
     El.openCashDraw.on('click', function () {
         $.ajax({
@@ -543,9 +543,9 @@ let loadOrderMenu = function () {
         El.btnOrderNote.removeAttr('disabled');
         El.btnPrintOrder.removeAttr('disabled');
     }
-    /*if (!App.role.voidmenu) {
+    if (!App.role.voidmenu) {
         El.orderMenu.bootstrapTable('hideColumn', 'void');
-    }*/
+    }
 };
 let loadTotal = function (id) {
     let ids = [].concat(id);
@@ -807,10 +807,10 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     //});
 };
 let mergeOrder = function () {
-    /*if (!Payments.length && !App.role.join) {
+    if (!Payments.length && !App.role.join) {
         El.btnMergeTable.hide();
         return;
-    }*/
+    }
     let modal = El.modalMerge;
     let pattern = '#check-list-box li';
     let grandtotal = getSummary('grandtotal').value;
@@ -891,10 +891,10 @@ let mergeOrder = function () {
     })
 };
 let cashPayment = function () {
-    /*if (!App.role.cash) {
+    if (!App.role.cash) {
         El.btnPayCash.hide();
         return;
-    }*/
+    }
     let modal = El.modalCash;
     let btnSubmit = modal.find('#submit');
     let lblChange = modal.find('#change');
@@ -934,10 +934,10 @@ let cashPayment = function () {
     });
 };
 let cardPayment = function () {
-    /*if (!App.role.card) {
+    if (!App.role.card) {
         El.btnPayCard.hide();
         return;
-    }*/
+    }
     let modal = El.modalCard;
     let selectBankType = modal.find('#bank-type');
     let selectCcType = modal.find('#cc-type');
@@ -1011,10 +1011,10 @@ let cardPayment = function () {
     });
 };
 let chargeToRoomPayment = function () {
-    /*if (!App.role.chargeroom) {
+    if (!App.role.chargeroom) {
         El.btnPayChargeToRoom.hide();
         return
-    }*/
+    }
     let modal = El.modalCharge2Room;
     let selectCustomer = modal.find('#customer');
     let lblCheckInDate = modal.find('#check-in-date');
@@ -1083,10 +1083,10 @@ let chargeToRoomPayment = function () {
     });
 };
 let houseUsePayment = function () {
-    /*if (!App.role.houseuse) {
+    if (!App.role.houseuse) {
         El.btnPayHouseUse.hide();
         return
-    }*/
+    }
 
     let modal = El.modalHouseUse;
     let selectHouseUse = modal.find('#house-use');
@@ -1160,10 +1160,10 @@ let houseUsePayment = function () {
     });
 };
 let noPostPayment = function () {
-    /*if (!App.role.nopost) {
+    if (!App.role.nopost) {
         El.btnPayNoPost.hide();
         return
-    }*/
+    }
     let modal = El.modalNoPost;
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
@@ -1194,10 +1194,10 @@ let noPostPayment = function () {
     });
 };
 let splitPayment = function () {
-    /*if (!App.role.split) {
+    if (!App.role.split) {
         El.btnPaySplit.hide();
         return;
-    }*/
+    }
     let m = El.modalSplit;
     let divInfo = m.find('div#info');
     let close = m.find('#close');
@@ -2184,10 +2184,10 @@ let splitPayment = function () {
     };
 };
 let saveOrderNote = function () {
-    /*if (!App.role.note) {
+    if (!App.role.note) {
         El.btnOrderNote.hide();
         return;
-    }*/
+    }
     let modal = El.modalAddNote;
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
@@ -2214,10 +2214,10 @@ let saveOrderNote = function () {
     });
 };
 let manualPrint = function () {
-    /*if (!App.role.printorder) {
+    if (!App.role.printorder) {
         El.btnPrintOrder.hide();
         return;
-    }*/
+    }
     let modal = El.modalPrintOrder;
     let btnPrint = modal.find('#print');
     let btnRePrint = modal.find('#reprint');
@@ -2340,10 +2340,10 @@ let manualPrint = function () {
     });
 };
 let openMenu = function () {
-    /*if (!App.role.openmenu) {
+    if (!App.role.openmenu) {
         El.btnOpenMenu.hide();
         return;
-    }*/
+    }
     let m = El.modalOpenMenu;
     let slctMealTime = m.find('#open-meal-time');
     let slctMenuCls = m.find('#open-menu-class');
@@ -2475,7 +2475,7 @@ let printBilling = function () {
 };
 let reprintBilling = function () {
     let m = El.modalReprintBill;
-    if (!Payments.length /*&& !App.role.reprintbill*/) {
+    if (!Payments.length && !App.role.reprintbill) {
         El.btnReprintBilling.hide();
         return;
     }
@@ -2506,7 +2506,7 @@ let reprintBilling = function () {
     });
 };
 let voidBilling = function () {
-    if (!Payments.length /*&& !App.role.voidbill*/) {
+    if (!Payments.length && !App.role.voidbill) {
         El.btnVoidBilling.hide();
         return;
     }
