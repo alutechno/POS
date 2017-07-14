@@ -50,7 +50,7 @@
 	<% include part/footer.ejs %>
 </div>
 <div class="modal fade" id="myModalShift" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-	<div class="modal-dialog" role="document">
+	<div class="modal-dialog" role="document" style="margin: auto;">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -58,10 +58,9 @@
 				</button>
 				<h4 class="modal-title">Shift Revenue</h4>
 			</div>
-			<div class="modal-body">
+			<div class="modal-body" style="height: 600px !important;">
 				<iframe src="<%- client.BIRT_CLOSE_CASHIER.replace('__format=pdf', '__format=html') + client.posCashier.id %>"
-						style="border: none; width: 100%; height: 100%;" scrolling="yes"
-				></iframe>
+						style="border: none; width: 100%; height: 100%;" scrolling="yes"></iframe>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
