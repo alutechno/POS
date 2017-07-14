@@ -353,12 +353,25 @@ let loadSubClass = function (filter) {
 };
 let loadMenu = function (filter) {
     if (!filter) {
-        let query = App.mealTimeMenu ? ` and meal_time_id in (${Object.keys(MealTime).join()})` : ''
-        let menu = SQL(`select * from inv_outlet_menus where status = 1 and outlet_id=${App.outlet.id} ${query} order by name`);
+        let query = App.mealTimeMenu ? ` and a.meal_time_id in (${Object.keys(MealTime).join()})` : ''
+        let menu = SQL(`
+            select 
+                b.name menu_class_name, b.code menu_class_code, a.*
+            from inv_outlet_menus a
+            left join ref_outlet_menu_class b on a.menu_class_id = b.id and b.status=1
+            where a.status = 1 and a.outlet_id=${App.outlet.id} ${query} order by a.name
+        `);
         Menu = [];
         if (!menu.error) {
-            let inputQty = El.modalQty.find('#qty');
-            let btnSubmit = El.modalQty.find('#submit');
+            let modal = El.modalQty;
+            let inputQty = modal.find('#qty');
+            let discType = modal.find('#discount-type');
+            let discPercent = modal.find('#discount-percent select');
+            let discAmount = modal.find('#percent-amount');
+            let labelPrice = modal.find('#price');
+            let labelGross = modal.find('#gross');
+            let labelNett = modal.find('#nett');
+            let btnSubmit = modal.find('#submit');
             let menuBg = El.menu.find('.menu-bg');
             let menuFinder = El.menuFinder;
             //
@@ -399,24 +412,79 @@ let loadMenu = function (filter) {
             });
             //
             if (App.role.ordermenu) {
-                El.menu.find('.menu-item').on('click', function () {
-                    inputQty.val('')
-                    btnSubmit.prop('disabled', true);
-                    El.modalQty.find('h4').html($(this).data('name'));
-                    El.modalQty.modal('show');
-                    El.modalQty.data($(this).data());
-                });
-                inputQty.on('blur', function () {
-                    let qty = inputQty.data('value');
-                    btnSubmit.prop('disabled', true);
-                    if (parseInt(qty) > 0) {
-                        btnSubmit.prop('disabled', false);
+                let validation = function () {
+                    let type = discType.val();
+                    let percent = discPercent.val();
+                    let price = modal.data('menu_price');
+                    let qty = parseInt(inputQty.data('value'));
+                    let max = price * qty;
+                    if (type == 'percent') {
+                        let a = max * percent / 100;
+                        discPercent.parent().show();
+                        discAmount.prop('disabled', true);
+                        discAmount.data('value', a);
+                        discAmount.data('display', rupiahJS(a));
+                        discAmount.val(rupiahJS(a));
+                    } else if (type == 'amount') {
+                        discPercent.parent().hide();
+                        discAmount.prop('disabled', false);
                     }
-                })
+                    //
+                    btnSubmit.prop('disabled', true);
+                    labelGross.html(rupiahJS(0));
+                    labelNett.html(rupiahJS(0));
+                    if (qty > 0) {
+                        labelGross.html(rupiahJS(max));
+                        labelNett.html(rupiahJS(max - discAmount.data('value')));
+                        if (discAmount.data('value') > -1 && discAmount.data('value') <= max) {
+                            btnSubmit.prop('disabled', false);
+                        }
+                    }
+                };
+                El.menu.find('.menu-item').on('click', function () {
+                    modal.find('h4').html($(this).data('name'));
+                    modal.data($(this).data());
+                    modal.modal('show');
+                });
+                discType.on('change', validation);
+                discPercent.on('change', validation);
+                discAmount.on('change', validation);
+                discAmount.on('blur', validation);
+                inputQty.on('change', validation)
+                inputQty.on('blur', validation)
                 btnSubmit.on('click', function () {
-                    let qty = inputQty.data('value');
-                    let item = El.modalQty.data();
-                    addOrderMenu(item, parseInt(qty));
+                    let data = Object.assign({}, modal.data());
+                    if (discAmount.data('value')) {
+                        data.addDiscount = {
+                            percent: parseFloat(discPercent.val()) || 0,
+                            amount: discAmount.data('value')
+                        }
+                    }
+                    addOrderMenu(data, parseInt(inputQty.data('value')))
+                });
+                modal.on('show.bs.modal', function () {
+                    let data = modal.data();
+                    discPercent.html('');
+                    discPercent.data('db').forEach(function (d, i) {
+                        let code = data.menu_class_code;
+                        let val = code = 'F' ? d.food : code = 'B' ? d.beverage : d.others;
+                        let el = $(`<option value="${val}">${val} %</option>`);
+                        if (!i) discPercent.append(`<option value="0">0 %</option>`);
+                        discPercent.append(el);
+                    });
+                    labelPrice.html(data.menu_price_);
+                    labelGross.html(rupiahJS(0));
+                    discType.val('percent');
+                    discPercent.parent().show();
+                    discPercent.val('0');
+                    discAmount.data('value', 0);
+                    discAmount.data('display', rupiahJS(0));
+                    discAmount.val(rupiahJS(0));
+                    inputQty.data('value', 0);
+                    inputQty.data('display', rupiahJS(0));
+                    inputQty.val(rupiahJS(0));
+                    labelNett.html(rupiahJS(0));
+                    btnSubmit.prop('disabled', true);
                 });
             }
         }
@@ -672,7 +740,7 @@ let loadOrderSummary4modal = function ({total, discount, subtotal, servicecharge
 };
 let addOrderMenu = function (data, qty = 1, orderId) {
     orderId = orderId || orderIds.split(',')[0];
-    let {id, menu_class_id, outlet_id, menu_price} = data;
+    let {id, menu_class_id, outlet_id, menu_price, addDiscount} = data;
     let amount = menu_price * qty;
     let totalDiscount = 0;
     let orderItemId, patchDiscountIds = [], orderTaxIds = {}, posOrder;
@@ -720,7 +788,20 @@ let addOrderMenu = function (data, qty = 1, orderId) {
             }
             let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
             patchDiscountIds.push(patchDiscount.data.insertId);
-        })
+        });
+        if (addDiscount) {
+            let newPatchDiscount = {
+                order_line_item_id: orderItemId,
+                menu_class_id: menu_class_id,
+                outlet_menu_id: id,
+                discount_percent: addDiscount.percent,
+                discount_amount: addDiscount.amount,
+                created_by: App.user.id
+            }
+            let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
+            patchDiscountIds.push(patchDiscount.data.insertId);
+            totalDiscount += addDiscount.amount;
+        }
     };
     let updateOrderTaxes = function () {
         let amount_w_discount = amount - totalDiscount;
@@ -793,19 +874,6 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     loadOrderMenu();
     loadOrderSummary(orderIds);
     El.modalQty.modal('hide');
-    //El.orderMenu.bootstrapTable('insertRow', {
-    //    index: OrderMenu.length,
-    //    row: {
-    //        "menu_outlet_id": data.id,
-    //        "total_amount": amount,
-    //        "order_id": orderIds.split(',')[0],
-    //        "order_qty": qty,
-    //        "id": orderItemId,
-    //        "name": data.name,
-    //        "no": OrderMenu.length + 1,
-    //        "total_amount_": rupiahJS(amount)
-    //    }
-    //});
 };
 let mergeOrder = function () {
     if (!Payments.length && !App.role.join) {
@@ -2561,6 +2629,64 @@ let voidBilling = function () {
         submit.prop('disabled', false)
     })
 };
+let discountBilling = function () {
+    let modal = El.modalDiscountBill;
+    let discType = modal.find('#discount-type');
+    let discPercent = modal.find('#discount-percent select');
+    let discAmount = modal.find('#percent-amount');
+    let labelNett = modal.find('#nett');
+    let btnSubmit = modal.find('#submit');
+    let opt = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
+    //
+    let validation = function () {
+        let type = discType.val();
+        let percent = discPercent.val();
+        let max = getSummary(0).grandtotal.value;
+        if (type == 'percent') {
+            let a = max * percent / 100;
+            discPercent.parent().show();
+            discAmount.prop('disabled', true);
+            discAmount.data('value', a);
+            discAmount.data('display', rupiahJS(a));
+            discAmount.val(rupiahJS(a));
+        } else if (type == 'amount') {
+            discPercent.parent().hide();
+            discAmount.prop('disabled', false);
+        }
+        //
+        btnSubmit.prop('disabled', true);
+        labelNett.html(rupiahJS(0));
+        if (discAmount.data('value') > -1 && discAmount.data('value') <= max) {
+            labelNett.html(rupiahJS(max - discAmount.data('value')));
+            btnSubmit.prop('disabled', false);
+        }
+    };
+    //
+    let others = El.modalQty.find('#discount-percent select');
+    others.data('db', opt.data);
+    opt.data.forEach(function (d, i) {
+        let el = $(`<option value="${d.others}">${d.others} %</option>`);
+        if (!i) discPercent.append(`<option value="0">0 %</option>`);
+        discPercent.append(el);
+    });
+    discType.on('change', validation);
+    discPercent.on('change', validation);
+    discAmount.on('change', validation);
+    discAmount.on('blur', validation);
+    modal.on('show.bs.modal', function () {
+        discType.val('percent');
+        discPercent.parent().show();
+        discPercent.val('0');
+        discAmount.data('value', 0);
+        discAmount.data('display', rupiahJS(0));
+        discAmount.val(rupiahJS(0));
+        labelNett.html(rupiahJS(0));
+        btnSubmit.prop('disabled', true);
+    });
+    btnSubmit.on('click', function () {
+        //
+    });
+}
 $(document).ready(function () {
     let {
         nopost, cash, chargeroom, card,
@@ -2592,6 +2718,7 @@ $(document).ready(function () {
     printBilling();
     reprintBilling();
     voidBilling();
+    discountBilling();
     //
     initCheckListBoxes();
     El.paymentBtn.attr('disabled', 1);
@@ -2610,9 +2737,8 @@ $(document).ready(function () {
     }
     El.paymentBtn.on('click', function () {
         let sum = getSummary(0);
-        console.log(sum)
-        El.modalMerge.find('#home-total').html(sum.grandtotal);
-        El.modalMerge.find('#grandtotal').html(sum.grandtotal);
+        El.modalMerge.find('#home-total').html(sum.grandtotal.value);
+        El.modalMerge.find('#grandtotal').html(sum.grandtotal.value);
         $('.modal-body div#info').html(loadOrderSummary4modal(sum));
     });
     App.virtualKeyboard();
