@@ -63,8 +63,9 @@ const http = function (pool, compile) {
     }
     app.use(async function (req, res, next) {
         let url = req._parsedUrl.pathname;
-        let {httpVersion, method, headers, params, query, body} = req;
-        let request = {httpVersion, url, method, headers, params, query, body};
+        let {method, headers, params, query, body} = req;
+        let cookie = req.cookies[name];
+        let request = {method, url, cookie, params, query, body};
         ['params', 'query', 'body'].forEach(function (s) {
             if (!Object.keys(request[s]).length) delete request[s];
         });
@@ -353,14 +354,16 @@ const http = function (pool, compile) {
         }
     });
     app.get('/printBill', async function (req, res, next) {
-        let {orderId, payment} = req.query;
-        let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment=' + payment);
+        let {orderId} = req.query;
+        let paymentId = [].concat(req.query.paymentId);
+        //let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment=' + payment + '&id=' + paymentId.join());
+        let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment=' + paymentId.join());
         getting.on('error', function (e) {
             console.log(process.pid.toString(), '> GET REQUEST :', e.message);
             res.send({
                 error: true,
-                message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
-                data: {orderId, payment}
+                message: 'Cannot print bill with ' + JSON.stringify({orderId, paymentId}),
+                data: {orderId, paymentId}
             })
         });
         let file = `${home}/bills/bill_${orderId}.pdf`;
@@ -375,16 +378,16 @@ const http = function (pool, compile) {
                 else {
                     res.send({
                         error: false,
-                        message: 'Billing has been printed with ' + JSON.stringify({orderId, payment}),
-                        data: {orderId, payment}
+                        message: 'Billing has been printed with ' + JSON.stringify({orderId, paymentId}),
+                        data: {orderId, paymentId}
                     })
                 }
             } catch (e) {
                 console.log(process.pid.toString(), '> WINDOWS COMMAND :', e.message);
                 res.send({
                     error: true,
-                    message: 'Cannot print bill with ' + JSON.stringify({orderId, payment}),
-                    data: {orderId, payment}
+                    message: 'Cannot print bill with ' + JSON.stringify({orderId, paymentId}),
+                    data: {orderId, paymentId}
                 })
             }
         });
