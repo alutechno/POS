@@ -13,7 +13,6 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         orderMenu: $('table#order-menu'),
         tableSummary: $('table#order-summary'),
         tableSheets: $('table#sheets'),
-        btnItem2Sheet: $('button#to-right'),
         tableItems: $('table#items'),
         openCashDraw: $('button#open-cash-draw'),
         paymentBtn: $('a.payment-btn'),
@@ -23,6 +22,7 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         modalCharge2Room: $('div#modal-charge-to-room'),
         modalNoPost: $('div#modal-no-post'),
         modalHouseUse: $('div#modal-house-use'),
+        modalDiscountBill: $('div#modal-discount-bill'),
         modalSplit: $('div#modal-split'),
         modalMerge: $('div#modal-merge'),
         modalPrintOrder: $('div#modal-print-order'),
@@ -40,6 +40,7 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         btnPaySplit: $('a#pay-split'),
         btnPayNoPost: $('a#pay-no-post'),
         btnMergeTable: $('a#merge-tables'),
+        btnItem2Sheet: $('button#to-right'),
         btnOpenCashDraw: $('button#open-cash-draw'),
         btnPrintBilling: $('button#print-billing'),
         btnReprintBilling: $('button#reprint-billing'),
@@ -1857,6 +1858,7 @@ let splitPayment = function () {
         noState.hide();
         state.show();
         next.disable();
+        console.log('any active payment state?', paymentState.is(':visible'))
         if (paymentState.is(':visible')) {
             let limit = parseInt(modeCounter.val());
             let bayar = parseFloat(paymentState.find('[id*="-amount"]').data('value'));
@@ -1934,6 +1936,9 @@ let splitPayment = function () {
                 if (mode.val() == 'amount') {
                     modeLabel0.html('By amount');
                     modeLabel1.html(`${count} of ${modeCounter.val()}`);
+                    paymentState.show();
+                    paymentState.html('');
+                    paymentState.append(payment(count));
                 } else if (mode.val() == 'item') {
                     let sheets = El.tableSheets.bootstrapTable('getData').filter(function (e) {
                         if (e.total > 0) return 1
@@ -2042,17 +2047,11 @@ let splitPayment = function () {
         modeCounter.hide();
         next.disable();
         close.disable();
-        itemSplitter.hide();
         if (val == 'item') {
             itemSplitter.show();
             modeCounter.parent().prev().show();
             modeCounter.show();
             m.find('.modal-dialog').addClass('modal-lg');
-        } else if (val == 'amount') {
-            next.enable();
-            modeCounter.parent().prev().show();
-            modeCounter.show();
-            m.find('.modal-dialog').removeClass('modal-lg');
             //
             let items = [];
             OrderMenu.forEach(function (menu) {
@@ -2074,9 +2073,19 @@ let splitPayment = function () {
                     }
                 }
             });
+            El.tableSheets.bootstrapTable('removeAll');
+            El.tableSheets.bootstrapTable('resetView');
+            El.tableSheets.bootstrapTable('load', sheets);
+            //
             El.tableItems.bootstrapTable('removeAll');
             El.tableItems.bootstrapTable('resetView');
             El.tableItems.bootstrapTable('load', items);
+        } else if (val == 'amount') {
+            itemSplitter.hide();
+            next.enable();
+            modeCounter.parent().prev().show();
+            modeCounter.show();
+            m.find('.modal-dialog').removeClass('modal-lg');
         }
     });
     modeCounter.on('blur', function () {
@@ -2601,6 +2610,7 @@ $(document).ready(function () {
     }
     El.paymentBtn.on('click', function () {
         let sum = getSummary(0);
+        console.log(sum)
         El.modalMerge.find('#home-total').html(sum.grandtotal);
         El.modalMerge.find('#grandtotal').html(sum.grandtotal);
         $('.modal-body div#info').html(loadOrderSummary4modal(sum));
