@@ -99,6 +99,10 @@
 											<i class="fa fa-arrow-down" aria-hidden="true"></i>
 											Merge
 										</a>
+										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-discount-bill" id="discount-bill">
+											<i class="fa fa-percent" aria-hidden="true"></i>
+											Bill Discount
+										</a>
 										<button class="btn btn-app btn-warning" id="open-cash-draw">
 											<i class="fa fa-th-large"></i>
 											Cash Draw
@@ -107,14 +111,14 @@
 											<i class="fa fa-print"></i>
 											Print Bill
 										</button>
-										<button class="btn btn-app" id="void-billing">
+										<a class="btn btn-app payment-btn" id="void-billing" data-toggle="modal" href="#modal-void-billing">
 											<i class="fa fa-ban"></i>
 											Void Bill
-										</button>
-										<button class="btn btn-app" id="reprint-billing">
+										</a>
+										<a class="btn btn-app payment-btn" id="reprint-billing" data-toggle="modal" href="#modal-reprint-billing">
 											<i class="fa fa-files-o"></i>
 											Reprint Bill
-										</button>
+										</a>
 									</div>
 								</div>
 							</div>
@@ -645,57 +649,50 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modal-reprint-billing" role="dialog">
-	<div class="modal-dialog">
+<div class="modal fade" id="modal-discount-bill" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title">Reprint Paid Bill</h4>
-			</div>
-			<div class="modal-body" style="padding-bottom: 0px;">
-				<div class="row">
-					<div class="col-sm-12">
-						<table class="table table-bordered">
-							<thead>
-								<tr>
-									<th>Method</th>
-									<th>Amount</th>
-									<th>Change</th>
-									<th>Action</th>
-								</tr>
-							</thead>
-							<tbody></tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<div class="row">
-					<div class="col-sm-6 pull-right">
-						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
-<div class="modal fade" id="modal-void-billing" tabindex="-1" role="dialog" aria-labelledby="modal-label">
-	<div class="modal-dialog modal-md" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
-				</button>
-				<h4 class="modal-title" id="modal-label">
-					Void Bill
-				</h4>
+				<h4 class="modal-title" id="modal-label">Additional Discount For Bill</h4>
 			</div>
 			<div class="modal-body">
-				<div class="form-group has-feedback">
-					<label for="#qty">Notes:</label>
-					<input placeholder="Add customer notes here" type="text" class="form-control" id="notes">
+				<div id="info"></div>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-lg-3">
+						<span>Discount Type</span>
+					</div>
+					<div class="col-lg-9">
+						<div class="row">
+							<div class="col-lg-5">
+								<select class="form-control" id="discount-type">
+									<option value="percent">Percentage</option>
+									<option value="amount">Amount</option>
+								</select>
+							</div>
+							<div class="col-lg-3" id="discount-percent">
+								<select class="form-control"></select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-lg-3">
+						<span>Amount</span>
+					</div>
+					<div class="col-lg-9 text-right">
+						<input type="currency" class="form-control" id="percent-amount">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-3">
+						<span>Grand Total</span>
+					</div>
+					<div class="col-lg-9 text-right">
+						<span id="grantotal2" style="margin-right: 13px;"></span>
+					</div>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -746,6 +743,68 @@
 						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 					</div>
 				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-reprint-billing" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">Reprint Paid Bill</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<thead>
+							<tr>
+								<th>Method</th>
+								<th>Amount</th>
+								<th>Change</th>
+								<th>Action</th>
+							</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="row">
+					<div class="col-sm-6 pull-right">
+						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-void-billing" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">
+					Void Bill
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="form-group has-feedback">
+					<label for="#qty">Notes:</label>
+					<input placeholder="Add customer notes here" type="text" class="form-control" id="notes">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
 			</div>
 		</div>
 	</div>
