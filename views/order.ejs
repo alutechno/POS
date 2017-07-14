@@ -56,6 +56,9 @@
 								<div class="box box-danger">
 									<div class="box-header">
 										<code>Payments</code>
+										<div class="pull-right" id="is-paid" style="display: none;">
+											<span class="badge" style="font-weight: lighter; margin-right: 5px"></span>
+										</div>
 									</div>
 									<div class="box-body text-center" style="padding-left: 0;">
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-cash" id="pay-cash">
@@ -85,7 +88,7 @@
 										</a>
 										-->
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-no-post" id="pay-no-post">
-											<i class="fa fa-times-circle"></i>
+											<i class="fa fa-exclamation"></i>
 											No Post
 										</a>
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-split" id="pay-split">
@@ -104,6 +107,14 @@
 											<i class="fa fa-print"></i>
 											Print Bill
 										</button>
+										<button class="btn btn-app" id="void-billing">
+											<i class="fa fa-ban"></i>
+											Void Bill
+										</button>
+										<button class="btn btn-app" id="reprint-billing">
+											<i class="fa fa-files-o"></i>
+											Reprint Bill
+										</button>
 									</div>
 								</div>
 							</div>
@@ -117,8 +128,8 @@
 												<th data-field="void"
 													data-halign="center"
 													data-align="center"
-													data-formatter="appendFn"
-													data-events="eventFn">#</th>
+													data-formatter="miscFn1"
+													data-events="miscFn1Cfg">#</th>
 												<th data-field="no" data-halign="center" data-align="center">No</th>
 												<th data-field="name">Menu</th>
 												<th data-field="order_qty" data-halign="right" data-align="right">Q</th>
@@ -233,7 +244,7 @@
 						<span>Change</span>
 					</div>
 					<div class="col-lg-6 text-right">
-						<label id="change" style="margin-right: 13px;"></label>
+						<span id="change" style="margin-right: 13px;"></span>
 					</div>
 				</div>
 			</div>
@@ -275,9 +286,7 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-12">
-						<hr/>
 						<input id="card-swiper" type="force-text" class="form-control" placeholder="Tap here, then swipe the card">
-						<hr/>
 					</div>
 				</div>
 				<div class="row">
@@ -482,7 +491,7 @@
 	</div>
 </div>
 <div class="modal fade" id="modal-split" role="dialog">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h4 class="modal-title" id="modal-label">Split Billing</h4>
@@ -491,26 +500,27 @@
 				<div id="info"></div>
 				<div class="row">
 					<div class="col-lg-6">
-						<span>Balance</span>
+						<label>Balance</label>
 					</div>
 					<div class="col-lg-6 text-right">
-						<span style="margin-right: 13px;" id="balance">0.00</span>
+						<label style="margin-right: 13px;" id="balance">0.00</label>
 					</div>
 				</div>
-				<hr/>
+				<hr style="margin-top: 5px; margin-bottom: 1px"/>
+				<hr style="margin-top: 1px; margin-bottom: 5px"/>
 				<div class="row" id="no-state">
 					<div class="col-sm-12">
 						<div class="form-group row">
 							<h5 class="col-sm-2 control-label">
-								<span>Split bills</span>
+								<span>Split type</span>
 							</h5>
 							<div class="col-sm-4">
 								<select class="form-control" id="mode">
 									<option value="">- Choose one -</option>
-									<option value="manual">Manually</option>
+									<option value="amount">Amount</option>
+									<option value="item">Items</option>
 									<!--
 									<option value="event">Evently</option>
-									<option value="item">Items</option>
 									-->
 								</select>
 							</div>
@@ -519,6 +529,51 @@
 							</h5>
 							<div class="col-sm-2">
 								<input type="number" class="form-control" id="mode-counter"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-12" id="item-splitter">
+						<div class="row">
+							<div class="col-sm-6">
+								<table id="items"
+									   data-classes="table"
+									   data-toggle="table"
+									   data-height="200"
+									   data-click-to-select="true">
+									<thead>
+									<tr>
+										<th data-field="state" data-checkbox="true" data-formatter="miscFn2"></th>
+										<th data-field="name">Menu</th>
+										<th data-field="price_amount_" data-align="right" data-halign="center">Price</th>
+										<th data-field="sheet" data-align="right" data-halign="center">Sheet #</th>
+									</tr>
+									</thead>
+								</table>
+							</div>
+							<div class="col-sm-1 text-center" style="padding: 0;">
+								<button class="btn btn-md btn-default" id="to-right">
+									<i class="fa fa-arrow-right" aria-hidden="true"></i>
+								</button>
+							</div>
+							<div class="col-sm-5">
+								<table id="sheets"
+									   data-classes="table"
+									   data-toggle="table"
+									   data-height="200"
+									   data-click-to-select="true">
+									<thead>
+									<tr>
+										<th data-field="state" data-radio="true"></th>
+										<th data-field="name">Sheet #</th>
+										<th data-field="total_" data-align="right" data-halign="center">Total</th>
+										<th data-field="reset"
+											data-halign="center"
+											data-align="center"
+											data-formatter="miscFn3"
+											data-events="miscFn3Cfg"></th>
+									</tr>
+									</thead>
+								</table>
 							</div>
 						</div>
 					</div>
@@ -533,9 +588,7 @@
 							</h5>
 						</div>
 					</div>
-					<div class="row payment-state" id="manual-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
-					<div class="row payment-state" id="event-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
-					<div class="row payment-state" id="item-state" style="max-height: 300px;overflow-y: auto;display: none;"></div>
+					<div class="row" id="payment-state" style="max-height: 300px;overflow-y: auto;display: none;margin-bottom: 15px;"></div>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -592,7 +645,67 @@
 		</div>
 	</div>
 </div>
-<div class="modal fade" id="modal-print" role="dialog">
+<div class="modal fade" id="modal-reprint-billing" role="dialog">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title">Reprint Paid Bill</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom: 0px;">
+				<div class="row">
+					<div class="col-sm-12">
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th>Method</th>
+									<th>Amount</th>
+									<th>Change</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody></tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<div class="row">
+					<div class="col-sm-6 pull-right">
+						<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-void-billing" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">
+					Void Bill
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="form-group has-feedback">
+					<label for="#qty">Notes:</label>
+					<input placeholder="Add customer notes here" type="text" class="form-control" id="notes">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-print-order" role="dialog">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
