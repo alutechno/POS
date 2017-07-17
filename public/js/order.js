@@ -1,7 +1,7 @@
 let Menu, MealTime, MenuClass, MenuSubClass,
     Order, OrderMenu, Taxes, Summary, Payments = [],
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
-    HouseUse = {}, Charge2Room = {},
+    HouseUse = {}, Charge2Room = {}, CityLedger = {},
     El = {
         menu: $('div#menu'),
         order: $('div#order'),
@@ -20,6 +20,8 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         modalCash: $('div#modal-cash'),
         modalCard: $('div#modal-card'),
         modalCharge2Room: $('div#modal-charge-to-room'),
+        modalVoucher: $('div#modal-voucher'),
+        modalCityLedger: $('div#modal-city-ledger'),
         modalNoPost: $('div#modal-no-post'),
         modalHouseUse: $('div#modal-house-use'),
         modalDiscountBill: $('div#modal-discount-bill'),
@@ -192,9 +194,9 @@ let getSummary = function (key, opt = {}) {
 };
 let goHome = function (param) {
     if (param.success) {
-        /*setTimeout(function () {
+        setTimeout(function () {
             window.location.href = '/'
-        }, 3000);*/
+        }, 3000);
     } else {
         alert(JSON.stringify(param.response))
     }
@@ -368,6 +370,7 @@ let loadMenu = function (filter) {
             let discType = modal.find('#discount-type');
             let discPercent = modal.find('#discount-percent select');
             let discAmount = modal.find('#percent-amount');
+            let discAmountItem = modal.find('#percent-amount-item');
             let labelPrice = modal.find('#price');
             let labelGross = modal.find('#gross');
             let labelNett = modal.find('#nett');
@@ -419,15 +422,32 @@ let loadMenu = function (filter) {
                     let qty = parseInt(inputQty.data('value'));
                     let max = price * qty;
                     if (type == 'percent') {
-                        let a = max * percent / 100;
+                        let discount = price * percent / 100;
                         discPercent.parent().show();
                         discAmount.prop('disabled', true);
-                        discAmount.data('value', a);
-                        discAmount.data('display', rupiahJS(a));
-                        discAmount.val(rupiahJS(a));
+                        discAmount.data('value', discount * qty);
+                        discAmount.data('display', rupiahJS(discount * qty));
+                        discAmount.val(rupiahJS(discount * qty));
+
+                        discAmountItem.prop('disabled', true);
+                        discAmountItem.data('value', discount);
+                        discAmountItem.data('display', rupiahJS(discount));
+                        discAmountItem.val(rupiahJS(discount));
                     } else if (type == 'amount') {
                         discPercent.parent().hide();
                         discAmount.prop('disabled', false);
+                        discAmountItem.prop('disabled', false);
+                        if (this.id == 'percent-amount') {
+                            let v = discAmount.data('value');
+                            discAmountItem.data('value', v / qty);
+                            discAmountItem.data('display', rupiahJS(v / qty));
+                            discAmountItem.val(rupiahJS(v / qty));
+                        } else if (this.id == 'percent-amount-item') {
+                            let v = discAmountItem.data('value');
+                            discAmount.data('value', v * qty);
+                            discAmount.data('display', rupiahJS(v * qty));
+                            discAmount.val(rupiahJS(v * qty));
+                        }
                     }
                     //
                     btnSubmit.prop('disabled', true);
@@ -448,6 +468,8 @@ let loadMenu = function (filter) {
                 });
                 discType.on('change', validation);
                 discPercent.on('change', validation);
+                discAmountItem.on('change', validation);
+                discAmountItem.on('blur', validation);
                 discAmount.on('change', validation);
                 discAmount.on('blur', validation);
                 inputQty.on('change', validation)
@@ -477,9 +499,12 @@ let loadMenu = function (filter) {
                     discType.val('percent');
                     discPercent.parent().show();
                     discPercent.val('0');
+                    discAmountItem.data('value', 0);
+                    discAmountItem.data('display', rupiahJS(0));
+                    discAmountItem.val('');
                     discAmount.data('value', 0);
                     discAmount.data('display', rupiahJS(0));
-                    discAmount.val(rupiahJS(0));
+                    discAmount.val('');
                     inputQty.data('value', 0);
                     inputQty.data('display', rupiahJS(0));
                     inputQty.val(rupiahJS(0));
@@ -971,35 +996,35 @@ let cashPayment = function () {
     let total, discount, service, tax, grandtotal, change;
     //
     El.btnPayCash.show();
+    inputAmount.on('blur', function () {
+        let value = $(this).data('value');
+        change = parseFloat(value) - parseFloat(grandtotal);
+        if (change >= 0) {
+            btnSubmit.prop('disabled', false);
+            lblChange.html(rupiahJS(change));
+        } else {
+            btnSubmit.prop('disabled', true);
+            lblChange.html(rupiahJS(0));
+        }
+    });
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            payment_type_id: 11,
+            grandtotal: grandtotal,
+            payment_amount: inputAmount.data('value'),
+            change_amount: change,
+        });
+        goHome(pay);
+    });
     modal.on('show.bs.modal', function () {
+        btnSubmit.prop('disabled', true);
         total = getSummary('total').value;
         discount = getSummary('discount').value;
         service = getSummary('servicecharge').value;
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
         change = 0;
-    });
-    inputAmount.on('blur', function () {
-        let value = $(this).data('value');
-        change = parseFloat(value) - parseFloat(grandtotal);
-        if (change >= 0) {
-            btnSubmit.prop('disabled', false)
-            lblChange.html(rupiahJS(change));
-        } else {
-            btnSubmit.prop('disabled', true)
-            lblChange.html(rupiahJS(0));
-        }
-    });
-    btnSubmit.prop('disabled', true);
-    btnSubmit.on('click', function () {
-        btnSubmit.prop('disabled', true);
-        let pay = Payment({
-            payment_type_id: 1,
-            grandtotal: grandtotal,
-            payment_amount: inputAmount.data('value'),
-            change_amount: change,
-        });
-        goHome(pay);
     });
 };
 let cardPayment = function () {
@@ -1225,6 +1250,204 @@ let houseUsePayment = function () {
             payment_amount: grandtotal,
             change_amount: 0
         });
+        goHome(pay);
+    });
+};
+let voucherPayment = function () {
+    if (!App.role.voucher) {
+        El.btnPayVoucher.hide();
+        return;
+    }
+    let modal = El.modalVoucher;
+    let btnSubmit = modal.find('#submit');
+    let lblChange = modal.find('#change');
+    let inputCode = modal.find('#code');
+    let inputAmount = modal.find('#amount');
+    let total, discount, service, tax, grandtotal, change;
+    let validation = function () {
+        let code = inputCode.val();
+        let value = inputAmount.data('value');
+        change = parseFloat(value) - parseFloat(grandtotal);
+        if (code && change >= 0) {
+            btnSubmit.prop('disabled', false)
+            lblChange.html(rupiahJS(change));
+        } else {
+            btnSubmit.prop('disabled', true)
+            lblChange.html(rupiahJS(0));
+        }
+    }
+    //
+    El.btnPayVoucher.show();
+    modal.on('show.bs.modal', function () {
+        btnSubmit.prop('disabled', true);
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
+        change = 0;
+    });
+    inputCode.on('blur', validation);
+    inputCode.on('change', validation);
+    inputAmount.on('blur', validation);
+    inputAmount.on('change', validation);
+    btnSubmit.prop('disabled', true);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            payment_type_id: 4, //todo: payment type id for voucher?
+            grandtotal: grandtotal,
+            payment_amount: inputAmount.data('value'),
+            change_amount: change,
+            card_no: inputCode.val()
+        });
+        goHome(pay);
+    });
+};
+let cityLedgerPayment = function () {
+    if (!App.role.cityledger) {
+        El.btnPayCityLedger.hide();
+        return
+    }
+    let modal = El.modalCityLedger;
+    let selectCityLedger = modal.find('#city-ledger');
+    let lblType = modal.find('#type');
+    let lblName = modal.find('#name');
+    let lblCode = modal.find('#code');
+    let lblCPName = modal.find('#cpname');
+    let lblCPNumb = modal.find('#cpnumber');
+    let lblAddr = modal.find('#address');
+    let lblBList = modal.find('#black-list');
+    let lblCredit = modal.find('#credit');
+    let lblAlert = modal.find('#alert');
+    let lblNotes = modal.find('#notes');
+    let lblSaldo = modal.find('#deposit-saldo');
+    let lblBalance = modal.find('#deposit-change');
+    let btnSubmit = modal.find('#submit');
+    //
+    El.btnPayCityLedger.show();
+    //
+    let total, discount, service, tax, grandtotal, change;
+    let cityLedgerList = SQL(`
+        select a.id, a.code, a.short_name, a.name, a.description, 
+            a.address, a.city_id, c.name city_name, 
+            a.contact_person_name, a.contact_person_phone,
+            a.is_credit, a.is_black_listed, a.notes, a.alert, 
+            a.status, a.company_type_id, b.name company_type,
+            d.deposit_amount, d.applied_amount,
+            d.used_currency_id, (d.deposit_amount-d.applied_amount) deposit_balance,
+            d.id deposit_id
+        from mst_cust_company a
+        left join ref_customer_type b on b.id = a.company_type_id
+        left join ref_kabupaten c on c.id = a.city_id
+        left join acc_ar_deposit d on d.customer_id = a.id
+        where a.status = '1'
+    `);
+    selectCityLedger.html('<option value="">- Choose -</option>');
+    cityLedgerList.data.forEach(function (e) {
+        CityLedger[e.id] = e;
+        let el = $(`<option value="${e.id}">[${e.code}] - ${e.name} / ${e.short_name}</option>`);
+        selectCityLedger.append(el);
+    });
+    modal.on('show.bs.modal', function () {
+        total = getSummary('total').value;
+        discount = getSummary('discount').value;
+        service = getSummary('servicecharge').value;
+        tax = getSummary('tax').value;
+        grandtotal = getSummary('grandtotal').value;
+        change = 0;
+        btnSubmit.prop('disabled', true);
+        lblType.html('');
+        lblName.html('');
+        lblCode.html('');
+        lblCPName.html('');
+        lblCPNumb.html('');
+        lblAddr.html('');
+        lblBList.html('');
+        lblCredit.html('');
+        lblAlert.html('');
+        lblNotes.html('');
+        lblSaldo.html('');
+        lblBalance.html('');
+    });
+    selectCityLedger.on('change', function () {
+        let val1 = selectCityLedger.val();
+        if (val1) {
+            let data = CityLedger[val1];
+            let addr = [data.address, data.city_name].join(', ');
+            let n = [data.name, data.short_name].join(' / ');
+            change = data.deposit_balance - grandtotal
+            lblType.html(data.company_type || '-');
+            lblName.html(n || '-');
+            lblCode.html(data.code || '-');
+            lblCPName.html(data.contact_person_name || '-');
+            lblCPNumb.html(data.contact_person_phone || '-');
+            lblAddr.html(addr || '-');
+            lblBList.html(data.is_black_listed || '-');
+            lblCredit.html(data.is_credit || '-');
+            lblAlert.html(data.alert || '-');
+            lblNotes.html(data.notes || '-');
+            lblSaldo.html(rupiahJS(data.deposit_balance || '0'));
+            lblBalance.html(rupiahJS(change));
+            btnSubmit.prop('disabled', false);
+        } else {
+            lblType.html('');
+            lblName.html('');
+            lblCode.html('');
+            lblCPName.html('');
+            lblCPNumb.html('');
+            lblAddr.html('');
+            lblBList.html('');
+            lblCredit.html('');
+            lblAlert.html('');
+            lblNotes.html('');
+            lblSaldo.html('');
+            lblBalance.html('');
+        }
+    });
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let pay = Payment({
+            payment_type_id: 2,
+            grandtotal: grandtotal,
+            payment_amount: grandtotal,
+            change_amount: 0
+        });
+        //
+        let val = selectCityLedger.val();
+        let data = CityLedger[val];
+        let getDate = SQL('select NOW() now');
+        let date = new Date(getDate.data[0].now);
+        let yyyymmdd = [
+            date.getFullYear(),
+            date.getMonth() < 9 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1,
+            date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+        ];
+        let getCode = SQL(`select next_document_no('AR', '${yyyymmdd.slice(0,2).join('/')}') as code`);
+        let base_deposit = data.deposit_amount;
+        let deposit_amount = change >= 0 ? grandtotal : data.deposit_balance;
+        let total_amount = grandtotal;
+        let total_due_amount = total_amount - deposit_amount;
+        let current_due_amount = total_due_amount;
+        let created_by = App.user.id;
+        let {id, deposit_id, applied_amount} = data;
+        let arInvoice = SQL(`INSERT INTO acc_ar_invoice SET ?`, {
+            code : getCode.data[0].code,
+            status : '0',
+            open_date : yyyymmdd.join('-'),
+            customer_id : id,
+            total_amount, deposit_amount, total_due_amount, current_due_amount,
+            created_by
+        })
+        let arDepLineItem = SQL(`INSERT INTO acc_ar_deposit_line_item SET ?`, {
+            deposit_id, invoice_id: arInvoice.data.insertId, created_by
+        });
+        let updateArDep = SQL(`UPDATE acc_ar_deposit SET applied_amount = ?, modified_date = ?, modified_by = ? WHERE id = ?`, [
+            applied_amount + deposit_amount > base_deposit ? base_deposit : applied_amount + deposit_amount,
+            yyyymmdd.join('-'),
+            created_by,
+            deposit_id
+        ])
         goHome(pay);
     });
 };
@@ -1934,7 +2157,7 @@ let splitPayment = function () {
             let an = paymentState.find('[id*="-mode"]').find('select').val();
             let d = {};
             if (an == 'cash') {
-                d.payment_type_id = 1;
+                d.payment_type_id = 11;
                 d.payment_amount = paymentState.find('[id*="-cash-paywith"]').data('value');
                 d.grandtotal = paymentState.find('[id*="-cash-amount"]').data('value');
                 d.change_amount = paymentState.find('[id*="-cash-change"]').attr('val');
@@ -2708,6 +2931,8 @@ $(document).ready(function () {
     cardPayment();
     chargeToRoomPayment();
     houseUsePayment();
+    voucherPayment();
+    cityLedgerPayment();
     noPostPayment();
     splitPayment();
     mergeOrder();

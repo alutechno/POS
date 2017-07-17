@@ -77,7 +77,6 @@
 											<i class="fa fa-tags"></i>
 											House use
 										</a>
-										<!--
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-city-ledger" id="pay-city-ledger">
 											<i class="fa fa-plane"></i>
 											City Ledger
@@ -86,7 +85,6 @@
 											<i class="fa fa-ticket"></i>
 											Voucher
 										</a>
-										-->
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-no-post" id="pay-no-post">
 											<i class="fa fa-exclamation"></i>
 											No Post
@@ -222,6 +220,14 @@
 								<select class="form-control"></select>
 							</div>
 						</div>
+					</div>
+				</div>
+				<div class="row" style="margin-bottom: 10px;">
+					<div class="col-lg-3">
+						<span>Amount per Item</span>
+					</div>
+					<div class="col-lg-9 text-right">
+						<input type="currency" class="form-control" id="percent-amount-item" disabled>
 					</div>
 				</div>
 				<div class="row" style="margin-bottom: 10px;">
@@ -444,6 +450,154 @@
 							<span>Notes</span>
 							<textarea id="note" style="width: 100%;height: 60px;"></textarea>
 						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-city-ledger" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal-label">City Ledger</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6" style="margin-top: 5px">
+						<span>City Ledger Account</span>
+						<span> : </span>
+					</div>
+					<div class="col-lg-6">
+						<select class="form-control" id="city-ledger"></select>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+						<span>Type</span>
+						<span> : </span>
+						<span id="type"></span>
+					</div>
+					<div class="col-sm-6">
+						<span>Account Name</span>
+						<span> : </span>
+						<span id="name"></span>
+					</div>
+					<div class="col-sm-6">
+						<span>Code</span>
+						<span> : </span>
+						<span id="code"></span>
+					</div>
+					<div class="col-lg-12">
+						<span>Contact Person Name</span>
+						<span> : </span>
+						<span id="cpname"></span>
+					</div>
+					<div class="col-lg-12">
+						<span>Contact Person Number</span>
+						<span> : </span>
+						<span id="cpnumber"></span>
+					</div>
+					<div class="col-lg-12">
+						<span>Address</span>
+						<span> : </span>
+						<span id="address"></span>
+					</div>
+					<div class="col-lg-6">
+						<span>Is Black listed ?</span>
+						<span> : </span>
+						<span id="black-list"></span>
+					</div>
+					<div class="col-sm-6">
+						<span>Is Credit ?</span>
+						<span> : </span>
+						<span id="credit"></span>
+					</div>
+					<div class="col-sm-6">
+						<span>Alert</span>
+						<span> : </span>
+						<span id="alert"></span>
+					</div>
+					<div class="col-sm-6">
+						<span>Notes</span>
+						<span> : </span>
+						<span id="notes"></span>
+					</div>
+				</div>
+				<hr style="margin-top: 10px; margin-bottom: 10px"/>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="row">
+							<div class="col-lg-6">
+								<span>Deposit Saldo</span>
+								<span>:</span>
+							</div>
+							<div class="col-lg-6 pull-right">
+								<label id="deposit-saldo" class="pull-right" style="margin-right: 13px;"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="row">
+							<div class="col-lg-6">
+								<span>Deposit Balance</span>
+								<span>:</span>
+							</div>
+							<div class="col-lg-6 pull-right">
+								<label id="deposit-change" class="pull-right" style="margin-right: 13px;"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-voucher" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="modal-label">Voucher Payment</h4>
+			</div>
+			<div class="modal-body">
+				<div id="info"></div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Voucher Code</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="text" class="form-control" id="code">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Voucher Amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="amount">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Change</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<span id="change" style="margin-right: 13px;"></span>
 					</div>
 				</div>
 			</div>
