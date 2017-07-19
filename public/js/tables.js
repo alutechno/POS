@@ -47,7 +47,7 @@ $(document).ready(function () {
         parent.append(table);
         table.find('.frame').height(table.find('.dining-table').width() - 4 + 'px');
     });
-    if (App.user.role_id == 30 && App.posCashier.begin_saldo <= 0) {
+    if (App.user.role_id == 30 && App.posCashier.begin_saldo == null) {
         let prompt = $('#myModalBeginSaldo');
         prompt.modal({backdrop: 'static', keyboard: false});
         prompt.modal('show');
