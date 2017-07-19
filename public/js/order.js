@@ -507,7 +507,7 @@ let loadMenu = function (filter) {
                     discAmount.val('');
                     inputQty.data('value', 0);
                     inputQty.data('display', rupiahJS(0));
-                    inputQty.val(rupiahJS(0));
+                    inputQty.val('');
                     labelNett.html(rupiahJS(0));
                     btnSubmit.prop('disabled', true);
                 });
@@ -554,41 +554,111 @@ let loadOrderMenu = function () {
     let inputQty = m.find('input');
     let btnSubmit = m.find('#submit');
     let orderMenu = SQL(`
-        select
-            @rownum := @rownum + 1 as no, b.outlet_id,
-            o.outlet_menu_id, b.name, o.price_amount, o.order_id, o.menu_class_id,
-            o.order_qty, if (v.order_void < 0, v.order_void, 0) order_void,
-            (o.total_amount + if (v.total_amount < 0, v.total_amount, 0)) total_amount,
-            format(o.total_amount + if (v.total_amount < 0, v.total_amount, 0),2) total_amount_
-        from (
+        select * from (
             select
-                a.menu_class_id, a.outlet_menu_id, a.price_amount, sum(a.total_amount) total_amount, a.order_id,
-                sum(a.order_qty) as order_qty
-            from pos_orders_line_item a
-            where order_qty > 0 and order_id in (${orderIds})
-            group by order_id, outlet_menu_id
+                1 type, true is_parent, a.id line_item_id, a.id parent_id, a.order_id, 
+                a.menu_class_id, a.outlet_menu_id, aa.name, a.serving_status, a.order_qty, 
+                a.price_amount, null promo_id, null discount_percent, 
+                null discount_amount, a.total_amount, a.created_date
+            from pos_orders_line_item a 
+            left join inv_outlet_menus aa on aa.id = a.outlet_menu_id
+            where a.parent_id is null and order_id in (${orderIds})
+            union 
+            select * from (
+                select
+                    3 type, false is_parent, x.order_line_item_id line_item_id,
+                    ifnull(y.parent_id, x.order_line_item_id) parent_id,
+                    y.order_id, y.menu_class_id, y.outlet_menu_id, z.name,
+                    0 serving_status, 0 order_qty, y.price_amount, x.promo_id,
+                    cast(x.discount_percent as char) discount_percent,
+                    cast(sum(x.discount_amount) as char) discount_amount,
+                    sum(x.discount_amount)*-1 total_amount, x.created_date
+                from pos_patched_discount x
+                left join pos_orders_line_item y on y.id = x.order_line_item_id
+                left join inv_outlet_menus z on z.id = y.outlet_menu_id
+                where y.order_id in (${orderIds})
+                group by ifnull(y.parent_id, x.order_line_item_id), promo_id
+                order by ifnull(y.parent_id, x.order_line_item_id), order_line_item_id, 
+                created_date desc
+            ) b
+            union
+            select * from (
+                select
+                    2 type, is_parent, id line_item_id, parent_id, order_id, menu_class_id,
+                    outlet_menu_id, name, serving_status, sum(order_qty) order_qty, price_amount,
+                    null promo_id, null discount_percent, null discount_amount, 
+                    sum(total_amount) total_amount, created_date
+                from (
+                    select
+                        false is_parent, r.name, pos_orders_line_item.*
+                    from pos_orders_line_item
+                    left join inv_outlet_menus r on r.id = pos_orders_line_item.outlet_menu_id
+                    where parent_id is not null and order_id in (${orderIds})
+                    order by created_date desc
+                ) _ where _.parent_id is not null
+                group by parent_id order by created_date desc
+            ) c
         ) o
-        left join (
-            select
-                a.outlet_menu_id, sum(a.order_qty) as order_void,
-                sum(a.total_amount) total_amount
-            from pos_orders_line_item a
-            where order_qty < 0 and order_id in (${orderIds})
-            group by order_id, outlet_menu_id
-        ) v on o.outlet_menu_id = v.outlet_menu_id
-        join inv_outlet_menus b on b.id = o.outlet_menu_id
-        cross join (select @rownum := 0) r
-        order by no
+        where total_amount != 0
+        order by parent_id, type;
     `);
     OrderMenu = [];
     if (!orderMenu.error) {
-        OrderMenu = orderMenu.data.map(function (e) {
-            e.order_void_ = e.order_void ? e.order_void * -1 : ''
-            return e;
+        let no = 0;
+        let getVoid = function (parent_id) {
+            return orderMenu.data.filter(function (dd) {
+                return ((dd.parent_id == parent_id) && (dd.type == 2)) ? 1 : 0
+            })
+        };
+        let getAddDiscount = function (parent_id) {
+            return orderMenu.data.filter(function (dd) {
+                return ((dd.parent_id == parent_id) && (dd.type == 3) && (!dd.promo_id)) ? 1 : 0
+            })
+        };
+        orderMenu.data.forEach(function (d) {
+            let e = Object.assign({}, d)
+            if (e.type == 1) {
+                let voiD = getVoid(e.parent_id)[0];
+                let disc = getAddDiscount(e.parent_id)[0] || {};
+                e.is = 'order';
+                e.name_ = e.name;
+                e.no = ++no;
+                e.order_qty_ = e.order_qty;
+                e.addDiscount = {};
+                if (disc.discount_amount && disc.discount_percent) {
+                    e.addDiscount.type = 'percent';
+                    e.addDiscount.percent = parseFloat(disc.discount_percent);
+                    e.addDiscount.amount = parseFloat(disc.discount_amount);
+                } else {
+                    e.addDiscount.type = 'amount';
+                    e.addDiscount.percent = null;
+                    e.addDiscount.amount = parseFloat(disc.discount_amount);
+                }
+                e.order_void = voiD ? voiD.order_qty * -1 : 0;
+            } else if (e.type == 3) {
+                let discount = parseFloat(e.discount_percent);
+                e.is = 'discount';
+                e.name_ = 'Discount' + (discount ? ` ${parseFloat(e.discount_percent)}%` : '');
+                e.order_qty = '';
+                e.order_qty_ = '';
+                e.no = '';
+            } else {
+                e.is = 'void';
+                e.name_ = 'Void';
+                e.no = '';
+                e.order_qty_ = e.order_qty * -1;
+            }
+            e.total_amount_ = rupiahJS(e.total_amount);
+            OrderMenu.push(e);
         });
     }
+    window.miscFn0 = function (row, index) {
+        return row.is == 'order' ? { classes: 'btn-default'} : {};
+    };
     window.miscFn1 = function (value, row, index) {
-        return (
+        let isOrder = row.is == 'order';
+        let voidable = row.order_qty > row.order_void;
+        return !(isOrder && voidable) ? '' : (
             `<div class="pull-right">
                 <a class="remove" href="#modal-void" title="Void">
                     <i class="glyphicon glyphicon-remove text-danger"></i>
@@ -608,28 +678,41 @@ let loadOrderMenu = function () {
     inputQty.off('blur');
     inputQty.on('blur', function () {
         let val = inputQty.data('value');
-
         btnSubmit.prop('disabled', true);
         val = parseInt(val);
         if (val) {
-            if ((mVoid.order_qty + mVoid.order_void) >= val) {
+            if ((mVoid.order_qty - mVoid.order_void) >= val) {
                 btnSubmit.prop('disabled', false);
             }
         }
     });
     btnSubmit.off('click');
     btnSubmit.on('click', function () {
-        let val = inputQty.data('value');
-        val = parseInt(val) * -1;
-        addOrderMenu({
+        let val = parseInt(inputQty.data('value')) * -1
+        let {type, amount, percent} = mVoid.addDiscount;
+        let qty = mVoid.order_qty - mVoid.order_void;
+        let discount = amount/qty
+        let data = {
             id: mVoid.outlet_menu_id,
+            parent_id: mVoid.line_item_id,
             menu_class_id: mVoid.menu_class_id,
             outlet_id: App.outlet.id,
             menu_price: mVoid.price_amount,
             name: mVoid.name
-        }, val)
+        }
+        if (type) {
+            let addDiscount = { amount: discount * val }
+            if (type == 'percent') addDiscount.percent = percent
+            data.addDiscount = addDiscount
+        }
+        //
+        btnSubmit.prop('disabled', true);
+        addOrderMenu(data, val, mVoid.order_id);
         m.modal('hide');
-    })
+    });
+    m.on('show.bs.modal', function () {
+        btnSubmit.prop('disabled', true);
+    });
     El.orderMenu.bootstrapTable('load', OrderMenu);
     if (OrderMenu.length) {
         El.paymentBtn.removeAttr('disabled');
@@ -649,14 +732,17 @@ let loadTotal = function (id) {
         from pos_order_taxes a, mst_pos_taxes b
         where a.tax_id=b.id and a.order_id in (${ids.join()})
         group by tax_id;
-
+        
         select
-            b.name, sum(price_amount * order_qty) price,
-            IFNULL(sum(c.discount_amount),0) discount
+            b.name, sum(a.total_amount) price, (
+                select sum(a.discount_amount) discount
+                from pos_patched_discount a
+                join pos_orders_line_item b on b.id = a.order_line_item_id
+                where b.order_id in (${ids.join()})
+            ) discount
         from pos_orders_line_item a
-        left join pos_patched_discount c on a.id=c.order_line_item_id, ref_outlet_menu_class b
-        where a.menu_class_id=b.id and a.order_id in (${ids.join()})
-        group by b.name
+        join ref_outlet_menu_class b on b.id = a.menu_class_id
+        where a.order_id in (${ids.join()})
     `);
     let taxes = queries.data[0];
     let summary = queries.data[1];
@@ -765,7 +851,7 @@ let loadOrderSummary4modal = function ({total, discount, subtotal, servicecharge
 };
 let addOrderMenu = function (data, qty = 1, orderId) {
     orderId = orderId || orderIds.split(',')[0];
-    let {id, menu_class_id, outlet_id, menu_price, addDiscount} = data;
+    let {id, parent_id, menu_class_id, outlet_id, menu_price, addDiscount} = data;
     let amount = menu_price * qty;
     let totalDiscount = 0;
     let orderItemId, patchDiscountIds = [], orderTaxIds = {}, posOrder;
@@ -773,6 +859,7 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     //
     let addOrderItem = function () {
         let newLineItem = {
+            parent_id: parent_id,
             order_id: orderId,
             menu_class_id: menu_class_id,
             outlet_menu_id: id,
