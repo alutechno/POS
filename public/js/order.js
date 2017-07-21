@@ -39,7 +39,7 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         btnPayHouseUse: $('a#pay-house-use'),
         btnPayCityLedger: $('a#pay-city-ledger'),
         btnPayVoucher: $('a#pay-voucher'),
-        btnPaySplit: $('a#pay-split'),
+        btnPaySplitPay: $('a#pay-split-pay'),
         btnPayNoPost: $('a#pay-no-post'),
         btnMergeTable: $('a#merge-tables'),
         btnItem2Sheet: $('button#to-right'),
@@ -363,6 +363,25 @@ let loadMenu = function (filter) {
             left join ref_outlet_menu_class b on a.menu_class_id = b.id and b.status=1
             where a.status = 1 and a.outlet_id=${App.outlet.id} ${query} order by a.name
         `);
+        let promos = (function () {
+            let obj = {};
+            let menuIds = menu.data.map(function (m) {
+                return m.id
+            })
+            let day = SQL('select LOWER(DAYNAME(NOW())) a');
+            let promo = SQL(`
+                select * from pos_menu_promos 
+                where outlet_menu_id in(${menuIds.join()}) and 
+                is_avail_${day.data[0].a}='Y' and
+                (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and 
+                (DATE_FORMAT(now(), '%H:%i') between cast(begin_time as time) and cast(end_time as time))
+            `);
+            promo.data.forEach(function(prom){
+                obj[prom.outlet_menu_id] = obj[prom.outlet_menu_id] || [];
+                obj[prom.outlet_menu_id].push(prom)
+            });
+            return obj;
+        })()
         Menu = [];
         if (!menu.error) {
             let modal = El.modalQty;
@@ -381,7 +400,22 @@ let loadMenu = function (filter) {
             El.menu.html('');
             Menu = menu.data.map(function (e) {
                 e.url_ = 'http://103.43.47.115:3000';
+                e.menu_price_nett = e.menu_price;
                 e.menu_price_ = rupiahJS(e.menu_price);
+                e.menu_price_nett_ = rupiahJS(e.menu_price_nett);
+                e.promos = promos[e.id] || [];
+                e.total_discount = 0;
+                e.promos.forEach(function (promo) {
+                    let discount = 0;
+                    if (promo.discount_amount > 0) {
+                        discount = promo.discount_amount
+                    } else if (promo.discount_percent > 0) {
+                        discount = e.menu_price / 100 * promo.discount_percent;
+                    }
+                    e.total_discount += discount;
+                    e.menu_price_nett -= discount;
+                    e.menu_price_nett_ = rupiahJS(e.menu_price_nett)
+                });
                 let el = $(`
                     <div class="col-lg-3 col-sm-4 col-xs-4 menu-item"
                         menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
@@ -392,7 +426,10 @@ let loadMenu = function (filter) {
                                 <div class="menu-bg"></div>
                                 <div class="menu-info text-center">
                                     <div class="menu-info-name">${e.name}</div>
-                                    <div class="menu-info-price">${e.menu_price_}</div>
+                                    <div class="menu-info-price" style="${e.promos.length ? 'text-decoration: line-through;color:wheat':''}">
+                                        &nbsp;&nbsp;${e.menu_price_}&nbsp;&nbsp;
+                                    </div>
+                                    ${e.promos.length ? `<div class="menu-info-price">${e.menu_price_nett_}</div>`:''}
                                 </div>
                             </div>
                         </div>
@@ -879,7 +916,13 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     };
     let addDiscountPatched = function () {
         let day = SQL('select LOWER(DAYNAME(NOW())) a');
-        let promos = SQL(`select * from pos_menu_promos where outlet_menu_id=? and is_avail_${day.data[0].a}='Y'`, id);
+        let promos = SQL(`
+            select * from pos_menu_promos
+            where outlet_menu_id=? and 
+            is_avail_${day.data[0].a}='Y' and 
+            (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and 
+            (DATE_FORMAT(now(), '%H:%i') between cast(begin_time as time) and cast(end_time as time))
+        `, id);
         promos.data.forEach(function (promo) {
             let discount = 0;
             if (promo.discount_amount > 0) {
@@ -1574,7 +1617,7 @@ let noPostPayment = function () {
 };
 let splitPayment = function () {
     if (!App.role.split) {
-        El.btnPaySplit.hide();
+        El.btnPaySplitPay.hide();
         return;
     }
     let m = El.modalSplit;
@@ -2210,7 +2253,7 @@ let splitPayment = function () {
     }
     let grandtotal;
     //
-    El.btnPaySplit.show();
+    El.btnPaySplitPay.show();
     //
     balance.val = function (value) {
         if (value) {
