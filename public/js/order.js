@@ -25,7 +25,9 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         modalNoPost: $('div#modal-no-post'),
         modalHouseUse: $('div#modal-house-use'),
         modalDiscountBill: $('div#modal-discount-bill'),
-        modalSplit: $('div#modal-split'),
+        modalMultiPayment: $('div#modal-multi-payment'),
+        modalSplitBill: $('div#modal-split-billing'),
+        modalAnySplitted: $('div#modal-any-splitted'),
         modalMerge: $('div#modal-merge'),
         modalPrintOrder: $('div#modal-print-order'),
         modalOpenMenu: $('div#modal-open-menu'),
@@ -39,7 +41,8 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         btnPayHouseUse: $('a#pay-house-use'),
         btnPayCityLedger: $('a#pay-city-ledger'),
         btnPayVoucher: $('a#pay-voucher'),
-        btnPaySplitPay: $('a#pay-split-pay'),
+        btnMultiPayment: $('a#pay-multi-payment'),
+        btnSplitBilling: $('a#pay-split-bill'),
         btnPayNoPost: $('a#pay-no-post'),
         btnMergeTable: $('a#merge-tables'),
         btnItem2Sheet: $('button#to-right'),
@@ -58,6 +61,10 @@ let delay = (function () {
         timer = setTimeout(callback, ms);
     };
 })();
+let anySplitted = function () {
+    let check = SQL(`SELECT * FROM pos_orders WHERE parent_id=?`, orderIds.split(',')[0]);
+    return check.data;
+}
 let rupiahJS = function (val) {
     val = val || "0"
     return parseFloat(val.toString().replace(/\,/g, "")).toFixed(2)
@@ -1615,18 +1622,16 @@ let noPostPayment = function () {
         goHome(pay);
     });
 };
-let splitPayment = function () {
+let multiPayment = function () {
     if (!App.role.split) {
-        El.btnPaySplitPay.hide();
+        El.btnMultiPayment.hide();
         return;
     }
-    let m = El.modalSplit;
+    let m = El.modalMultiPayment;
     let divInfo = m.find('div#info');
     let close = m.find('#close');
     let next = m.find('#submit');
-    let mode = m.find('#mode');
-    let modeCounter = m.find('#mode-counter');
-    let itemSplitter = m.find('#item-splitter');
+    let inputCounter = m.find('#mode-counter');
     let noState = m.find('#no-state');
     let state = m.find('#state');
     let modeLabel0 = m.find('#mode-label-0');
@@ -1693,7 +1698,7 @@ let splitPayment = function () {
         return pay;
     };
     let payWithCash = function (id) {
-        let limit = parseInt(modeCounter.val());
+        let limit = parseInt(inputCounter.val());
         let pay = $(`
             <div class="row">
                 <div class="col-sm-6">
@@ -1790,12 +1795,7 @@ let splitPayment = function () {
             }
         });
         //
-        if (mode.val() == 'item') {
-            amount.attr('disabled', 1);
-            amount.data('value', parseFloat(m.find('[for="grandtotal"]').data('value')));
-            amount.data('display', m.find('[for="grandtotal"]').data('display'));
-            amount.val(m.find('[for="grandtotal"]').data('display'));
-        } else if (limit == count) {
+        if (limit == count) {
             amount.attr('disabled', 1);
             amount.data('value', parseFloat(balance.val()));
             amount.data('display', rupiahJS(parseFloat(balance.val())));
@@ -1804,7 +1804,7 @@ let splitPayment = function () {
         return pay;
     }
     let payWithCard = function (id) {
-        let limit = parseInt(modeCounter.val());
+        let limit = parseInt(inputCounter.val());
         let options = El.modalCard.find('#bank-type').html();
         let pay = $(`
             <div class="row">
@@ -1965,23 +1965,17 @@ let splitPayment = function () {
         cardType.on('change', validate)
         cardNo.on('change', validate);
         customer.on('change', validate);
-
-        if (mode.val() == 'item') {
-            amount.attr('disabled', 1);
-            amount.data('value', parseFloat(m.find('[for="grandtotal"]').data('value')));
-            amount.data('display', m.find('[for="grandtotal"]').data('display'));
-            amount.val(m.find('[for="grandtotal"]').data('display'));
-        } else if (limit == count) {
+        //
+        if (limit == count) {
             amount.attr('disabled', 1);
             amount.data('value', parseFloat(balance.val()));
             amount.data('display', rupiahJS(parseFloat(balance.val())));
             amount.val(rupiahJS(parseFloat(balance.val())));
         }
-
         return pay;
     }
     let payWithCharge2Room = function (id) {
-        let limit = parseInt(modeCounter.val());
+        let limit = parseInt(inputCounter.val());
         let options = El.modalCharge2Room.find('#customer').html();
         let pay = $(`
             <div class="row">
@@ -2105,11 +2099,8 @@ let splitPayment = function () {
                 }
             }
         });
-        if (mode.val() == 'item') {
-            amount.data('value', parseFloat(m.find('[for="grandtotal"]').data('value')));
-            amount.data('display', m.find('[for="grandtotal"]').data('display'));
-            amount.val(m.find('[for="grandtotal"]').data('display'));
-        } else if (limit == count) {
+        //
+        if (limit == count) {
             amount.attr('disabled', 1);
             amount.data('value', parseFloat(balance.val()));
             amount.data('display', rupiahJS(parseFloat(balance.val())));
@@ -2118,7 +2109,7 @@ let splitPayment = function () {
         return pay;
     }
     let payWithHouseUse = function (id) {
-        let limit = parseInt(modeCounter.val());
+        let limit = parseInt(inputCounter.val());
         let options = El.modalHouseUse.find('#house-use').html();
         let pay = $(`
             <div class="row">
@@ -2237,13 +2228,8 @@ let splitPayment = function () {
                 }
             }
         });
-
-        if (mode.val() == 'item') {
-            amount.attr('disabled', 1);
-            amount.data('value', parseFloat(m.find('[for="grandtotal"]').data('value')));
-            amount.data('display', m.find('[for="grandtotal"]').data('display'));
-            amount.val(m.find('[for="grandtotal"]').data('display'));
-        } else if (limit == count) {
+        //
+        if (limit == count) {
             amount.attr('disabled', 1);
             amount.data('value', parseFloat(balance.val()));
             amount.data('display', rupiahJS(parseFloat(balance.val())));
@@ -2253,7 +2239,7 @@ let splitPayment = function () {
     }
     let grandtotal;
     //
-    El.btnPaySplitPay.show();
+    El.btnMultiPayment.show();
     //
     balance.val = function (value) {
         if (value) {
@@ -2279,9 +2265,10 @@ let splitPayment = function () {
         noState.hide();
         state.show();
         next.disable();
-        console.log('any active payment state?', paymentState.is(':visible'))
+        close.disable();
+        console.log('Any active multi payment state?', paymentState.is(':visible'))
         if (paymentState.is(':visible')) {
-            let limit = parseInt(modeCounter.val());
+            let limit = parseInt(inputCounter.val());
             let bayar = parseFloat(paymentState.find('[id*="-amount"]').data('value'));
             let nextBalance = balance.val() - parseFloat(bayar);
             let an = paymentState.find('[id*="-mode"]').find('select').val();
@@ -2317,15 +2304,15 @@ let splitPayment = function () {
                 balance.html(rupiahJS(nextBalance));
                 recordList.append(recordPayment(count, bayar));
 
-                console.info('Splitbill > saving & printing start #' + count);
+                console.info('Multi payment > saving & printing start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
                     paymentState.hide();
                     next.enable();
                     next.click();
-                    console.info('Splitbill > saving & printing done #' + count);
+                    console.info('Multi payment > saving & printing done #' + count);
                 } else {
-                    console.error('Splitbill > saving & printing error #' + count);
+                    console.error('Multi payment > saving & printing error #' + count);
                     alert(`Error occurrence, result : ${JSON.stringify(pay.response)}`);
                 }
             } else if ((nextBalance <= 0) || (count == limit)) {
@@ -2334,192 +2321,158 @@ let splitPayment = function () {
                 balance.html(rupiahJS(nextBalance));
                 recordList.append(recordPayment(count, bayar));
 
-                console.info('Splitbill > saving & printing start #' + count);
+                console.info('Multi payment > saving & printing start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
                     paymentState.hide();
-                    mode.val('')
                     close.enable();
                     state.hide();
                     noState.hide();
-                    console.info('Splitbill > saving & printing done #' + count);
-                    console.info('Splitbill > finished!');
+                    console.info('Multi payment > saving & printing done #' + count);
+                    console.info('Multi payment > finished!');
                     goHome(pay);
                 } else {
-                    console.error('Splitbill > saving & printing error #' + count);
+                    console.error('Multi payment > saving & printing error #' + count);
                     alert(`Error occurrence, result : ${JSON.stringify(res.result)}`);
                 }
             }
         } else {
             count += 1;
             paymentState.hide();
-            if (mode.val()) {
-                if (mode.val() == 'amount') {
-                    modeLabel0.html('By amount');
-                    modeLabel1.html(`${count} of ${modeCounter.val()}`);
-                    paymentState.show();
-                    paymentState.html('');
-                    paymentState.append(payment(count));
-                } else if (mode.val() == 'item') {
-                    let sheets = El.tableSheets.bootstrapTable('getData').filter(function (e) {
-                        if (e.total > 0) return 1
-                        return 0;
-                    });
-                    modeCounter.val(sheets.length);
-                    modeLabel0.html('By items');
-                    modeLabel1.html(`${count} of ${sheets.length}`);
-                    let oId = orderIds.split(',')[0];
-                    let order = Order[oId];
-                    sheets.forEach(function (sheet, i) {
-                        let init = SQL('INSERT pos_orders SET ?', {
-                            parent_id: parseInt(oId),
-                            table_id: order.table_id,
-                            code: order.code + '#' + (i + 1),
-                            transc_batch_id: App.posCashier.id,
-                            outlet_id: App.outlet.id,
-                            sub_total_amount: 0,
-                            discount_total_amount: 0,
-                            tax_total_amount: 0,
-                            due_amount: 0,
-                            segment_id: 1,
-                            status: 0,
-                            waiter_user_id: App.user.id,
+            modeLabel0.html('Split by amount');
+            modeLabel1.html(`${count} of ${inputCounter.val()}`);
+            paymentState.show();
+            paymentState.html('');
+            paymentState.append(payment(count));
+        }
+    });
+    inputCounter.on('blur', function () {
+        let by = inputCounter.val();
+        next.disable();
+        if (parseInt(by) > 0) next.enable();
+    });
+    //
+    m.on('show.bs.modal', function () {
+        grandtotal = getSummary('grandtotal').value
+        balance.val(grandtotal);
+        inputCounter.val('');
+        recordList.html('');
+        next.disable();
+        m.find('.modal-dialog').removeClass('modal-lg');
+        noState.show();
+        state.hide();
+        count = 0;
+    });
+    inputCounter.keyboard({layout: 'num'});
+    recordList.insertBefore(balance.closest('.row'));
+    m.modal({backdrop: 'static', keyboard: false});
+    m.modal('hide');
+};
+let splitBill = function () {
+    if (!App.role.split) {
+        El.btnMultiPayment.hide();
+        return;
+    }
+    let m = El.modalSplitBill;
+    let next = m.find('#submit');
+    let inputCounter = m.find('#mode-counter');
+    let noState = m.find('#no-state');
+    let state = m.find('#state');
+    let allItems = [], allSheets = [], count = 0;
+    //
+    El.btnMultiPayment.show();
+    //
+    next.enable = function () {
+        next.removeAttr('disabled');
+    };
+    next.disable = function () {
+        next.attr('disabled', 1);
+    };
+    next.on('click', function () {
+        next.disable();
+        //
+        let data = El.tableSheets.bootstrapTable('getData');
+        let sheets = data.filter(function (e) {
+            if (e.total > 0) return 1
+            return 0;
+        });
+        let oId = orderIds.split(',')[0];
+        let order = Order[oId];
+        //
+        SQL(`UPDATE pos_orders SET status=5 WHERE id=?`, parseInt(oId));
+        sheets.forEach(function (sheet, i) {
+            let init = SQL('INSERT pos_orders SET ?', {
+                parent_id: parseInt(oId),
+                table_id: order.table_id,
+                code: order.code + '#' + (i + 1),
+                transc_batch_id: App.posCashier.id,
+                outlet_id: App.outlet.id,
+                sub_total_amount: 0,
+                discount_total_amount: 0,
+                tax_total_amount: 0,
+                due_amount: 0,
+                segment_id: 1,
+                status: 0,
+                waiter_user_id: App.user.id,
+                created_by: App.user.id
+            });
+            if (!init.error) {
+                let lastId = init.data.insertId;
+                let taxes = SQL(`
+                    select b.*
+                    from pos_outlet_tax a 
+                    left join mst_pos_taxes b on b.id = a.pos_tax_id 
+                    where outlet_id = ?
+                `, App.outlet.id);
+                if (!taxes.error) {
+                    let result = [];
+                    taxes.data.forEach(function (tax) {
+                        let orderTax = SQL('insert into pos_order_taxes set ?', {
+                            order_id: lastId,
+                            tax_id: tax.id,
+                            tax_percent: tax.tax_percent,
+                            tax_amount: 0,
                             created_by: App.user.id
                         });
-                        if (!init.error) {
-                            let lastId = init.data.insertId;
-                            let taxes = SQL(`
-                                select b.*
-                                from pos_outlet_tax a 
-                                left join mst_pos_taxes b on b.id = a.pos_tax_id 
-                                where outlet_id = ?
-                            `, App.outlet.id);
-                            if (!taxes.error) {
-                                let result = [];
-                                taxes.data.forEach(function (tax) {
-                                    let orderTax = SQL('insert into pos_order_taxes set ?', {
-                                        order_id: lastId,
-                                        tax_id: tax.id,
-                                        tax_percent: tax.tax_percent,
-                                        tax_amount: 0,
-                                        created_by: App.user.id
-                                    });
-                                    if (!orderTax.error) result.push(1);
-                                    else result.push(0);
-                                });
-                                if (result.indexOf(0) < 0) {
-                                    let qty = {};
-                                    sheet.items_ = {};
-                                    sheet.order_id = lastId;
-                                    sheet.items.forEach(function (d) {
-                                        let k = d.outlet_menu_id;
-                                        sheet.items_[k] = {
-                                            id: d.outlet_menu_id,
-                                            menu_class_id: d.menu_class_id,
-                                            outlet_id: d.outlet_id,
-                                            menu_price: d.price_amount,
-                                            name: d.name
-                                        };
-                                        qty[k] = qty[k] || 0;
-                                        qty[k]++;
-                                    });
-                                    for (let i in sheet.items_) {
-                                        sheet.items_[i].qty = qty[i];
-                                        addOrderMenu(sheet.items_[i], qty[i], lastId);
-                                    }
-                                }
-                            }
-                            let total = loadTotal(lastId);
-                            sheet.summary = getSummary(0, total);
+                        if (!orderTax.error) result.push(1);
+                        else result.push(0);
+                    });
+                    if (result.indexOf(0) < 0) {
+                        let qty = {};
+                        sheet.items_ = {};
+                        sheet.order_id = lastId;
+                        sheet.items.forEach(function (d) {
+                            let k = d.outlet_menu_id;
+                            sheet.items_[k] = {
+                                id: d.outlet_menu_id,
+                                menu_class_id: d.menu_class_id,
+                                outlet_id: d.outlet_id,
+                                menu_price: d.price_amount,
+                                name: d.name
+                            };
+                            qty[k] = qty[k] || 0;
+                            qty[k]++;
+                        });
+                        for (let i in sheet.items_) {
+                            sheet.items_[i].qty = qty[i];
+                            addOrderMenu(sheet.items_[i], qty[i], lastId);
                         }
-                    })
-                    //
-                    let numb = count-1;
-                    let sheet = sheets[numb];
-                    divInfo.html(loadOrderSummary4modal(sheet.summary));
-                    for (let zz in sheet.items_) {
-                        let zItem = sheet.items_[zz];
-                        divInfo.prepend(`
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <span>${zItem.name}</span>
-                                </div>
-                                <div class="col-lg-6 text-right">
-                                    <span>${rupiahJS(zItem.menu_price)}</span>                              
-                                    <span>x</span>
-                                    <span style="margin-right: 15px;">${zItem.qty}</span>
-                                    <label style="margin-right: 13px;" for="total">
-                                        ${rupiahJS(zItem.menu_price*zItem.qty)}
-                                    </label>
-                                </div>
-                            </div>
-                        `);
                     }
-                    paymentState.show();
-                    paymentState.html('');
-                    paymentState.append(payment(count));
                 }
+                let total = loadTotal(lastId);
+                sheet.summary = getSummary(0, total);
             }
-        }
+        });
+        //todo: window.location.reload();
     });
-    mode.on('change', function () {
-        let val = $(this).val();
-        modeCounter.parent().prev().hide();
-        modeCounter.hide();
-        next.disable();
-        close.disable();
-        if (val == 'item') {
-            itemSplitter.show();
-            modeCounter.parent().prev().show();
-            modeCounter.show();
-            m.find('.modal-dialog').addClass('modal-lg');
-            //
-            let items = [];
-            OrderMenu.forEach(function (menu) {
-                let d = Object.assign({}, menu);
-                let s = (d.order_qty + d.order_void);
-                d.sheet = '';
-                d.sheetIdx = '';
-                d.price_amount_ = rupiahJS(d.price_amount);
-                if (s > 0) {
-                    if (s > 1) {
-                        for (let j = 0; j < s; j++) {
-                            let dd = Object.assign({}, d);
-                            dd.index = items.length;
-                            items.push(dd);
-                        }
-                    } else {
-                        d.index = items.length;
-                        items.push(d);
-                    }
-                }
-            });
-            El.tableSheets.bootstrapTable('removeAll');
-            El.tableSheets.bootstrapTable('resetView');
-            El.tableSheets.bootstrapTable('load', sheets);
-            //
-            El.tableItems.bootstrapTable('removeAll');
-            El.tableItems.bootstrapTable('resetView');
-            El.tableItems.bootstrapTable('load', items);
-        } else if (val == 'amount') {
-            itemSplitter.hide();
-            next.enable();
-            modeCounter.parent().prev().show();
-            modeCounter.show();
-            m.find('.modal-dialog').removeClass('modal-lg');
-        }
-    });
-    modeCounter.on('blur', function () {
-        let by = parseFloat(modeCounter.val());
-        let val = mode.val();
+    inputCounter.on('blur', function () {
+        let by = inputCounter.val();
 
         next.disable();
-        if (val == 'amount' && by) {
-            next.enable();
-        } else if (val == 'item' && (by > 1)) {
-            let sheets = [];
+        if (parseFloat(by) > 1) {
+            allSheets = [];
             for (let i = 0; i < by; i++) {
-                sheets.push({
+                allSheets.push({
                     index: i,
                     name: i + 1,
                     total: 0,
@@ -2529,7 +2482,7 @@ let splitPayment = function () {
             }
             El.tableSheets.bootstrapTable('removeAll');
             El.tableSheets.bootstrapTable('resetView');
-            El.tableSheets.bootstrapTable('load', sheets);
+            El.tableSheets.bootstrapTable('load', allSheets);
         }
     });
     El.btnItem2Sheet.on('click', function () {
@@ -2563,21 +2516,34 @@ let splitPayment = function () {
     });
     //
     m.on('show.bs.modal', function () {
-        grandtotal = getSummary('grandtotal').value
-        balance.val(grandtotal);
-        modeCounter.val('');
-        recordList.html('');
+        inputCounter.val('');
         next.disable();
-        modeCounter.parent().prev().hide()
-        itemSplitter.hide();
-        modeCounter.hide();
-        m.find('.modal-dialog').removeClass('modal-lg');
-        noState.show();
-        state.hide();
-        count = 0;
+        //
+        allItems = [];
+        OrderMenu.forEach(function (menu) {
+            if (menu.type == '1') {
+                let d = Object.assign({}, menu);
+                let s = (d.order_qty - d.order_void);
+                d.sheet = '';
+                d.sheetIdx = '';
+                if (s > 0) {
+                    if (s > 1) {
+                        for (let j = 0; j < s; j++) {
+                            let dd = Object.assign({}, d);
+                            dd.index = allItems.length;
+                            allItems.push(dd);
+                        }
+                    } else {
+                        d.index = allItems.length;
+                        allItems.push(d);
+                    }
+                }
+            }
+        });
+        El.tableSheets.bootstrapTable('load', allSheets);
+        El.tableItems.bootstrapTable('load', allItems);
     });
-    modeCounter.keyboard({layout: 'num'});
-    recordList.insertBefore(balance.closest('.row'));
+    inputCounter.keyboard({layout: 'num'});
     m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
     window.miscFn2 = function (value, row, index) {
@@ -3041,6 +3007,7 @@ let discountBilling = function () {
     });
 }
 $(document).ready(function () {
+    let checkSplitted = anySplitted();
     let {
         nopost, cash, chargeroom, card,
         voucher, cityledger, join,
@@ -3048,53 +3015,73 @@ $(document).ready(function () {
         split, cashdraw, voidmenu,
         houseuse
     } = App.role;
-    //
-    loadMealTime();
-    loadClass();
-    loadSubClass();
-    loadMenu();
-    loadOrder();
-    loadOrderMenu();
-    loadOrderSummary(orderIds);
-    loadBills();
-    cashPayment();
-    cardPayment();
-    chargeToRoomPayment();
-    houseUsePayment();
-    voucherPayment();
-    cityLedgerPayment();
-    noPostPayment();
-    splitPayment();
-    mergeOrder();
-    saveOrderNote();
-    manualPrint();
-    openCashDraw();
-    openMenu();
-    printBilling();
-    reprintBilling();
-    voidBilling();
-    discountBilling();
-    //
-    initCheckListBoxes();
-    El.paymentBtn.attr('disabled', 1);
-    El.btnPrintBilling.attr('disabled', 1);
-    El.btnOrderNote.attr('disabled', 1);
-    El.btnPrintOrder.attr('disabled', 1);
-    El.btnPayNoPost.removeAttr('disabled');
-    //
-    if (OrderMenu) {
-        if (OrderMenu.length) {
-            El.paymentBtn.removeAttr('disabled');
-            El.btnPrintBilling.removeAttr('disabled');
-            El.btnOrderNote.removeAttr('disabled');
-            El.btnPrintOrder.removeAttr('disabled');
+    if (!checkSplitted.length) {
+        loadMealTime();
+        loadClass();
+        loadSubClass();
+        loadMenu();
+        loadOrder();
+        loadOrderMenu();
+        loadOrderSummary(orderIds);
+        loadBills();
+        cashPayment();
+        cardPayment();
+        chargeToRoomPayment();
+        houseUsePayment();
+        voucherPayment();
+        cityLedgerPayment();
+        noPostPayment();
+        multiPayment();
+        splitBill();
+        mergeOrder();
+        saveOrderNote();
+        manualPrint();
+        openCashDraw();
+        openMenu();
+        printBilling();
+        reprintBilling();
+        voidBilling();
+        discountBilling();
+        //
+        initCheckListBoxes();
+        El.paymentBtn.attr('disabled', 1);
+        El.btnPrintBilling.attr('disabled', 1);
+        El.btnOrderNote.attr('disabled', 1);
+        El.btnPrintOrder.attr('disabled', 1);
+        El.btnPayNoPost.removeAttr('disabled');
+        //
+        if (OrderMenu) {
+            if (OrderMenu.length) {
+                El.paymentBtn.removeAttr('disabled');
+                El.btnPrintBilling.removeAttr('disabled');
+                El.btnOrderNote.removeAttr('disabled');
+                El.btnPrintOrder.removeAttr('disabled');
+            }
         }
+        El.paymentBtn.on('click', function () {
+            let sum = getSummary(0);
+            El.modalMerge.find('#home-total').html(sum.grandtotal.value);
+            El.modalMerge.find('#grandtotal').html(sum.grandtotal.value);
+            $('.modal-body div#info').html(loadOrderSummary4modal(sum));
+        });
+        App.virtualKeyboard();
+    } else {
+        let m = El.modalAnySplitted;
+        //
+        m.modal({backdrop: 'static', keyboard: false});
+        m.on('show.bs.modal', function () {
+            let div = m.find('#splitted-links');
+            div.html('');
+            checkSplitted.forEach(function(d){
+                let {id, code} = d;
+                code = code.split('#');
+                div.append(`
+                    <a class="btn btn-app payment-btn" data-toggle="modal" href="/order/${id}" id="pay-cash">
+                        <p style="margin-top: 5px">${code[0]} #${code[1]}</span></p>
+                    </a>
+                `);
+            })
+        });
+        m.modal('show');
     }
-    El.paymentBtn.on('click', function () {
-        let sum = getSummary(0);
-        El.modalMerge.find('#home-total').html(sum.grandtotal.value);
-        El.modalMerge.find('#grandtotal').html(sum.grandtotal.value);
-        $('.modal-body div#info').html(loadOrderSummary4modal(sum));
-    });
-    App.virtualKeyboard();
 });
