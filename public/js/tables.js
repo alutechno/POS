@@ -7,10 +7,19 @@ $(document).ready(function () {
     let {data} = SQL(`
         select * from (
             select
-                a.*, b.id as posId, b.num_of_cover guest
+                a.*, b.id as posId, b.num_of_cover guest, c.splitted, c.done_splitted
             from mst_pos_tables a
-            left join pos_orders b
-            on a.id=b.table_id and b.status in (0,1)
+            left join (
+            	select * from (
+		        	select * from pos_orders where status in (0,1,5) and parent_id is null
+					order by created_date desc
+				) x group by table_id
+            ) b on a.id=b.table_id and b.status in (0,1,5)
+            left join (
+				select id, parent_id, count(id) splitted, sum(IF(status = '2', 1, 0)) done_splitted 
+				from pos_orders a 
+				where a.parent_id is not null group by parent_id
+            ) c on b.id = c.parent_id 
             where a.outlet_id=${App.outlet.id}
             group by a.id order by b.id DESC
         ) x order by table_no, id
@@ -21,6 +30,9 @@ $(document).ready(function () {
     let inputGuest = guestModal.find('input#guest');
     data.forEach(function (d) {
         let {id, posId, table_no} = d;
+
+        if (d.splitted && (d.splitted == d.done_splitted)) posId = null;
+
         let href = posId ? `/order/${posId || ''}` : '#myModalGuest';
         let table = $(`
             <a href="${href}" data-toggle="modal">

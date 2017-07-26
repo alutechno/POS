@@ -61,6 +61,16 @@ let delay = (function () {
         timer = setTimeout(callback, ms);
     };
 })();
+let formalDate = function (param) {
+    let dt = param.constructor == Date ? param : new Date(param);
+    let y = dt.getFullYear();
+    let m = dt.getMonth() > 8 ? dt.getMonth() + 1 : '0' + (dt.getMonth() + 1);
+    let d = dt.getDate() > 9 ? dt.getDate() : '0' + dt.getDate();
+    let h = dt.getHours() > 9 ? dt.getHours() : '0' + dt.getHours();
+    let i = dt.getMinutes() > 9 ? dt.getMinutes() : '0' + dt.getMinutes();
+    let s = dt.getSeconds() > 9 ? dt.getSeconds() : '0' + dt.getSeconds();
+    return `${y}-${m}-${d} ${h}:${i}:${s}`;
+};
 let anySplitted = function () {
     let check = SQL(`SELECT * FROM pos_orders WHERE parent_id=?`, orderIds.split(',')[0]);
     return check.data;
@@ -126,7 +136,7 @@ let Payment = function (param, orderId) {
         status: status || 2,
         order_notes,
         modified_by: userId,
-        modified_date: datetime,
+        modified_date: formalDate(datetime),
         closing_batch_id: tranBatchId
     };
     let posOrdersArr = [];
@@ -139,6 +149,7 @@ let Payment = function (param, orderId) {
         }
     }
     let updatePosOrder = SQL(`update pos_orders set ${posOrdersArr.join()} where id in (${orderIds})`, posOrdersVal);
+    SQL(`select parent_id from pos_orders where id in (${orderIds})`);
     if (!updatePosOrder.error) {
         if (status === 4) {
             Printing({orderId: orderId});
@@ -201,9 +212,10 @@ let getSummary = function (key, opt = {}) {
 };
 let goHome = function (param) {
     if (param.success) {
-        setTimeout(function () {
-            window.location.href = '/'
-        }, 3000);
+        //todo
+        //setTimeout(function () {
+        //    window.location.href = '/'
+        //}, 3000);
     } else {
         alert(JSON.stringify(param.response))
     }
@@ -395,6 +407,7 @@ let loadMenu = function (filter) {
             let inputQty = modal.find('#qty');
             let discType = modal.find('#discount-type');
             let discPercent = modal.find('#discount-percent select');
+            let discPercent2 = modal.find('#discount-percent-manual input');
             let discAmount = modal.find('#percent-amount');
             let discAmountItem = modal.find('#percent-amount-item');
             let labelPrice = modal.find('#price');
@@ -465,6 +478,12 @@ let loadMenu = function (filter) {
                     let price = modal.data('menu_price');
                     let qty = parseInt(inputQty.data('value'));
                     let max = price * qty;
+
+                    discPercent2.parent().hide();
+                    if (percent == 'manual') {
+                        discPercent2.parent().show();
+                        percent = discPercent2.data('value');
+                    }
                     if (type == 'percent') {
                         let discount = price * percent / 100;
                         discPercent.parent().show();
@@ -497,7 +516,7 @@ let loadMenu = function (filter) {
                     btnSubmit.prop('disabled', true);
                     labelGross.html(rupiahJS(0));
                     labelNett.html(rupiahJS(0));
-                    if (qty > 0) {
+                    if (qty > 0 && (parseFloat(percent) <= 100)) {
                         labelGross.html(rupiahJS(max));
                         labelNett.html(rupiahJS(max - discAmount.data('value')));
                         if (discAmount.data('value') > -1 && discAmount.data('value') <= max) {
@@ -512,6 +531,8 @@ let loadMenu = function (filter) {
                 });
                 discType.on('change', validation);
                 discPercent.on('change', validation);
+                discPercent2.on('change', validation);
+                discPercent2.on('blur', validation);
                 discAmountItem.on('change', validation);
                 discAmountItem.on('blur', validation);
                 discAmount.on('change', validation);
@@ -538,11 +559,15 @@ let loadMenu = function (filter) {
                         if (!i) discPercent.append(`<option value="0">0 %</option>`);
                         discPercent.append(el);
                     });
+                    discPercent.append(`<option value="manual">Manual</option>`);
                     labelPrice.html(data.menu_price_);
                     labelGross.html(rupiahJS(0));
                     discType.val('percent');
                     discPercent.parent().show();
                     discPercent.val('0');
+                    discPercent2.data('value', 0);
+                    discPercent2.data('display', rupiahJS(0));
+                    discPercent2.val(rupiahJS(''));
                     discAmountItem.data('value', 0);
                     discAmountItem.data('display', rupiahJS(0));
                     discAmountItem.val('');
@@ -1054,24 +1079,20 @@ let mergeOrder = function () {
     El.btnMergeTable.show();
     //
     let tableList = SQL(`
-        select * from (
-            select
-                a.id,a.table_no,a.cover, b.id order_id, b.num_of_cover guest,
-                b.sub_total_amount, b.discount_total_amount, b.tax_total_amount,
-                b.due_amount
-            from mst_pos_tables a
-            left join pos_orders b on a.id=b.table_id and b.status in (0,1)
-            where a.outlet_id=?
-            group by a.id order by b.id DESC
-        ) x
-        where order_id is not null and order_id not in (${orderIds})
-        order by table_no, id
+        select 
+            b.id, b.table_no, b.cover, a.id order_id, a.num_of_cover guest,
+            a.sub_total_amount, a.discount_total_amount, a.tax_total_amount,
+            a.due_amount, a.code order_code
+        from pos_orders a
+        join mst_pos_tables b on b.id = a.table_id
+        where a.status not in (2,5) and a.id not in (${orderIds})
+        order by b.table_no, a.id
     `, App.outlet.id);
     ulCheckListBox.html('');
     tableList.data.forEach(function (e) {
         let li = $(`
             <li id="merge-w-${e.order_id}" class="list-group-item" data-color="info">
-                Table #${e.table_no}
+                Table ${e.table_no} / ${e.order_code}
                 <span class='badge badge-default badge-pill'>${rupiahJS(e.due_amount)}</span>
             </li>
         `);
@@ -1111,7 +1132,7 @@ let mergeOrder = function () {
         keys.forEach(function (key) {
             SQL(
                 `insert into pos_included_orders set order_id=?,included_order_id=?,created_by=? on duplicate key update modified_date=?,modified_by=?`,
-                [home, key, App.user.id, datetime, App.user.id]
+                [home, key, App.user.id, formalDate(datetime), App.user.id]
             )
         });
         window.location.href = '/order/' + paths.join('-')
@@ -2463,7 +2484,7 @@ let splitBill = function () {
                 sheet.summary = getSummary(0, total);
             }
         });
-        //todo: window.location.reload();
+        window.location.reload();
     });
     inputCounter.on('blur', function () {
         let by = inputCounter.val();
@@ -2952,6 +2973,7 @@ let discountBilling = function () {
     let modal = El.modalDiscountBill;
     let discType = modal.find('#discount-type');
     let discPercent = modal.find('#discount-percent select');
+    let discPercent2 = modal.find('#discount-percent-manual input');
     let discAmount = modal.find('#percent-amount');
     let labelNett = modal.find('#nett');
     let btnSubmit = modal.find('#submit');
@@ -2961,6 +2983,12 @@ let discountBilling = function () {
         let type = discType.val();
         let percent = discPercent.val();
         let max = getSummary(0).grandtotal.value;
+
+        discPercent2.parent().hide();
+        if (percent == 'manual') {
+            discPercent2.parent().show();
+            percent = discPercent2.data('value');
+        }
         if (type == 'percent') {
             let a = max * percent / 100;
             discPercent.parent().show();
@@ -2975,7 +3003,7 @@ let discountBilling = function () {
         //
         btnSubmit.prop('disabled', true);
         labelNett.html(rupiahJS(0));
-        if (discAmount.data('value') > -1 && discAmount.data('value') <= max) {
+        if (discAmount.data('value') > -1 && discAmount.data('value') <= max && (parseFloat(percent) <= 100)) {
             labelNett.html(rupiahJS(max - discAmount.data('value')));
             btnSubmit.prop('disabled', false);
         }
@@ -2988,6 +3016,7 @@ let discountBilling = function () {
         if (!i) discPercent.append(`<option value="0">0 %</option>`);
         discPercent.append(el);
     });
+    discPercent.append(`<option value="manual">Manual</option>`);
     discType.on('change', validation);
     discPercent.on('change', validation);
     discAmount.on('change', validation);
@@ -2996,6 +3025,9 @@ let discountBilling = function () {
         discType.val('percent');
         discPercent.parent().show();
         discPercent.val('0');
+        discPercent2.data('value', 0);
+        discPercent2.data('display', rupiahJS(0));
+        discPercent2.val(rupiahJS(''));
         discAmount.data('value', 0);
         discAmount.data('display', rupiahJS(0));
         discAmount.val(rupiahJS(0));
@@ -3073,13 +3105,15 @@ $(document).ready(function () {
             let div = m.find('#splitted-links');
             div.html('');
             checkSplitted.forEach(function(d){
-                let {id, code} = d;
+                let {id, code, status} = d;
                 code = code.split('#');
-                div.append(`
-                    <a class="btn btn-app payment-btn" data-toggle="modal" href="/order/${id}" id="pay-cash">
-                        <p style="margin-top: 5px">${code[0]} #${code[1]}</span></p>
-                    </a>
-                `);
+                if (status == '0' || status == '1') {
+                    div.append(`
+                        <a class="btn btn-app payment-btn" data-toggle="modal" href="/order/${id}" id="pay-cash">
+                            <p style="margin-top: 5px">${code[0]} #${code[1]}</span></p>
+                        </a>
+                    `);
+                }
             })
         });
         m.modal('show');

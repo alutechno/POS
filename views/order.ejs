@@ -233,6 +233,9 @@
 							<div class="col-lg-3" id="discount-percent">
 								<select class="form-control"></select>
 							</div>
+							<div class="col-lg-3" id="discount-percent-manual" style="display: none;">
+								<input type="currency" max="100" min="0" class="form-control"/>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -871,12 +874,12 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title" id="modal-label">Choose Tables</h4>
+				<h4 class="modal-title" id="modal-label">Choose Order No.</h4>
 			</div>
 			<div class="modal-body">
 				<div class="row">
 					<div class="col-lg-6">
-						<span>This Table</span>
+						<span>This Order</span>
 					</div>
 					<div class="col-lg-6 text-right">
 						<span  style="margin-right: 22px;" id="home-total">0.00</span>
@@ -936,6 +939,9 @@
 							</div>
 							<div class="col-lg-3" id="discount-percent">
 								<select class="form-control"></select>
+							</div>
+							<div class="col-lg-3" id="discount-percent-manual" style="display: none;">
+								<input type="currency" max="100" min="0" class="form-control"/>
 							</div>
 						</div>
 					</div>

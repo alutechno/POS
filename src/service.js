@@ -2,7 +2,7 @@ let nodeWindows = require('node-windows').Service;
 let service = new nodeWindows({
 	name:'POS',
 	description: 'POS standalone',
-	script: dirname__ + '\\bin\\app'
+	script: __dirname + '\\bin\\app'
 });
 service.on('install',function(){
 	service.start();
