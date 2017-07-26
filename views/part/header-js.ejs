@@ -43,6 +43,10 @@
                 }
             }
         });
+        var d = a.responseJSON;
+        if (d.error) { //Unauthorized! Need to re-login
+            if(d.error.status == 401) return window.location.reload();
+		}
         return a.responseJSON;
     };
     ["LOGIN", "cache", "_locals", "settings", "LOGIN", "filename"].forEach(function(s){delete window.App[s]});
@@ -52,7 +56,7 @@
 	    var q = `
 			select
 				a.id, a.menu_id, a.object, a.label, b.name menu_name,
-				b.state menu_state, c.role_id, c.role_name
+				c.role_id, c.role_name
 			from menu_detail_pos a
 			left join menu_pos b on b.id = a.menu_id
 			left join (
@@ -61,7 +65,7 @@
 				from role_menu_pos a
 				left join role b on b.id = a.role_id
 			) c on c.menu_detail_id = a.id
-			where b.group_id = 15 and b.parent and role_id=?
+			where b.group_id = 15 and role_id=?
 		`;
 	    if (App.user) {
             var authorize = SQL(q, App.user.role_id);

@@ -3,7 +3,7 @@ $(document).ready(function () {
     let shiftModal = $('#myModalShift');
     let btnCloseBalance = shiftModal.find('#submit');
     btnCloseBalance.hide();
-    if (App.role.reports) {
+    if (App.role.cashierreport) {
         btnCloseBalance.show();
         shiftModal.find('#submit').on('click', function(){
             let getDate = SQL('select NOW() now');

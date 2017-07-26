@@ -1,4 +1,4 @@
-let Menu, MealTime, MenuClass, MenuSubClass,
+let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
     Order, OrderMenu, Taxes, Summary, Payments = [],
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
     HouseUse = {}, Charge2Room = {}, CityLedger = {},
@@ -28,7 +28,7 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         modalMultiPayment: $('div#modal-multi-payment'),
         modalSplitBill: $('div#modal-split-billing'),
         modalAnySplitted: $('div#modal-any-splitted'),
-        modalMerge: $('div#modal-merge'),
+        modalMergeBill: $('div#modal-merge'),
         modalPrintOrder: $('div#modal-print-order'),
         modalOpenMenu: $('div#modal-open-menu'),
         modalAddNote: $('div#modal-add-note'),
@@ -44,12 +44,13 @@ let Menu, MealTime, MenuClass, MenuSubClass,
         btnMultiPayment: $('a#pay-multi-payment'),
         btnSplitBilling: $('a#pay-split-bill'),
         btnPayNoPost: $('a#pay-no-post'),
-        btnMergeTable: $('a#merge-tables'),
+        btnMergeBill: $('a#merge-bill'),
         btnItem2Sheet: $('button#to-right'),
         btnOpenCashDraw: $('button#open-cash-draw'),
         btnPrintBilling: $('button#print-billing'),
-        btnReprintBilling: $('button#reprint-billing'),
-        btnVoidBilling: $('button#void-billing'),
+        btnReprintBilling: $('a#reprint-billing'),
+        btnVoidBilling: $('a#void-billing'),
+        btnDiscountBilling: $('a#discount-bill'),
         btnOrderNote: $('a#order-note'),
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
@@ -104,7 +105,7 @@ let openCashDraw = function () {
         });
     });
 };
-let Printing = function (param) {
+let Printing = function (param, paymentType) {
     $.ajax({
         method: 'GET',
         url: '/printBill',
@@ -175,6 +176,7 @@ let Payment = function (param, orderId) {
                     orderId: orderId,
                     paymentId: insertPosPaymentDetail.data.insertId
                 });
+                if (payment_type_id == 11) El.openCashDraw.click();
                 return {success: true, response: insertPosPaymentDetail.data};
             } else {
                 return {success: false, response: insertPosPaymentDetail.error}
@@ -283,6 +285,7 @@ let loadBills = function () {
         where a.order_id = ?
     `, orderIds.split(',')[0]);
     Payments = getPayment.data;
+    isOlder = Payments.length;
     if (!Payments.length) {
         El.isPaid.hide()
     } else {
@@ -541,8 +544,12 @@ let loadMenu = function (filter) {
                 btnSubmit.on('click', function () {
                     let data = Object.assign({}, modal.data());
                     if (discAmount.data('value')) {
+                        let percent = discPercent.val();
+                        if (percent == 'manual') {
+                            percent = discPercent2.data('value');
+                        }
                         data.addDiscount = {
-                            percent: parseFloat(discPercent.val()) || 0,
+                            percent: parseFloat(percent) || 0,
                             amount: discAmount.data('value')
                         }
                     }
@@ -683,24 +690,40 @@ let loadOrderMenu = function () {
                 return ((dd.parent_id == parent_id) && (dd.type == 3) && (!dd.promo_id)) ? 1 : 0
             })
         };
+        let getBasicDiscount = function (parent_id) {
+            return orderMenu.data.filter(function (dd) {
+                return ((dd.parent_id == parent_id) && (dd.type == 3) && (dd.promo_id)) ? 1 : 0
+            })
+        };
         orderMenu.data.forEach(function (d) {
             let e = Object.assign({}, d)
             if (e.type == 1) {
                 let voiD = getVoid(e.parent_id)[0];
-                let disc = getAddDiscount(e.parent_id)[0] || {};
+                let addDisc = getAddDiscount(e.parent_id)[0] || {};
+                let basicDisc = getBasicDiscount(e.parent_id)[0] || {};
                 e.is = 'order';
                 e.name_ = e.name;
                 e.no = ++no;
                 e.order_qty_ = e.order_qty;
                 e.addDiscount = {};
-                if (disc.discount_amount && disc.discount_percent) {
+                e.basicDiscount = {};
+                if (addDisc.discount_amount && addDisc.discount_percent) {
                     e.addDiscount.type = 'percent';
-                    e.addDiscount.percent = parseFloat(disc.discount_percent);
-                    e.addDiscount.amount = parseFloat(disc.discount_amount);
+                    e.addDiscount.percent = parseFloat(addDisc.discount_percent);
+                    e.addDiscount.amount = parseFloat(addDisc.discount_amount);
                 } else {
                     e.addDiscount.type = 'amount';
                     e.addDiscount.percent = null;
-                    e.addDiscount.amount = parseFloat(disc.discount_amount);
+                    e.addDiscount.amount = parseFloat(addDisc.discount_amount);
+                }
+                if (basicDisc.discount_amount && basicDisc.discount_percent) {
+                    e.basicDiscount.type = 'percent';
+                    e.basicDiscount.percent = parseFloat(basicDisc.discount_percent);
+                    e.basicDiscount.amount = parseFloat(basicDisc.discount_amount);
+                } else {
+                    e.basicDiscount.type = 'amount';
+                    e.basicDiscount.percent = null;
+                    e.basicDiscount.amount = parseFloat(basicDisc.discount_amount);
                 }
                 e.order_void = voiD ? voiD.order_qty * -1 : 0;
             } else if (e.type == 3) {
@@ -825,7 +848,7 @@ let loadOrderSummary = function (id) {
 
     parent.html('');
     summary.forEach(function (el) {
-        parent.append(`
+        if (el.name) parent.append(`
             <tr class="info text-italic">
                 <td colspan="3" align="left" style="font-style: italic;">${el.name}</td>
                 <td align="right">${rupiahJS(el.price)}</td>
@@ -937,7 +960,7 @@ let addOrderMenu = function (data, qty = 1, orderId) {
             total_amount: amount,
             created_by: App.user.id
         }
-        if (Payments.length) {
+        if (isOlder) {
             newLineItem.void_notes = "void menu after payment";
             newLineItem.void_date = getDate.data[0].now;
             newLineItem.void_by = App.user.id;
@@ -976,17 +999,19 @@ let addOrderMenu = function (data, qty = 1, orderId) {
             patchDiscountIds.push(patchDiscount.data.insertId);
         });
         if (addDiscount) {
-            let newPatchDiscount = {
-                order_line_item_id: orderItemId,
-                menu_class_id: menu_class_id,
-                outlet_menu_id: id,
-                discount_percent: addDiscount.percent,
-                discount_amount: addDiscount.amount,
-                created_by: App.user.id
+            if (addDiscount.amount) {
+                let newPatchDiscount = {
+                    order_line_item_id: orderItemId,
+                    menu_class_id: menu_class_id,
+                    outlet_menu_id: id,
+                    discount_percent: addDiscount.percent,
+                    discount_amount: addDiscount.amount,
+                    created_by: App.user.id
+                }
+                let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
+                patchDiscountIds.push(patchDiscount.data.insertId);
+                totalDiscount += addDiscount.amount;
             }
-            let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
-            patchDiscountIds.push(patchDiscount.data.insertId);
-            totalDiscount += addDiscount.amount;
         }
     };
     let updateOrderTaxes = function () {
@@ -1040,7 +1065,7 @@ let addOrderMenu = function (data, qty = 1, orderId) {
             tax_total_amount: totalTaxes,
             due_amount: sub_total_amount - discount_total_amount + totalTaxes
         }
-        if (Payments.length) {
+        if (isOlder) {
             posOrderUpdate.reopen_notes = "void menu after payment";
             posOrderUpdate.reopen_date = getDate.data[0].now;
             posOrderUpdate.reopen_by = App.user.id;
@@ -1061,12 +1086,17 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     loadOrderSummary(orderIds);
     El.modalQty.modal('hide');
 };
-let mergeOrder = function () {
-    if (!Payments.length && !App.role.join) {
-        El.btnMergeTable.hide();
+let mergeBill = function () {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnMergeBill.hide();
+            return;
+        }
+    } else if (!App.role.mergebill) {
+        El.btnMergeBill.hide();
         return;
     }
-    let modal = El.modalMerge;
+    let modal = El.modalMergeBill;
     let pattern = '#check-list-box li';
     let grandtotal = getSummary('grandtotal').value;
     let ulCheckListBox = modal.find('#check-list-box');
@@ -1075,7 +1105,7 @@ let mergeOrder = function () {
     let btnSubmit = modal.find('#submit');
     let paths = orderIds.split(',');
     //
-    El.btnMergeTable.show();
+    El.btnMergeBill.show();
     //
     let tableList = SQL(`
         select 
@@ -1088,6 +1118,9 @@ let mergeOrder = function () {
         order by b.table_no, a.id
     `, App.outlet.id);
     ulCheckListBox.html('');
+    if (!tableList.data.length) {
+        El.btnMergeBill.attr('disabled', true);
+    }
     tableList.data.forEach(function (e) {
         let li = $(`
             <li id="merge-w-${e.order_id}" class="list-group-item" data-color="info">
@@ -1138,11 +1171,16 @@ let mergeOrder = function () {
     });
     //
     $('a[href="#modal-merge"]').on('click', function () {
-        El.modalMerge.find('li.active').click();
+        El.modalMergeBill.find('li.active').click();
     })
 };
 let cashPayment = function () {
-    if (!App.role.cash) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayCash.hide();
+            return;
+        }
+    } else if (!App.role.cash) {
         El.btnPayCash.hide();
         return;
     }
@@ -1185,7 +1223,12 @@ let cashPayment = function () {
     });
 };
 let cardPayment = function () {
-    if (!App.role.card) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayCard.hide();
+            return;
+        }
+    } else if (!App.role.card) {
         El.btnPayCard.hide();
         return;
     }
@@ -1262,7 +1305,12 @@ let cardPayment = function () {
     });
 };
 let chargeToRoomPayment = function () {
-    if (!App.role.chargeroom) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayChargeToRoom.hide();
+            return;
+        }
+    } else if (!App.role.chargeroom) {
         El.btnPayChargeToRoom.hide();
         return
     }
@@ -1334,7 +1382,12 @@ let chargeToRoomPayment = function () {
     });
 };
 let houseUsePayment = function () {
-    if (!App.role.houseuse) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayHouseUse.hide();
+            return;
+        }
+    } else if (!App.role.houseuse) {
         El.btnPayHouseUse.hide();
         return
     }
@@ -1411,7 +1464,12 @@ let houseUsePayment = function () {
     });
 };
 let voucherPayment = function () {
-    if (!App.role.voucher) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayVoucher.hide();
+            return;
+        }
+    } else if (!App.role.voucher) {
         El.btnPayVoucher.hide();
         return;
     }
@@ -1452,7 +1510,7 @@ let voucherPayment = function () {
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
-            payment_type_id: 4, //todo: payment type id for voucher?
+            payment_type_id: 4,
             grandtotal: grandtotal,
             payment_amount: inputAmount.data('value'),
             change_amount: change,
@@ -1462,7 +1520,12 @@ let voucherPayment = function () {
     });
 };
 let cityLedgerPayment = function () {
-    if (!App.role.cityledger) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayCityLedger.hide();
+            return;
+        }
+    } else if (!App.role.cityledger) {
         El.btnPayCityLedger.hide();
         return
     }
@@ -1609,7 +1672,12 @@ let cityLedgerPayment = function () {
     });
 };
 let noPostPayment = function () {
-    if (!App.role.nopost) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPayNoPost.hide();
+            return;
+        }
+    } else if (!App.role.nopost) {
         El.btnPayNoPost.hide();
         return
     }
@@ -1643,7 +1711,12 @@ let noPostPayment = function () {
     });
 };
 let multiPayment = function () {
-    if (!App.role.split) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnMultiPayment.hide();
+            return;
+        }
+    } else if (!App.role.multipayment) {
         El.btnMultiPayment.hide();
         return;
     }
@@ -2286,7 +2359,7 @@ let multiPayment = function () {
         state.show();
         next.disable();
         close.disable();
-        console.log('Any active multi payment state?', paymentState.is(':visible'))
+        console.info('Any active multi payment state?', paymentState.is(':visible'))
         if (paymentState.is(':visible')) {
             let limit = parseInt(inputCounter.val());
             let bayar = parseFloat(paymentState.find('[id*="-amount"]').data('value'));
@@ -2389,8 +2462,13 @@ let multiPayment = function () {
     m.modal('hide');
 };
 let splitBill = function () {
-    if (!App.role.split) {
-        El.btnMultiPayment.hide();
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnSplitBilling.hide();
+            return;
+        }
+    } else if (!App.role.splitbill) {
+        El.btnSplitBilling.hide();
         return;
     }
     let m = El.modalSplitBill;
@@ -2440,8 +2518,8 @@ let splitBill = function () {
                 let lastId = init.data.insertId;
                 let taxes = SQL(`
                     select b.*
-                    from pos_outlet_tax a 
-                    left join mst_pos_taxes b on b.id = a.pos_tax_id 
+                    from pos_outlet_tax a
+                    left join mst_pos_taxes b on b.id = a.pos_tax_id
                     where outlet_id = ?
                 `, App.outlet.id);
                 if (!taxes.error) {
@@ -2459,23 +2537,44 @@ let splitBill = function () {
                     });
                     if (result.indexOf(0) < 0) {
                         let qty = {};
+                        let discount = {};
                         sheet.items_ = {};
                         sheet.order_id = lastId;
                         sheet.items.forEach(function (d) {
-                            let k = d.outlet_menu_id;
+                            let k = d.line_item_id;
+                            let disc = d.addDiscount;
+
                             sheet.items_[k] = {
                                 id: d.outlet_menu_id,
                                 menu_class_id: d.menu_class_id,
                                 outlet_id: d.outlet_id,
                                 menu_price: d.price_amount,
-                                name: d.name
+                                name: d.name,
                             };
+
+                            if (disc.amount) {
+                                discount[k] = discount[k] || {amount:0, percent:0};
+                                if (disc.type == 'percent') {
+                                    let amount = disc.percent / 100 * d.price_amount
+                                    discount[k].percent = disc.percent;
+                                    discount[k].amount += amount;
+                                    discount[k].type = 'percent';
+                                } else {
+                                    discount[k].type = 'amount';
+                                    discount[k].amount += disc.amount;
+                                }
+                            }
+
                             qty[k] = qty[k] || 0;
                             qty[k]++;
                         });
-                        for (let i in sheet.items_) {
-                            sheet.items_[i].qty = qty[i];
-                            addOrderMenu(sheet.items_[i], qty[i], lastId);
+
+                        for (let k in sheet.items_) {
+                            sheet.items_[k].qty = qty[k];
+                            if (discount.hasOwnProperty(k)) {
+                                sheet.items_[k].addDiscount = discount[k]
+                            }
+                            addOrderMenu(sheet.items_[k], qty[k], lastId);
                         }
                     }
                 }
@@ -2600,7 +2699,12 @@ let splitBill = function () {
     };
 };
 let saveOrderNote = function () {
-    if (!App.role.note) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnOrderNote.hide();
+            return;
+        }
+    } else if (!App.role.ordernote) {
         El.btnOrderNote.hide();
         return;
     }
@@ -2630,7 +2734,12 @@ let saveOrderNote = function () {
     });
 };
 let manualPrint = function () {
-    if (!App.role.printorder) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPrintOrder.hide();
+            return;
+        }
+    } else if (!App.role.printorder) {
         El.btnPrintOrder.hide();
         return;
     }
@@ -2756,7 +2865,12 @@ let manualPrint = function () {
     });
 };
 let openMenu = function () {
-    if (!App.role.openmenu) {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnOpenMenu.hide();
+            return;
+        }
+    } else if (!App.role.openmenu) {
         El.btnOpenMenu.hide();
         return;
     }
@@ -2879,10 +2993,15 @@ let openMenu = function () {
     });
 };
 let printBilling = function () {
-    //if (!App.role.printbill) {
-    //    El.btnPrintBilling.hide();
-    //    return;
-    //}
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnPrintBilling.hide();
+            return;
+        }
+    } else if (!App.role.printbill) {
+        El.btnPrintBilling.hide();
+        return;
+    }
     El.btnPrintBilling.show();
     El.btnPrintBilling.on('click', function () {
         let orderId = orderIds.split(',')[0];
@@ -2891,7 +3010,12 @@ let printBilling = function () {
 };
 let reprintBilling = function () {
     let m = El.modalReprintBill;
-    if (!Payments.length && !App.role.reprintbill) {
+    if (isOlder) {
+        if (!App.role.reprintbill) {
+            El.btnReprintBilling.hide();
+            return;
+        }
+    } else {
         El.btnReprintBilling.hide();
         return;
     }
@@ -2922,7 +3046,12 @@ let reprintBilling = function () {
     });
 };
 let voidBilling = function () {
-    if (!Payments.length && !App.role.voidbill) {
+    if (isOlder) {
+        if (!App.role.voidbill) {
+            El.btnVoidBilling.hide();
+            return;
+        }
+    } else {
         El.btnVoidBilling.hide();
         return;
     }
@@ -2969,6 +3098,15 @@ let voidBilling = function () {
     })
 };
 let discountBilling = function () {
+    if (isOlder) {
+        if (App.user.role_id == 30) {
+            El.btnDiscountBilling.hide();
+            return;
+        }
+    } else if (!App.role.discountbill) {
+        El.btnDiscountBilling.hide();
+        return;
+    }
     let modal = El.modalDiscountBill;
     let discType = modal.find('#discount-type');
     let discPercent = modal.find('#discount-percent select');
@@ -3034,18 +3172,11 @@ let discountBilling = function () {
         btnSubmit.prop('disabled', true);
     });
     btnSubmit.on('click', function () {
-        //
+        //todo
     });
 }
 $(document).ready(function () {
     let checkSplitted = anySplitted();
-    let {
-        nopost, cash, chargeroom, card,
-        voucher, cityledger, join,
-        printorder, openmenu, note,
-        split, cashdraw, voidmenu,
-        houseuse
-    } = App.role;
     if (!checkSplitted.length) {
         loadMealTime();
         loadClass();
@@ -3064,7 +3195,7 @@ $(document).ready(function () {
         noPostPayment();
         multiPayment();
         splitBill();
-        mergeOrder();
+        mergeBill();
         saveOrderNote();
         manualPrint();
         openCashDraw();
@@ -3091,8 +3222,8 @@ $(document).ready(function () {
         }
         El.paymentBtn.on('click', function () {
             let sum = getSummary(0);
-            El.modalMerge.find('#home-total').html(sum.grandtotal.value);
-            El.modalMerge.find('#grandtotal').html(sum.grandtotal.value);
+            El.modalMergeBill.find('#home-total').html(sum.grandtotal.value);
+            El.modalMergeBill.find('#grandtotal').html(sum.grandtotal.value);
             $('.modal-body div#info').html(loadOrderSummary4modal(sum));
         });
         App.virtualKeyboard();
@@ -3105,11 +3236,11 @@ $(document).ready(function () {
             div.html('');
             checkSplitted.forEach(function(d){
                 let {id, code, status} = d;
-                code = code.split('#');
-                if (status == '0' || status == '1') {
+                code = code.replace(/\#/g, ' #')
+                if (status == '0' || status == '1' || status == '6') {
                     div.append(`
                         <a class="btn btn-app payment-btn" data-toggle="modal" href="/order/${id}" id="pay-cash">
-                            <p style="margin-top: 5px">${code[0]} #${code[1]}</span></p>
+                            <label style="margin-top: 5px">${code}</label>
                         </a>
                     `);
                 }
