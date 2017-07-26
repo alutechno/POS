@@ -212,10 +212,9 @@ let getSummary = function (key, opt = {}) {
 };
 let goHome = function (param) {
     if (param.success) {
-        //todo
-        //setTimeout(function () {
-        //    window.location.href = '/'
-        //}, 3000);
+        setTimeout(function () {
+            window.location.href = '/'
+        }, 3000);
     } else {
         alert(JSON.stringify(param.response))
     }
@@ -1085,7 +1084,7 @@ let mergeOrder = function () {
             a.due_amount, a.code order_code
         from pos_orders a
         join mst_pos_tables b on b.id = a.table_id
-        where a.status not in (2,5) and a.id not in (${orderIds})
+        where a.status not in (2,6) and a.id not in (${orderIds})
         order by b.table_no, a.id
     `, App.outlet.id);
     ulCheckListBox.html('');
@@ -2420,7 +2419,7 @@ let splitBill = function () {
         let oId = orderIds.split(',')[0];
         let order = Order[oId];
         //
-        SQL(`UPDATE pos_orders SET status=5 WHERE id=?`, parseInt(oId));
+        SQL(`UPDATE pos_orders SET status=6 WHERE id=?`, parseInt(oId));
         sheets.forEach(function (sheet, i) {
             let init = SQL('INSERT pos_orders SET ?', {
                 parent_id: parseInt(oId),

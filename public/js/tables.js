@@ -11,10 +11,10 @@ $(document).ready(function () {
             from mst_pos_tables a
             left join (
             	select * from (
-		        	select * from pos_orders where status in (0,1,5) and parent_id is null
+		        	select * from pos_orders where status in (0,1,6) and parent_id is null
 					order by created_date desc
 				) x group by table_id
-            ) b on a.id=b.table_id and b.status in (0,1,5)
+            ) b on a.id=b.table_id and b.status in (0,1,6)
             left join (
 				select id, parent_id, count(id) splitted, sum(IF(status = '2', 1, 0)) done_splitted 
 				from pos_orders a 
