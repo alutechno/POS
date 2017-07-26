@@ -356,7 +356,7 @@ const http = function (pool, compile) {
     app.get('/printBill', async function (req, res, next) {
         let {orderId} = req.query;
         let paymentId = [].concat(req.query.paymentId);
-        let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment=' + paymentId.join());
+        let getting = request.get(locals.BIRT + '&no_bill=' + orderId + '&payment_id=' + paymentId.join());
         getting.on('error', function (e) {
             console.log(process.pid.toString(), '> GET REQUEST :', e.message);
             res.send({
