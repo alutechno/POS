@@ -3020,9 +3020,6 @@ let reprintBilling = function () {
         return;
     }
     El.btnReprintBilling.show();
-    El.btnReprintBilling.on('click', function () {
-        m.modal('show');
-    });
     m.on('show.bs.modal', function () {
         let tbody = m.find('tbody');
         tbody.html('')
