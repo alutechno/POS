@@ -1,5 +1,5 @@
 let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
-    Order, OrderMenu, Taxes, Summary, Payments = [],
+    Order, OrderMenu, Taxes, Summary, Discount, Payments = [],
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
     HouseUse = {}, Charge2Room = {}, CityLedger = {},
     El = {
@@ -190,10 +190,12 @@ let getSummary = function (key, opt = {}) {
     let obj = {};
     let total = 0;
     let subtotal = 0;
-    let discount = 0;
+    let discMenu = 0;
     let tax = 0;
     let taxes = opt.taxes || Taxes;
     let summary = opt.summary || Summary;
+    let discount = opt.discount || Discount;
+    let discountBill = discount[0].discount;
     taxes.forEach(function (el) {
         tax += el.tax_amount;
         obj[el.tax_name.toLowerCase().replace(/\s/g, '')] = {
@@ -202,10 +204,10 @@ let getSummary = function (key, opt = {}) {
     });
     summary.forEach(function (el) {
         total += el.price;
-        discount += el.discount;
+        discMenu += el.discount;
     })
-    subtotal = total - discount;
-    obj.discount = {label: 'Discount', value: discount};
+    subtotal = total - discountBill - discMenu;
+    obj.discount = {label: 'Discount', value: discountBill + discMenu};
     obj.total = {label: 'Total', value: total};
     obj.subtotal = {label: 'Sub Total', value: subtotal};
     obj.grandtotal = {label: 'Grand Total', value: subtotal + tax};
@@ -833,17 +835,23 @@ let loadTotal = function (id) {
             ) discount
         from pos_orders_line_item a
         join ref_outlet_menu_class b on b.id = a.menu_class_id
-        where a.order_id in (${ids.join()})
+        where a.order_id in (${ids.join()});
+        
+        select 'Discount bill' name, sum(a.discount_amount) discount
+        from pos_patched_discount a
+        where a.order_id in (${ids.join()});
     `);
     let taxes = queries.data[0];
     let summary = queries.data[1];
-    return {taxes, summary};
+    let discount = queries.data[2];
+    return {taxes, summary, discount};
 };
 let loadOrderSummary = function (id) {
     let total = loadTotal(id);
     let taxes = Taxes = total.taxes;
     let summary = Summary = total.summary;
-    let sum = getSummary(0, {taxes, summary});
+    let discount = Discount = total.discount;
+    let sum = getSummary(0, total);
     let parent = El.tableSummary.find('tbody')
 
     parent.html('');
@@ -3153,6 +3161,8 @@ let discountBilling = function () {
     discPercent.append(`<option value="manual">Manual</option>`);
     discType.on('change', validation);
     discPercent.on('change', validation);
+    discPercent2.on('change', validation);
+    discPercent2.on('blur', validation);
     discAmount.on('change', validation);
     discAmount.on('blur', validation);
     modal.on('show.bs.modal', function () {
@@ -3169,7 +3179,72 @@ let discountBilling = function () {
         btnSubmit.prop('disabled', true);
     });
     btnSubmit.on('click', function () {
-        //todo
+        btnSubmit.prop('disabled', true);
+        //
+        let orderId = orderIds.split(',')[0];
+        let percent = discPercent.val();
+        let amount = discAmount.data('value');
+
+        if (percent == 'manual') {
+            percent = discPercent2.data('value');
+        }
+
+        let getDate = SQL('select NOW() now');
+        let selectOrder = SQL('select * from pos_orders where id = ?', orderId);
+        let {sub_total_amount, tax_total_amount, due_amount, discount_total_amount} = selectOrder.data[0];
+        let posOrder = selectOrder.data[0];
+        discount_total_amount += amount;
+
+        let addDiscountPatched = function () {
+            let newPatchDiscount = {
+                order_id: orderId,
+                discount_percent: parseFloat(percent) || 0,
+                discount_amount: amount,
+                created_by: App.user.id
+            }
+            let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
+        };
+        let updateOrderTaxes = function () {
+            let subtotal = sub_total_amount - discount_total_amount;
+            let orderTaxes = SQL('select * from pos_order_taxes where order_id = ?', orderId);
+            orderTaxes.data.forEach(function (row) {
+                if (row.tax_percent) {
+                    let taxAmount = subtotal * row.tax_percent / 100;
+                    let updateTax = SQL(
+                        'update pos_order_taxes set tax_amount = ? where id = ? and tax_id = ?',
+                        [taxAmount, row.id, row.tax_id]
+                    );
+                }
+            });
+        };
+        let updateItem = function () {
+            let taxes = SQL('select sum(tax_amount) tax from pos_order_taxes where order_id=?', orderId)
+            let totalTaxes = taxes.data[0].tax;
+            //
+            let posOrderUpdate = {
+                sub_total_amount: sub_total_amount,
+                discount_total_amount: discount_total_amount,
+                tax_total_amount: totalTaxes,
+                due_amount: sub_total_amount - discount_total_amount + totalTaxes
+            }
+            if (isOlder) {
+                posOrderUpdate.reopen_notes = "discount billing after payment";
+                posOrderUpdate.reopen_date = formalDate(getDate.data[0].now);
+                posOrderUpdate.reopen_by = App.user.id;
+            }
+            let obj = Object.keys(posOrderUpdate)
+            SQL(`update pos_orders set ${
+                    obj.map(function (key) { return key + '=?' }).join()
+                } where id=${orderId}`, obj.map(function (key) { return posOrderUpdate[key] })
+            );
+        };
+
+        addDiscountPatched();
+        updateOrderTaxes();
+        updateItem();
+        loadOrderMenu();
+        loadOrderSummary(orderIds);
+        modal.modal('hide')
     });
 }
 $(document).ready(function () {
