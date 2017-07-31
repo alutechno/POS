@@ -15,10 +15,21 @@
 <script>
     App.getRole();
     App.virtualKeyboard = function () {
-        var s = $('input[type="currency"]');
-        s.keyboard({layout: 'num'});
-        s.css('text-align', 'end');
-        s.on('focus', function(){
+        var opts = {
+            autoAccept: true,
+			autoAcceptOnEsc:true,
+            appendLocally:true,
+            initialFocus:true,
+            lockInput:false, //dont force disabled keyboard
+            noFocus:false, //force focus input!
+		};
+        var text = $('input[type="text"]');
+        var textarea = $('textarea');
+        var currency = $('input[type="currency"]');
+        var number = $('input[type="number"]');
+        currency.keyboard(Object.assign(new Object(opts), {layout: 'num'}));
+        currency.css('text-align', 'end');
+        currency.on('focus', function(){
             let v = $(this).val();
             if (!v || v == "0.00") {
                 $(this).val('')
@@ -30,7 +41,7 @@
 				)
 			}
 		})
-        s.on('change', function () {
+        currency.on('change', function () {
             var el = $(this);
             var val = el.val() || "0";
             el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
@@ -43,7 +54,8 @@
             el.val(el.data('display'));
         });
 
-        $('input[type="text"]').keyboard({layout: 'qwerty'});
-        $('textarea').keyboard({layout: 'qwerty'});
+        number.keyboard(Object.assign(new Object(opts), {layout: 'num'}));
+        text.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
+        textarea.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
 	}
 </script>
