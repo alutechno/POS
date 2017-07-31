@@ -3,7 +3,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
     HouseUse = {}, Charge2Room = {}, CityLedger = {},
     El = {
-        menu: $('div#menu'),
+        menu: $('div#menu-container'),
         order: $('div#order'),
         isPaid: $('div#is-paid'),
         mealTime: $('div#meal-time'),
@@ -298,6 +298,7 @@ let loadBills = function () {
         } else {
             span.addClass('btn-success').html('Already paid :)');
         }
+        El.menu.css('max-height', 'calc(100vh - 340px)');
     }
 };
 let loadMealTime = function () {
@@ -441,7 +442,7 @@ let loadMenu = function (filter) {
                     e.menu_price_nett_ = rupiahJS(e.menu_price_nett)
                 });
                 let el = $(`
-                    <div class="col-lg-3 col-sm-4 col-xs-4 menu-item"
+                    <div class="col-lg-2 col-sm-3 col-xs-3 menu-item"
                         menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
                         menu-class="${e.menu_class_id}"
                         menu-sub-class="${e.menu_group_id}">
@@ -470,6 +471,18 @@ let loadMenu = function (filter) {
             });
             //
             menuBg.height(menuBg.parent().width());
+            menuFinder.keyboard({
+                layout: 'qwerty',
+                autoAccept: true,
+                autoAcceptOnEsc: true,
+                appendLocally: true,
+                initialFocus: true,
+                lockInput: false, //dont force disabled keyboard
+                noFocus: false, //force focus input!
+                change: function (ev, keyboard, el) {
+                    loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: $(keyboard.preview).val()})
+                }
+            });
             menuFinder.off('blur');
             menuFinder.on('blur', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
@@ -816,6 +829,14 @@ let loadOrderMenu = function () {
     if (!App.role.voidmenu) {
         El.orderMenu.bootstrapTable('hideColumn', 'void');
     }
+    let to = setTimeout(function () {
+        let opts = {'padding-bottom':'0px', 'height': 'calc(100vh - 541px)' }
+        if (isOlder) {
+            opts.height = 'calc(100vh - 476px)';
+        }
+        El.orderMenu.parent().parent().css(opts);
+        clearTimeout(to)
+    }, 500)
 };
 let loadTotal = function (id) {
     let ids = [].concat(id);
@@ -910,7 +931,7 @@ let loadOrderSummary4modal = function ({total, discount, subtotal, servicecharge
                 </label>
             </div>
         </div>
-        <div class="row">
+        <div class="row discount-exception">
             <div class="col-lg-6">
                 <label style="margin-left: 15px;">Service Charge</label>
             </div>
@@ -920,7 +941,7 @@ let loadOrderSummary4modal = function ({total, discount, subtotal, servicecharge
                 </label>
             </div>
         </div>
-        <div class="row">
+        <div class="row discount-exception">
             <div class="col-lg-6">
                 <label style="margin-left: 15px;">Tax</label>
             </div>
@@ -930,7 +951,7 @@ let loadOrderSummary4modal = function ({total, discount, subtotal, servicecharge
                 </label>
             </div>
         </div>
-        <div class="row">
+        <div class="row discount-exception">
             <div class="col-lg-6">
                 <label>Grand Total</label>
             </div>
@@ -1803,7 +1824,7 @@ let multiPayment = function () {
         let pay = $(`
             <div class="row">
                 <div class="col-sm-6">
-                    <span for="usr">Pay with</span>
+                    <span for="usr">Cash amount</span>
                 </div>
                 <div class="col-sm-6 text-right">
                     <input id="${id}-paywith" type="currency" class="form-control">
@@ -1811,7 +1832,7 @@ let multiPayment = function () {
             </div>
             <div class="row">
                 <div class="col-sm-6">
-                    <span for="usr">Pay Amount</span>
+                    <span for="usr">Paid amount</span>
                 </div>
                 <div class="col-sm-6 text-right">
                     <input id="${id}-amount" type="currency" class="form-control">
@@ -1938,7 +1959,7 @@ let multiPayment = function () {
                 <div class="col-sm-7">
                     <div class="form-group">
                         <span for="usr">Number:</span>
-                        <input id="${id}-cardno" type="text" class="form-control">
+                        <input id="${id}-cardno" type="number" class="form-control">
                     </div>
                 </div>
                 <div class="col-sm-5">
@@ -2039,7 +2060,7 @@ let multiPayment = function () {
                 }
             }
         });
-        cardNo.keyboard({layout: 'qwerty'});
+        cardNo.keyboard({layout: 'num'});
         customer.keyboard({layout: 'qwerty'});
         swiper.keydown(function (e) {
             if (e.keyCode == 13) {
@@ -3117,6 +3138,7 @@ let discountBilling = function () {
     let discPercent = modal.find('#discount-percent select');
     let discPercent2 = modal.find('#discount-percent-manual input');
     let discAmount = modal.find('#percent-amount');
+    let labelNewDiscount = modal.find('#new-discount');
     let labelNett = modal.find('#nett');
     let btnSubmit = modal.find('#submit');
     let opt = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
@@ -3124,7 +3146,7 @@ let discountBilling = function () {
     let validation = function () {
         let type = discType.val();
         let percent = discPercent.val();
-        let max = getSummary(0).grandtotal.value;
+        let {total, discount, tax, servicecharge} = getSummary(0);
 
         discPercent2.parent().hide();
         if (percent == 'manual') {
@@ -3132,7 +3154,7 @@ let discountBilling = function () {
             percent = discPercent2.data('value');
         }
         if (type == 'percent') {
-            let a = max * percent / 100;
+            let a = total.value * percent / 100;
             discPercent.parent().show();
             discAmount.prop('disabled', true);
             discAmount.data('value', a);
@@ -3145,8 +3167,12 @@ let discountBilling = function () {
         //
         btnSubmit.prop('disabled', true);
         labelNett.html(rupiahJS(0));
-        if (discAmount.data('value') > -1 && discAmount.data('value') <= max && (parseFloat(percent) <= 100)) {
-            labelNett.html(rupiahJS(max - discAmount.data('value')));
+        if ((discAmount.data('value') > -1) &&
+            ((discAmount.data('value') + discount.value) <= total.value)
+        ) {
+            let newDiscount = discAmount.data('value') + discount.value;
+            labelNewDiscount.html(rupiahJS(newDiscount))
+            labelNett.html(rupiahJS(total.value - newDiscount));
             btnSubmit.prop('disabled', false);
         }
     };
@@ -3175,6 +3201,7 @@ let discountBilling = function () {
         discAmount.data('value', 0);
         discAmount.data('display', rupiahJS(0));
         discAmount.val(rupiahJS(0));
+        labelNewDiscount.html(rupiahJS(0));
         labelNett.html(rupiahJS(0));
         btnSubmit.prop('disabled', true);
     });
@@ -3294,9 +3321,17 @@ $(document).ready(function () {
         }
         El.paymentBtn.on('click', function () {
             let sum = getSummary(0);
+            let html = loadOrderSummary4modal(sum);
             El.modalMergeBill.find('#home-total').html(sum.grandtotal.value);
             El.modalMergeBill.find('#grandtotal').html(sum.grandtotal.value);
-            $('.modal-body div#info').html(loadOrderSummary4modal(sum));
+            if ($(this).attr('id') == 'discount-bill') {
+                let el = $('<div>');
+                el.append(html);
+                el.find('.discount-exception').remove();
+                $('.modal-body div#info').html(el.html());
+            } else {
+                $('.modal-body div#info').html(html);
+            }
         });
         App.virtualKeyboard();
     } else {
