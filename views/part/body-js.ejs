@@ -54,7 +54,7 @@
             el.attr('value', el.data('display'));
             el.val(el.data('display'));
         });
-        password.keyboard();
+        password.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
         number.keyboard(Object.assign(new Object(opts), {layout: 'numpad'}));
         text.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
         textarea.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
