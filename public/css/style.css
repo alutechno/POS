@@ -59,15 +59,24 @@
     background-size: 60%;
     margin-left: -1px;
 }
-
+#menu-container {
+    overflow-y: auto;padding: 0 5px;
+    max-height: calc(100vh - 405px);
+}
 .menu {
     background-color: transparent !important;
     padding: 0 !important;
 }
+.menu-item {
+    padding: 0 5px;
+}
+.menu-item .small-box {
+    margin-bottom: 10px;
+}
 .menu-bg {
-    border: 2px solid rgba(60, 141, 188, 0.78);;
+    border: 1px solid rgba(60, 141, 188, 0.78);;
     border-radius: 5px;
-    height: 128px;
+    height: 110px;
     background-image: url("http://localhost:8888/media-pos-php/menu/no_image.svg");
     background-repeat: no-repeat;
     background-position: center center;
@@ -101,4 +110,27 @@
     border: 1px solid darkseagreen;
     border-radius: 5px;
     background-color: white;
+}
+.ui-keyboard-button {
+    height: 3em;
+    min-width: 3em;
+    margin: 0.1em;
+    cursor: pointer;
+    overflow: hidden;
+    line-height: 2em;
+    -moz-user-focus: ignore;
+}
+footer {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+.custom-box {
+    margin-bottom: -15px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.custom-box .box-body {
+    padding-left: 0;
+    padding-bottom: 0;
+    /*min-height: 150px;*/
 }

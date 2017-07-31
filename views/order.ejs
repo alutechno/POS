@@ -12,55 +12,92 @@
 	<% include part/navbar.ejs %>
 	<div class="content-wrapper">
 		<div class="container">
-			<section class="content">
+			<section class="content" style="padding-left: 0;padding-right: 0;">
 				<div class="row">
 					<div class="col-md-8">
-						<div class="row">
-							<div class="col-md-12">
-								<div class="box box-info">
-									<div class="box-header">
-										<div class="row">
-											<div id="order" class="col-md-7" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
-											<div id="meal-time" class="col-md-5"></div>
-										</div>
-										<hr style="margin-top: 10px;">
-										<div class="form-group row" style="margin-bottom: 0">
-											<div class="col-sm-4">
-												<label for="#menu-class">Menu Class</label>
-												<select class="form-control" name="menu-class" id="menu-class"></select>
-											</div>
-											<div class="col-sm-4">
-												<label for="#select-sub-class">Sub Class</label>
-												<select class="form-control" name="menu-sub-class" id="menu-sub-class"></select>
-											</div>
-											<div class="col-sm-4">
-												<label for="#search-menu">Find</label>
-												<input class="form-control" type="text" name="menu-finder" placeholder="Search" id="menu-finder"/>
-											</div>
-										</div>
+						<div class="box box-info">
+							<div class="box-header">
+								<div class="row">
+									<div id="order" class="col-md-7" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
+									<div id="meal-time" class="col-md-5"></div>
+								</div>
+								<hr style="margin-top: 10px;margin-bottom: 10px;">
+								<div class="form-group row" style="margin-bottom: 0">
+									<div class="col-sm-4">
+										<label for="#menu-class">Menu Class</label>
+										<select class="form-control" name="menu-class" id="menu-class"></select>
 									</div>
-									<div class="box-body" style="padding: 10px 0 0 0;">
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="col-lg-12" id="menu" style="max-height: 868px;overflow-y: auto;"></div>
-											</div>
-										</div>
+									<div class="col-sm-4">
+										<label for="#select-sub-class">Sub Class</label>
+										<select class="form-control" name="menu-sub-class" id="menu-sub-class"></select>
+									</div>
+									<div class="col-sm-4">
+										<label for="#search-menu">Find</label>
+										<input class="form-control" type="text-special" name="menu-finder" placeholder="Search" id="menu-finder"/>
+									</div>
+								</div>
+							</div>
+							<div class="box-body" style="padding: 10px 0 0 0;-webkit-box-shadow: inset 0px 96px 128px -128px rgba(0,0,0,0.2);-moz-box-shadow: inset 0px 96px 128px -128px rgba(0,0,0,0.2);box-shadow: inset 0px 96px 128px -128px rgba(0,0,0,0.2);">
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="col-lg-12" id="menu-container"></div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 					<div class="col-md-4">
-						<div class="row">
-							<div class="col-md-12">
-								<div class="box box-danger">
-									<div class="box-header">
-										<code>Payments</code>
-										<div class="pull-right" id="is-paid" style="display: none;">
-											<span class="badge" style="font-weight: lighter; margin-right: 5px"></span>
-										</div>
+						<div class="box box-success">
+							<div class="box-body" style="padding-top: 0;">
+								<table id="order-menu" data-classes="table table-no-bordered"
+									   data-toggle="table" data-row-style="miscFn0">
+									<thead>
+									<tr>
+										<th data-field="void"
+											data-halign="center"
+											data-align="center"
+											data-formatter="miscFn1"
+											data-events="miscFn1Cfg">#</th>
+										<th data-field="no" data-halign="center" data-align="center">No</th>
+										<th data-field="name_">Menu</th>
+										<th data-field="order_qty_" data-halign="right" data-align="right">Q</th>
+										<th data-field="total_amount_" data-halign="right" data-align="right">Amount</th>
+									</tr>
+									</thead>
+								</table>
+								<table class="table table-striped" id="order-summary">
+									<tbody></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12" id="bottom-navbar">
+						<div class="box box-danger custom-box">
+							<div class="box-body text-center">
+								<div class="row">
+									<div class="col-sm-4">
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-add-note" id="order-note">
+											<i class="fa fa-edit"></i>
+											Note
+										</a>
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-open-menu" id="open-menu">
+											<i class="fa fa-edit" data-toggle="modal"></i>
+											Open Menu
+										</a>
+										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-discount-bill" id="discount-bill">
+											<i class="fa fa-percent" aria-hidden="true"></i>
+											Bill Discount
+										</a>
+										<a class="btn btn-app" data-toggle="modal" href="#modal-merge" id="merge-bill">
+											<i class="fa fa-arrow-down" aria-hidden="true"></i>
+											Merge
+										</a>
+										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-split-billing" id="pay-split-bill">
+											<i class="fa fa-arrows-alt"></i>
+											Split Bill
+										</a>
 									</div>
-									<div class="box-body text-center" style="padding-left: 0;">
+									<div class="col-sm-5">
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-cash" id="pay-cash">
 											<i class="fa fa-money"></i>
 											Cash
@@ -89,29 +126,23 @@
 											<i class="fa fa-exclamation"></i>
 											No Post
 										</a>
-										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-discount-bill" id="discount-bill">
-											<i class="fa fa-percent" aria-hidden="true"></i>
-											Bill Discount
-										</a>
-										<button class="btn btn-app btn-warning" id="open-cash-draw">
-											<i class="fa fa-th-large"></i>
-											Cash Draw
-										</button>
 										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-multi-payment" id="pay-multi-payment">
 											<i class="fa fa-files-o"></i>
 											Split Payment
 										</a>
-										<a class="btn btn-app" data-toggle="modal" href="#modal-merge" id="merge-bill">
-											<i class="fa fa-arrow-down" aria-hidden="true"></i>
-											Merge
-										</a>
-										<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-split-billing" id="pay-split-bill">
-											<i class="fa fa-arrows-alt"></i>
-											Split Bill
+									</div>
+									<div class="col-sm-3">
+										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-print" id="print-order">
+											<i class="fa fa-print"></i>
+											Print Order
 										</a>
 										<button class="btn btn-app btn-warning" id="print-billing">
 											<i class="fa fa-print"></i>
 											Print Bill
+										</button>
+										<button class="btn btn-app btn-warning" id="open-cash-draw">
+											<i class="fa fa-th-large"></i>
+											Cash Draw
 										</button>
 										<a class="btn btn-app payment-btn" id="void-billing" data-toggle="modal" href="#modal-void-billing">
 											<i class="fa fa-ban"></i>
@@ -120,52 +151,6 @@
 										<a class="btn btn-app payment-btn" id="reprint-billing" data-toggle="modal" href="#modal-reprint-billing">
 											<i class="fa fa-file-text-o"></i>
 											Reprint Bill
-										</a>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-12">
-								<div class="box box-success">
-									<div class="box-body" style="padding-top: 0;">
-										<table id="order-menu" data-classes="table table-no-bordered"
-											   data-toggle="table" data-height="300" data-row-style="miscFn0">
-											<thead>
-											<tr>
-												<th data-field="void"
-													data-halign="center"
-													data-align="center"
-													data-formatter="miscFn1"
-													data-events="miscFn1Cfg">#</th>
-												<th data-field="no" data-halign="center" data-align="center">No</th>
-												<th data-field="name_">Menu</th>
-												<th data-field="order_qty_" data-halign="right" data-align="right">Q</th>
-												<th data-field="total_amount_" data-halign="right" data-align="right">Amount</th>
-											</tr>
-											</thead>
-										</table>
-										<table class="table table-striped" id="order-summary">
-											<tbody></tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-							<div class="col-md-12">
-								<div class="box box-primary">
-									<div class="box-header">
-										<code>Order Control</code>
-									</div>
-									<div class="box-body text-center" style="padding-left: 0;">
-										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-add-note" id="order-note">
-											<i class="fa fa-edit"></i>
-											Note
-										</a>
-										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-print" id="print-order">
-											<i class="fa fa-print"></i>
-											Print Order
-										</a>
-										<a class="btn btn-app bg-grey" data-toggle="modal" href="#modal-open-menu" id="open-menu">
-											<i class="fa fa-edit" data-toggle="modal"></i>
-											Open Menu
 										</a>
 									</div>
 								</div>
@@ -275,7 +260,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -298,7 +283,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button id="submit" type="button" class="btn btn-primary">Submit</button>
+					<button id="submit" type="button" class="btn btn-primary">OK</button>
 				</div>
 			</div>
 		</div>
@@ -316,7 +301,7 @@
 				<div id="info"></div>
 				<div class="row">
 					<div class="col-lg-6">
-						<span>Cash with</span>
+						<span>Cash amount</span>
 					</div>
 					<div class="col-lg-6 text-right">
 						<input type="currency" class="form-control" id="amount">
@@ -333,7 +318,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -376,7 +361,7 @@
 					<div class="col-lg-7">
 						<div class="form-group">
 							<span>Number</span>
-							<input id="card-no" type="text" class="form-control">
+							<input id="card-no" type="number" class="form-control">
 						</div>
 					</div>
 					<div class="col-lg-5">
@@ -389,7 +374,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -472,7 +457,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -578,7 +563,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -620,7 +605,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -646,7 +631,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="submit" class="btn btn-primary">Submit</button>
+				<button id="submit" type="submit" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -718,7 +703,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -862,7 +847,7 @@
 			</div>
 			<div class="modal-footer">
 				<button id="close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -909,7 +894,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -957,7 +942,15 @@
 				<hr>
 				<div class="row">
 					<div class="col-lg-3">
-						<label>Grand Total</label>
+						<label>Discount</label>
+					</div>
+					<div class="col-lg-9 text-right">
+						<label id="new-discount" style="margin-right: 13px;"></label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-3">
+						<label>SubTotal</label>
 					</div>
 					<div class="col-lg-9 text-right">
 						<label id="nett" style="margin-right: 13px;"></label>
@@ -966,7 +959,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -1073,7 +1066,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -1139,7 +1132,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="button" class="btn btn-primary">Submit</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
 			</div>
 		</div>
 	</div>
@@ -1157,7 +1150,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="submit" type="submit" class="btn btn-primary">Submit</button>
+				<button id="submit" type="submit" class="btn btn-primary">OK</button>
 			</div>
 			</form>
 		</div>
