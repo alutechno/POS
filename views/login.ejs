@@ -43,7 +43,7 @@
     $(function () {
         var outlet = $('#outlet');
 
-        //App.virtualKeyboard();
+        App.virtualKeyboard();
         App.outlets.forEach(function (el, i) {
             if (!i) outlet.html('<option value="">- Outlet -</option>');
 			outlet.append(`<option value="${el.id}">${el.name}</option>`);
