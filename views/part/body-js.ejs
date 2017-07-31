@@ -27,7 +27,8 @@
         var textarea = $('textarea');
         var currency = $('input[type="currency"]');
         var number = $('input[type="number"]');
-        currency.keyboard(Object.assign(new Object(opts), {layout: 'num'}));
+        var password = $('input[type="password"]');
+        currency.keyboard(Object.assign(new Object(opts), {layout: 'numpad'}));
         currency.css('text-align', 'end');
         currency.on('focus', function(){
             let v = $(this).val();
@@ -53,8 +54,8 @@
             el.attr('value', el.data('display'));
             el.val(el.data('display'));
         });
-
-        number.keyboard(Object.assign(new Object(opts), {layout: 'num'}));
+        password.keyboard();
+        number.keyboard(Object.assign(new Object(opts), {layout: 'numpad'}));
         text.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
         textarea.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
 	}
