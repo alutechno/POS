@@ -35,6 +35,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         modalVoid: $('div#modal-void'),
         modalVoidBill: $('div#modal-void-billing'),
         modalReprintBill: $('div#modal-reprint-billing'),
+        btnShowDetail: $('a#show-detail'),
         btnPayCash: $('a#pay-cash'),
         btnPayCard: $('a#pay-card'),
         btnPayChargeToRoom: $('a#pay-charge-to-room'),
@@ -55,6 +56,21 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
     };
+var getOpts = function (obj, parent) {
+    var opts = {
+        autoAccept: true,
+        autoAcceptOnEsc:true,
+        initialFocus:true,
+        lockInput:false, //dont force disabled keyboard
+        noFocus:false //force focus input!
+    };
+    if (parent) {
+        opts.change = function (ev, keyboard, el) {
+            parent.val($(keyboard.preview).val())
+        }
+    }
+    return Object.assign(opts, obj);
+}
 let delay = (function () {
     let timer = 0;
     return function (callback, ms) {
@@ -126,7 +142,7 @@ let Payment = function (param, orderId) {
     let {
         order_notes, payment_type_id, payment_amount,
         change_amount, folio_id, card_no, house_use_id,
-        total_amount, status
+        total_amount, status, multipayment
     } = param;
     let userId = App.user.id;
     let tranBatchId = App.posCashier.id;
@@ -153,7 +169,9 @@ let Payment = function (param, orderId) {
     SQL(`select parent_id from pos_orders where id in (${orderIds})`);
     if (!updatePosOrder.error) {
         if (status === 4) {
-            Printing({orderId: orderId});
+            if (!param.hasOwnProperty('multipayment') || multipayment) {
+                Printing({orderId: orderId});
+            }
             return {success: true, response: updatePosOrder.data};
         } else {
             let posPaymentDetail = {
@@ -172,10 +190,20 @@ let Payment = function (param, orderId) {
             }
             let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
             if (!insertPosPaymentDetail.error) {
-                Printing({
-                    orderId: orderId,
-                    paymentId: insertPosPaymentDetail.data.insertId
-                });
+                if (!param.hasOwnProperty('multipayment')) {
+                    Printing({
+                        orderId: orderId,
+                        paymentId: insertPosPaymentDetail.data.insertId
+                    });
+                } else if (multipayment) {
+                    let ids = SQL('select id from pos_payment_detail where order_id = ?', orderId)
+                    Printing({
+                        orderId: orderId,
+                        paymentId: ids.data.map(function(e){
+                            return e.id
+                        })
+                    });
+                }
                 if (payment_type_id == 11) El.openCashDraw.click();
                 return {success: true, response: insertPosPaymentDetail.data};
             } else {
@@ -218,7 +246,7 @@ let goHome = function (param) {
     if (param.success) {
         setTimeout(function () {
             window.location.href = '/'
-        }, 3000);
+        }, 5000);
     } else {
         alert(JSON.stringify(param.response))
     }
@@ -263,7 +291,6 @@ let initCheckListBoxes = function () {
                 $widget.removeClass(style + color + ' active');
             }
         }
-
         function init() {
             if ($widget.data('checked') == true) {
                 $checkbox.prop('checked', !$checkbox.is(':checked'));
@@ -298,7 +325,6 @@ let loadBills = function () {
         } else {
             span.addClass('btn-success').html('Already paid :)');
         }
-        El.menu.css('max-height', 'calc(100vh - 340px)');
     }
 };
 let loadMealTime = function () {
@@ -471,25 +497,24 @@ let loadMenu = function (filter) {
             });
             //
             menuBg.height(menuBg.parent().width());
-            menuFinder.keyboard({
+            menuFinder.keyboard(getOpts({
                 layout: 'qwerty',
-                autoAccept: true,
-                autoAcceptOnEsc: true,
-                appendLocally: true,
-                initialFocus: true,
-                lockInput: false, //dont force disabled keyboard
-                noFocus: false, //force focus input!
                 change: function (ev, keyboard, el) {
                     loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: $(keyboard.preview).val()})
                 }
-            });
+            }));
             menuFinder.off('blur');
             menuFinder.on('blur', function () {
+                loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
+            });
+            menuFinder.off('change');
+            menuFinder.on('change', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
             //
             if (App.role.ordermenu) {
                 let validation = function () {
+                    console.log(arguments)
                     let type = discType.val();
                     let percent = discPercent.val();
                     let price = modal.data('menu_price');
@@ -792,6 +817,17 @@ let loadOrderMenu = function () {
             }
         }
     });
+    inputQty.off('change');
+    inputQty.on('change', function () {
+        let val = inputQty.data('value');
+        btnSubmit.prop('disabled', true);
+        val = parseInt(val);
+        if (val) {
+            if ((mVoid.order_qty - mVoid.order_void) >= val) {
+                btnSubmit.prop('disabled', false);
+            }
+        }
+    });
     btnSubmit.off('click');
     btnSubmit.on('click', function () {
         let val = parseInt(inputQty.data('value')) * -1
@@ -820,7 +856,39 @@ let loadOrderMenu = function () {
         btnSubmit.prop('disabled', true);
     });
     El.orderMenu.bootstrapTable('load', OrderMenu);
+    El.btnShowDetail.attr('disabled', 1);
+    El.btnShowDetail.off('click');
+    El.btnShowDetail.on('click', function(){
+        let next = El.btnShowDetail.attr('next');
+        El.orderMenu.bootstrapTable('getData').forEach(function (e, i) {
+            if (e.is !== 'order') {
+                if (next == 'collapse') {
+                    El.orderMenu.bootstrapTable('showRow', {index: i});
+                } else {
+                    El.orderMenu.bootstrapTable('hideRow', {index: i});
+                }
+            }
+        });
+        if (next == 'collapse') {
+            El.btnShowDetail.attr('next', 'expand');
+            El.btnShowDetail.html('<i class="fa fa-list"></i> Collapse');
+        } else {
+            El.btnShowDetail.attr('next', 'collapse');
+            El.btnShowDetail.html('<i class="fa fa-list"></i> Expand');
+        }
+    });
+    El.orderMenu.bootstrapTable('getData').forEach(function (e, i) {
+        let mode = El.btnShowDetail.attr('next');
+        if (e.is !== 'order') {
+            if (mode == 'collapse') {
+                El.orderMenu.bootstrapTable('hideRow', {index: i});
+            } else {
+                El.orderMenu.bootstrapTable('showRow', {index: i});
+            }
+        }
+    });
     if (OrderMenu.length) {
+        El.btnShowDetail.removeAttr('disabled');
         El.paymentBtn.removeAttr('disabled');
         El.btnPrintBilling.removeAttr('disabled');
         El.btnOrderNote.removeAttr('disabled');
@@ -829,14 +897,6 @@ let loadOrderMenu = function () {
     if (!App.role.voidmenu) {
         El.orderMenu.bootstrapTable('hideColumn', 'void');
     }
-    let to = setTimeout(function () {
-        let opts = {'padding-bottom':'0px', 'height': 'calc(100vh - 541px)' }
-        if (isOlder) {
-            opts.height = 'calc(100vh - 476px)';
-        }
-        El.orderMenu.parent().parent().css(opts);
-        clearTimeout(to)
-    }, 500)
 };
 let loadTotal = function (id) {
     let ids = [].concat(id);
@@ -856,7 +916,8 @@ let loadTotal = function (id) {
             ) discount
         from pos_orders_line_item a
         join ref_outlet_menu_class b on b.id = a.menu_class_id
-        where a.order_id in (${ids.join()});
+        where a.order_id in (${ids.join()})
+        group by b.name;
         
         select 'Discount bill' name, sum(a.discount_amount) discount
         from pos_patched_discount a
@@ -1221,6 +1282,17 @@ let cashPayment = function () {
     //
     El.btnPayCash.show();
     inputAmount.on('blur', function () {
+        let value = $(this).data('value');
+        change = parseFloat(value) - parseFloat(grandtotal);
+        if (change >= 0) {
+            btnSubmit.prop('disabled', false);
+            lblChange.html(rupiahJS(change));
+        } else {
+            btnSubmit.prop('disabled', true);
+            lblChange.html(rupiahJS(0));
+        }
+    });
+    inputAmount.on('change', function () {
         let value = $(this).data('value');
         change = parseFloat(value) - parseFloat(grandtotal);
         if (change >= 0) {
@@ -1854,7 +1926,7 @@ let multiPayment = function () {
         let change = pay.find(`#${id}-change`);
         let paywith = pay.find(`#${id}-paywith`);
         let amount = pay.find(`#${id}-amount`);
-        paywith.keyboard({layout: 'num'});
+        paywith.keyboard(getOpts({layout: 'numpad'}, paywith));
         paywith.css('text-align', 'end');
         paywith.on('change', function () {
             let el = $(this);
@@ -1885,7 +1957,7 @@ let multiPayment = function () {
                 }
             }
         });
-        amount.keyboard({layout: 'num'});
+        amount.keyboard(getOpts({layout: 'numpad'}, amount));
         amount.css('text-align', 'end');
         amount.on('change', function () {
             let el = $(this);
@@ -2015,7 +2087,7 @@ let multiPayment = function () {
             }
         }
         //
-        amount.keyboard({layout: 'num'});
+        amount.keyboard(getOpts({layout: 'numpad'}, amount));
         amount.css('text-align', 'end');
         amount.on('change', function () {
             let el = $(this);
@@ -2060,8 +2132,8 @@ let multiPayment = function () {
                 }
             }
         });
-        cardNo.keyboard({layout: 'num'});
-        customer.keyboard({layout: 'qwerty'});
+        cardNo.keyboard(getOpts({layout: 'numpad'}, cardNo));
+        customer.keyboard(getOpts({layout: 'qwerty'}, customer));
         swiper.keydown(function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
@@ -2169,7 +2241,7 @@ let multiPayment = function () {
         let amount = pay.find(`#${id}-amount`);
         let select = pay.find(`#${id}-select`);
         //
-        amount.keyboard({layout: 'num'});
+        amount.keyboard(getOpts({layout: 'numpad'}, amount));
         amount.css('text-align', 'end');
         amount.on('change', function () {
             let el = $(this);
@@ -2322,7 +2394,7 @@ let multiPayment = function () {
                 }
             }
         });
-        amount.keyboard({layout: 'num'});
+        amount.keyboard(getOpts({layout: 'numpad'}, amount));
         amount.css('text-align', 'end');
         amount.on('change', function () {
             let el = $(this);
@@ -2394,7 +2466,7 @@ let multiPayment = function () {
             let bayar = parseFloat(paymentState.find('[id*="-amount"]').data('value'));
             let nextBalance = balance.val() - parseFloat(bayar);
             let an = paymentState.find('[id*="-mode"]').find('select').val();
-            let d = {};
+            let d = { multipayment: 0 };
             if (an == 'cash') {
                 d.payment_type_id = 11;
                 d.payment_amount = paymentState.find('[id*="-cash-paywith"]').data('value');
@@ -2426,15 +2498,15 @@ let multiPayment = function () {
                 balance.html(rupiahJS(nextBalance));
                 recordList.append(recordPayment(count, bayar));
 
-                console.info('Multi payment > saving & printing start #' + count);
+                console.info('Multi payment > saving start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
                     paymentState.hide();
                     next.enable();
                     next.click();
-                    console.info('Multi payment > saving & printing done #' + count);
+                    console.info('Multi payment > saving done #' + count);
                 } else {
-                    console.error('Multi payment > saving & printing error #' + count);
+                    console.error('Multi payment > saving error #' + count);
                     alert(`Error occurrence, result : ${JSON.stringify(pay.response)}`);
                 }
             } else if ((nextBalance <= 0) || (count == limit)) {
@@ -2442,7 +2514,7 @@ let multiPayment = function () {
                 balance.val(nextBalance);
                 balance.html(rupiahJS(nextBalance));
                 recordList.append(recordPayment(count, bayar));
-
+                d.multipayment = 1;
                 console.info('Multi payment > saving & printing start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
@@ -2473,6 +2545,11 @@ let multiPayment = function () {
         next.disable();
         if (parseInt(by) > 0) next.enable();
     });
+    inputCounter.on('change', function () {
+        let by = inputCounter.val();
+        next.disable();
+        if (parseInt(by) > 0) next.enable();
+    });
     //
     m.on('show.bs.modal', function () {
         grandtotal = getSummary('grandtotal').value
@@ -2485,7 +2562,7 @@ let multiPayment = function () {
         state.hide();
         count = 0;
     });
-    inputCounter.keyboard({layout: 'num'});
+    inputCounter.keyboard(getOpts({layout: 'numpad'}, inputCounter));
     recordList.insertBefore(balance.closest('.row'));
     m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
@@ -2633,6 +2710,26 @@ let splitBill = function () {
             El.tableSheets.bootstrapTable('load', allSheets);
         }
     });
+    inputCounter.on('change', function () {
+        let by = inputCounter.val();
+
+        next.disable();
+        if (parseFloat(by) > 1) {
+            allSheets = [];
+            for (let i = 0; i < by; i++) {
+                allSheets.push({
+                    index: i,
+                    name: i + 1,
+                    total: 0,
+                    total_: rupiahJS(0),
+                    items: []
+                });
+            }
+            El.tableSheets.bootstrapTable('removeAll');
+            El.tableSheets.bootstrapTable('resetView');
+            El.tableSheets.bootstrapTable('load', allSheets);
+        }
+    });
     El.btnItem2Sheet.on('click', function () {
         let sheet = El.tableSheets.bootstrapTable('getSelections');
         let menuselection = El.tableItems.bootstrapTable('getSelections');
@@ -2691,7 +2788,7 @@ let splitBill = function () {
         El.tableSheets.bootstrapTable('load', allSheets);
         El.tableItems.bootstrapTable('load', allItems);
     });
-    inputCounter.keyboard({layout: 'num'});
+    inputCounter.keyboard(getOpts({layout: 'numpad'}, inputCounter));
     m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
     window.miscFn2 = function (value, row, index) {
@@ -2981,8 +3078,11 @@ let openMenu = function () {
     slctMenuSubCls.on('change', validation);
     slctPrintToKitchen.on('change', validation);
     inputMenuName.on('blur', validation);
+    inputMenuName.on('change', validation);
     inputMenuPrice.on('blur', validation);
+    inputMenuPrice.on('change', validation);
     inputMenuQty.on('blur', validation);
+    inputMenuQty.on('change', validation);
     btnSubmit.on('click', function () {
         let e = slctPrintToKitchen.val().split(',');
         let newMenu = {
@@ -3355,4 +3455,10 @@ $(document).ready(function () {
         });
         m.modal('show');
     }
+    $('#bottom-navbar').css({
+        'z-index': 1000,
+        'position': 'fixed',
+        //'width': $('.content').width() + 30 + 'px',
+        'bottom': '15px'
+    });
 });
