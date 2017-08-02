@@ -15,20 +15,27 @@
 <script>
     App.getRole();
     App.virtualKeyboard = function () {
-        var opts = {
-            autoAccept: true,
-			autoAcceptOnEsc:true,
-            appendLocally:true,
-            initialFocus:true,
-            lockInput:false, //dont force disabled keyboard
-            noFocus:false, //force focus input!
-		};
+        var getOpts = function (obj, parent) {
+            var opts = {
+                autoAccept: true,
+                autoAcceptOnEsc:true,
+                initialFocus:true,
+                lockInput:false, //dont force disabled keyboard
+                noFocus:false //force focus input!
+            };
+            if (parent) {
+                opts.change = function (ev, keyboard, el) {
+                    parent.val($(keyboard.preview).val())
+                }
+            }
+            return Object.assign(opts, obj);
+        }
         var text = $('input[type="text"]');
         var textarea = $('textarea');
         var currency = $('input[type="currency"]');
         var number = $('input[type="number"]');
         var password = $('input[type="password"]');
-        currency.keyboard(Object.assign(new Object(opts), {layout: 'numpad'}));
+        currency.keyboard(getOpts({layout: 'numpad'}, currency));
         currency.css('text-align', 'end');
         currency.on('focus', function(){
             let v = $(this).val();
@@ -54,9 +61,9 @@
             el.attr('value', el.data('display'));
             el.val(el.data('display'));
         });
-        password.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
-        number.keyboard(Object.assign(new Object(opts), {layout: 'numpad'}));
-        text.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
-        textarea.keyboard(Object.assign(new Object(opts), {layout: 'qwerty'}));
+        password.keyboard(getOpts({layout: 'qwerty'}, password));
+        number.keyboard(getOpts({layout: 'numpad'}, number));
+        text.keyboard(getOpts({layout: 'qwerty'}, text));
+        textarea.keyboard(getOpts({layout: 'qwerty'}, textarea));
 	}
 </script>
