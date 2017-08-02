@@ -137,15 +137,18 @@
 					<button class="btn btn-app btn-md" id="print-billing">
 						<i class="fa fa-print"></i> Print Bill
 					</button>
-					<button class="btn btn-app btn-md" id="open-cash-draw">
-						<i class="fa fa-th-large"></i> Cash Draw
-					</button>
+					<a class="btn btn-app btn-md payment-btn" id="tip-billing" data-toggle="modal" href="#modal-tip-billing">
+						<i class="fa fa-money"></i> Add tip
+					</a>
 					<a class="btn btn-app btn-md payment-btn" id="void-billing" data-toggle="modal" href="#modal-void-billing">
 						<i class="fa fa-ban"></i> Void Bill
 					</a>
 					<a class="btn btn-app btn-md payment-btn" id="reprint-billing" data-toggle="modal" href="#modal-reprint-billing">
 						<i class="fa fa-file-text-o"></i> Reprint Bill
 					</a>
+					<button class="btn btn-app btn-md" id="open-cash-draw">
+						<i class="fa fa-th-large"></i> Cash Draw
+					</button>
 				</div>
 			</div>
 		</div>
@@ -162,6 +165,49 @@
 			</div>
 			<div class="modal-body" id="splitted-links"></div>
 			</form>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="modal-tip-billing" tabindex="-1" role="dialog" aria-labelledby="modal-label">
+	<div class="modal-dialog modal-md" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="modal-label">Add Tip</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-lg-6">
+						<label>Tip (already)</label>
+					</div>
+					<div class="col-lg-6 text-right">
+						<label style="margin-right: 13px;" for="before"></label>
+					</div>
+				</div>
+				<hr>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input placeholder="0" type="currency" class="form-control" id="amount" style="margin-right: 13px;">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<label>Total tip</label>
+					</div>
+					<div class="col-lg-6 text-right">
+						<label style="margin-right: 13px;" for="after"></label>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button id="submit" type="button" class="btn btn-primary">OK</button>
+			</div>
 		</div>
 	</div>
 </div>
@@ -298,6 +344,14 @@
 						<input type="currency" class="form-control" id="amount">
 					</div>
 				</div>
+				<div class="row" style="margin-top: 5px;">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
+					</div>
+				</div>
 				<div class="row">
 					<div class="col-lg-6">
 						<span>Change</span>
@@ -326,7 +380,7 @@
 			<div class="modal-body">
 				<div id="info"></div>
 				<div class="row">
-					<div class="col-lg-3">
+					<div class="col-lg-4">
 						<div class="form-group">
 							<span>Type</span>
 							<select class="form-control" id="cc-type">
@@ -335,11 +389,16 @@
 							</select>
 						</div>
 					</div>
-					<div class="col-lg-9">
+					<div class="col-lg-4">
 						<div class="form-group">
-							<span>Bank</span>
 							<span>EDC</span>
 							<select class="form-control" id="bank-type"></select>
+						</div>
+					</div>
+					<div class="col-lg-4">
+						<div class="form-group">
+							<span>Bank</span>
+							<select class="form-control" id="bank-account"></select>
 						</div>
 					</div>
 				</div>
@@ -360,6 +419,14 @@
 							<span>Name</span>
 							<input id="customer-name" type="text" class="form-control">
 						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
 					</div>
 				</div>
 			</div>
@@ -434,6 +501,14 @@
 						<span>VIP Type</span>
 						<span> : </span>
 						<span id="vip-type"></span>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
 					</div>
 				</div>
 				<hr/>
@@ -551,6 +626,14 @@
 						</div>
 					</div>
 				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
+					</div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -577,12 +660,20 @@
 						<input type="text" class="form-control" id="code">
 					</div>
 				</div>
-				<div class="row">
+				<div class="row" style="margin-top: 5px;">
 					<div class="col-lg-6">
 						<span>Voucher Amount</span>
 					</div>
 					<div class="col-lg-6 text-right">
 						<input type="currency" class="form-control" id="amount">
+					</div>
+				</div>
+				<div class="row" style="margin-top: 5px;">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
 					</div>
 				</div>
 				<div class="row">
@@ -667,7 +758,7 @@
 								<span>Monthly Spent</span>
 							</div>
 							<div class="col-lg-6 pull-right">
-								<span id="max-spent" class="pull-right"></span>
+								<span id="max-spent" class="pull-right" style="margin-right: 10px"></span>
 							</div>
 						</div>
 					</div>
@@ -677,9 +768,27 @@
 								<span>Current Transaction Amount</span>
 							</div>
 							<div class="col-lg-6 pull-right">
-								<span id="current-balance" class="pull-right"></span>
+								<span id="current-used" class="pull-right" style="margin-right: 10px"></span>
 							</div>
 						</div>
+					</div>
+					<div class="col-sm-12">
+						<div class="row">
+							<div class="col-sm-6">
+								<span>Balance</span>
+							</div>
+							<div class="col-sm-6 pull-right">
+								<span id="current-balance" class="pull-right" style="margin-right: 10px;"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<span>Tip amount</span>
+					</div>
+					<div class="col-lg-6 text-right">
+						<input type="currency" class="form-control" id="add-tip">
 					</div>
 				</div>
 				<hr/>
@@ -1017,7 +1126,8 @@
 							<thead>
 							<tr>
 								<th>Method</th>
-								<th>Amount</th>
+								<th>Pay Amount</th>
+								<th>Tip</th>
 								<th>Change</th>
 								<th>Action</th>
 							</tr>
@@ -1116,7 +1226,7 @@
 					<div class="col-lg-4">
 						<div class="form-group">
 							<span>Qty</span>
-							<input class="form-control" id="open-menu-qty" type="currency">
+							<input class="form-control" id="open-menu-qty" type="number">
 						</div>
 					</div>
 				</div>
