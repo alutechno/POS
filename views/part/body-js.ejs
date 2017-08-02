@@ -15,18 +15,30 @@
 <script>
     App.getRole();
     App.virtualKeyboard = function () {
-        var getOpts = function (obj, parent) {
+        var getOpts = function (obj, isFloat) {
             var opts = {
                 autoAccept: true,
                 autoAcceptOnEsc:true,
                 initialFocus:true,
-                lockInput:false, //dont force disabled keyboard
-                noFocus:false //force focus input!
+                lockInput:true, //dont force disabled keyboard
+                noFocus:true //force focus input!
             };
-            if (parent) {
-                opts.change = function (ev, keyboard, el) {
-                    parent.val($(keyboard.preview).val())
+			opts.change = function (ev, keyboard, el) {
+				var val = $(keyboard.preview).val();
+			    if (obj.layout == 'numpad') {
+                    if (isFloat) {
+                        $(el).data('value', parseFloat(val));
+                        $(el).data('display', rupiahJS(val));
+                        $(el).val(rupiahJS(val))
+                    } else {
+                        $(el).data('value', val);
+                        $(el).data('display', val);
+                        $(el).val(val)
+					}
+				} else {
+                    $(el).val(val);
                 }
+                $(el).trigger('change');
             }
             return Object.assign(opts, obj);
         }
@@ -35,7 +47,7 @@
         var currency = $('input[type="currency"]');
         var number = $('input[type="number"]');
         var password = $('input[type="password"]');
-        currency.keyboard(getOpts({layout: 'numpad'}, currency));
+        currency.keyboard(getOpts({layout: 'numpad'}, 1));
         currency.css('text-align', 'end');
         currency.on('focus', function(){
             let v = $(this).val();
@@ -49,7 +61,7 @@
 				)
 			}
 		})
-        currency.on('change', function () {
+        currency.on('change', function (e) {
             var el = $(this);
             var val = el.val() || "0";
             el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
@@ -61,9 +73,9 @@
             el.attr('value', el.data('display'));
             el.val(el.data('display'));
         });
-        password.keyboard(getOpts({layout: 'qwerty'}, password));
-        number.keyboard(getOpts({layout: 'numpad'}, number));
-        text.keyboard(getOpts({layout: 'qwerty'}, text));
-        textarea.keyboard(getOpts({layout: 'qwerty'}, textarea));
+        password.keyboard(getOpts({layout: 'qwerty'}));
+        number.keyboard(getOpts({layout: 'numpad'}));
+        text.keyboard(getOpts({layout: 'qwerty'}));
+        textarea.keyboard(getOpts({layout: 'qwerty'}));
 	}
 </script>

@@ -75,7 +75,7 @@ $(document).ready(function () {
     guestModal.on('show.bs.modal', function () {
         button.prop('disabled', true);
     });
-    inputGuest.on('blur', function () {
+    inputGuest.on('change paste keyup input blur', function () {
         let val = parseInt(inputGuest.val());
         if (val > 0) {
             button.prop('disabled', false);
