@@ -16,6 +16,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         tableItems: $('table#items'),
         openCashDraw: $('button#open-cash-draw'),
         paymentBtn: $('a.payment-btn'),
+        modalBillTip: $('div#modal-tip-billing'),
         modalQty: $('div#modal-qty'),
         modalCash: $('div#modal-cash'),
         modalCard: $('div#modal-card'),
@@ -36,6 +37,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         modalVoidBill: $('div#modal-void-billing'),
         modalReprintBill: $('div#modal-reprint-billing'),
         btnShowDetail: $('a#show-detail'),
+        btnAddTip: $('a#tip-billing'),
         btnPayCash: $('a#pay-cash'),
         btnPayCard: $('a#pay-card'),
         btnPayChargeToRoom: $('a#pay-charge-to-room'),
@@ -56,7 +58,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
     };
-var getOpts = function (obj, parent) {
+var getOpts = function (obj, isFloat) {
     var opts = {
         autoAccept: true,
         autoAcceptOnEsc:true,
@@ -64,9 +66,23 @@ var getOpts = function (obj, parent) {
         lockInput:false, //dont force disabled keyboard
         noFocus:false //force focus input!
     };
-    if (parent) {
+    if (!obj.hasOwnProperty('change')) {
         opts.change = function (ev, keyboard, el) {
-            parent.val($(keyboard.preview).val())
+            var val = $(keyboard.preview).val();
+            if (obj.layout == 'numpad') {
+                if (isFloat) {
+                    $(el).data('value', parseFloat(val));
+                    $(el).data('display', rupiahJS(val));
+                    $(el).val(rupiahJS(val))
+                } else {
+                    $(el).data('value', val);
+                    $(el).data('display', val);
+                    $(el).val(val)
+                }
+            } else {
+                $(el).val(val);
+            }
+            $(el).trigger('change');
         }
     }
     return Object.assign(opts, obj);
@@ -140,9 +156,9 @@ let Printing = function (param, paymentType) {
 let Payment = function (param, orderId) {
     orderId = orderId || orderIds.split(',')[0];
     let {
-        order_notes, payment_type_id, payment_amount,
-        change_amount, folio_id, card_no, house_use_id,
-        total_amount, status, multipayment
+        order_notes, payment_type_id, card_type_id, payment_amount,
+        tip_amount, change_amount, folio_id, card_no, house_use_id,
+        total_amount, status, IS_MULTIPAY, MULTIPAY
     } = param;
     let userId = App.user.id;
     let tranBatchId = App.posCashier.id;
@@ -169,7 +185,7 @@ let Payment = function (param, orderId) {
     SQL(`select parent_id from pos_orders where id in (${orderIds})`);
     if (!updatePosOrder.error) {
         if (status === 4) {
-            if (!param.hasOwnProperty('multipayment') || multipayment) {
+            if (!param.hasOwnProperty('IS_MULTIPAY') || MULTIPAY == 'done') {
                 Printing({orderId: orderId});
             }
             return {success: true, response: updatePosOrder.data};
@@ -177,26 +193,37 @@ let Payment = function (param, orderId) {
             let posPaymentDetail = {
                 order_id: orderId,
                 payment_type_id,
+                card_type_id,
                 payment_amount,
+                tip_amount,
                 change_amount,
                 folio_id,
                 card_no,
                 house_use_id,
                 total_amount,
-                created_by: userId
+                created_by: userId,
+                status: 1
             };
             for (let i in posPaymentDetail) {
                 if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
             }
+            if (isOlder && IS_MULTIPAY) {
+                if (MULTIPAY == 1) SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
+            } else {
+                SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
+            }
             let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
             if (!insertPosPaymentDetail.error) {
-                if (!param.hasOwnProperty('multipayment')) {
+                if (payment_type_id == 17) {
+                    //todo: kalo pembayaran pake house use update ke akunting
+                }
+                if (!param.hasOwnProperty('IS_MULTIPAY')) {
                     Printing({
                         orderId: orderId,
                         paymentId: insertPosPaymentDetail.data.insertId
                     });
-                } else if (multipayment) {
-                    let ids = SQL('select id from pos_payment_detail where order_id = ?', orderId)
+                } else if (MULTIPAY == 'done') {
+                    let ids = SQL('select id from pos_payment_detail where order_id = ? and status = 1', orderId)
                     Printing({
                         orderId: orderId,
                         paymentId: ids.data.map(function(e){
@@ -307,19 +334,27 @@ let initCheckListBoxes = function () {
     });
 };
 let loadBills = function () {
+    let parent = SQL(`select * from pos_orders where id = ?`, orderIds.split(',')[0]);
     let getPayment = SQL(`
         select a.*, b.name
         from pos_payment_detail a
         join ref_payment_method b on a.payment_type_id = b.id
-        where a.order_id = ?
+        where a.order_id = ? and a.status = 1
     `, orderIds.split(',')[0]);
     Payments = getPayment.data;
     isOlder = Payments.length;
     if (!Payments.length) {
         El.isPaid.hide()
     } else {
+        let getDate = SQL('select NOW() now');
+        let datetime = getDate.data[0].now;
         let span = El.isPaid.find('span');
         El.isPaid.show();
+        Payments.parent = parent.data[0];
+        Payments.parent.elapsed_time = new Date(datetime) - new Date(parent.data[0].modified_date);
+        formalDate(datetime).split('\s')[0] == formalDate(parent.data[0].modified_date).split('\s')[0];
+        Payments.parent.isSameDay = formalDate(datetime).split(/\s/g)[0] == formalDate(parent.data[0].modified_date).split(/\s/g)[0];
+
         if (Order[orderIds.split(',')[0]].status == '5') {
             span.addClass('btn-danger').html('Changed to void!');
         } else {
@@ -497,24 +532,14 @@ let loadMenu = function (filter) {
             });
             //
             menuBg.height(menuBg.parent().width());
-            menuFinder.keyboard(getOpts({
-                layout: 'qwerty',
-                change: function (ev, keyboard, el) {
-                    loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: $(keyboard.preview).val()})
-                }
-            }));
-            menuFinder.off('blur');
-            menuFinder.on('blur', function () {
-                loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
-            });
-            menuFinder.off('change');
-            menuFinder.on('change', function () {
+            menuFinder.keyboard(getOpts({layout: 'qwerty'}));
+            menuFinder.off('change paste keyup input blur');
+            menuFinder.on('change paste keyup input blur', function () {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
             //
             if (App.role.ordermenu) {
                 let validation = function () {
-                    console.log(arguments)
                     let type = discType.val();
                     let percent = discPercent.val();
                     let price = modal.data('menu_price');
@@ -573,12 +598,9 @@ let loadMenu = function (filter) {
                 });
                 discType.on('change', validation);
                 discPercent.on('change', validation);
-                discPercent2.on('change', validation);
-                discPercent2.on('blur', validation);
-                discAmountItem.on('change', validation);
-                discAmountItem.on('blur', validation);
-                discAmount.on('change', validation);
-                discAmount.on('blur', validation);
+                discPercent2.on('change paste keyup input blur', validation);
+                discAmountItem.on('change paste keyup input blur', validation);
+                discAmount.on('change paste keyup input blur', validation);
                 inputQty.on('change', validation)
                 inputQty.on('blur', validation)
                 btnSubmit.on('click', function () {
@@ -806,19 +828,8 @@ let loadOrderMenu = function () {
             mVoid = row;
         }
     };
-    inputQty.off('blur');
-    inputQty.on('blur', function () {
-        let val = inputQty.data('value');
-        btnSubmit.prop('disabled', true);
-        val = parseInt(val);
-        if (val) {
-            if ((mVoid.order_qty - mVoid.order_void) >= val) {
-                btnSubmit.prop('disabled', false);
-            }
-        }
-    });
-    inputQty.off('change');
-    inputQty.on('change', function () {
+    inputQty.off('change paste keyup input blur');
+    inputQty.on('change paste keyup input blur', function () {
         let val = inputQty.data('value');
         btnSubmit.prop('disabled', true);
         val = parseInt(val);
@@ -1178,7 +1189,7 @@ let addOrderMenu = function (data, qty = 1, orderId) {
 };
 let mergeBill = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnMergeBill.hide();
             return;
         }
@@ -1264,9 +1275,65 @@ let mergeBill = function () {
         El.modalMergeBill.find('li.active').click();
     })
 };
+let addBillTip = function () {
+    if (isOlder) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
+            El.btnAddTip.hide();
+            return;
+        }
+    } else if (!App.role.cash) {
+        El.btnAddTip.hide();
+        return;
+    }
+    let m = El.modalBillTip;
+    let labelBefore = m.find('label[for="before"]');
+    let labelAfter = m.find('label[for="after"]');
+    let inputAmount = m.find('input#amount');
+    let btnSubmit = m.find('#submit');
+    let orderId = orderIds.split(',')[0];
+    let userId = App.user.id;
+    let validation = function () {
+        let before = labelBefore.data('value');
+        let value = inputAmount.data('value');
+        let total = parseFloat(before) + parseFloat(value);
+        labelAfter.html(rupiahJS(total));
+        if (total >= 0) {
+            btnSubmit.prop('disabled', false);
+        } else {
+            btnSubmit.prop('disabled', true);
+        }
+    };
+
+    El.btnAddTip.show();
+    inputAmount.on('change paste keyup input blur', validation);
+    btnSubmit.on('click', function () {
+        btnSubmit.prop('disabled', true);
+        let tip_amount = inputAmount.data('value');
+        let posPaymentDetail = {
+            order_id: orderId,
+            tip_amount,
+            created_by: userId,
+            status: 1
+        };
+        let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
+        m.modal('hide')
+    });
+    m.on('show.bs.modal', function () {
+        btnSubmit.prop('disabled', true);
+        let tipRaw = SQL(`select ifnull(sum(tip_amount), 0) tip from pos_payment_detail where order_id = ? and status = 1`, orderId);
+        let tip = tipRaw.data[0].tip || 0;
+        inputAmount.data('value', 0);
+        inputAmount.data('display', '');
+        inputAmount.val('');
+        labelBefore.data('value', tip);
+        labelBefore.html(rupiahJS(tip));
+        labelAfter.html(rupiahJS(tip));
+        btnSubmit.prop('disabled', true);
+    });
+};
 let cashPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayCash.hide();
             return;
         }
@@ -1275,39 +1342,32 @@ let cashPayment = function () {
         return;
     }
     let modal = El.modalCash;
+    let inputTip = modal.find('#add-tip');
     let btnSubmit = modal.find('#submit');
     let lblChange = modal.find('#change');
     let inputAmount = modal.find('#amount');
     let total, discount, service, tax, grandtotal, change;
+    let validation = function () {
+        let value = inputAmount.data('value');
+        change = parseFloat(value) - parseFloat(grandtotal) - inputTip.data('value');
+        if (change >= 0 && inputTip.data('value') >= 0) {
+            btnSubmit.prop('disabled', false);
+            lblChange.html(rupiahJS(change));
+        } else {
+            btnSubmit.prop('disabled', true);
+            lblChange.html(rupiahJS(0));
+        }
+    }
     //
     El.btnPayCash.show();
-    inputAmount.on('blur', function () {
-        let value = $(this).data('value');
-        change = parseFloat(value) - parseFloat(grandtotal);
-        if (change >= 0) {
-            btnSubmit.prop('disabled', false);
-            lblChange.html(rupiahJS(change));
-        } else {
-            btnSubmit.prop('disabled', true);
-            lblChange.html(rupiahJS(0));
-        }
-    });
-    inputAmount.on('change', function () {
-        let value = $(this).data('value');
-        change = parseFloat(value) - parseFloat(grandtotal);
-        if (change >= 0) {
-            btnSubmit.prop('disabled', false);
-            lblChange.html(rupiahJS(change));
-        } else {
-            btnSubmit.prop('disabled', true);
-            lblChange.html(rupiahJS(0));
-        }
-    });
+    inputTip.on('change paste keyup input blur', validation);
+    inputAmount.on('change paste keyup input blur', validation);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
             payment_type_id: 11,
             grandtotal: grandtotal,
+            tip_amount: inputTip.data('value'),
             payment_amount: inputAmount.data('value'),
             change_amount: change,
         });
@@ -1321,11 +1381,12 @@ let cashPayment = function () {
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
         change = 0;
+        inputTip.data('value', 0);
     });
 };
 let cardPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayCard.hide();
             return;
         }
@@ -1334,7 +1395,9 @@ let cardPayment = function () {
         return;
     }
     let modal = El.modalCard;
-    let selectBankType = modal.find('#bank-type');
+    let inputTip = modal.find('#add-tip');
+    let selectEDC = modal.find('#bank-type');
+    let selectBankType = modal.find('#bank-account');
     let selectCcType = modal.find('#cc-type');
     let inputCardSwiper = modal.find('#card-swiper');
     let inputCardNo = modal.find('#card-no');
@@ -1345,19 +1408,25 @@ let cardPayment = function () {
     //
     let total, discount, service, tax, grandtotal;
     let validation = function () {
-        let val1 = selectBankType.val();
+        let val1 = selectEDC.val();
         let val2 = inputCardNo.val();
         let val3 = inputCustomerName.val();
+        let val4 = inputTip.data('value') >= 0;
         btnSubmit.prop('disabled', true);
         if (selectCcType.val() == 'credit') {
-            if (val1 && val3 && val3) btnSubmit.prop('disabled', false);
+            if (val1 && val3 && val3 && val4) btnSubmit.prop('disabled', false);
         } else {
             inputCustomerName.val('');
             if (val1 && val2) btnSubmit.prop('disabled', false);
         }
     };
-    let bankList = SQL(`select id, code, name, description from ref_payment_method where category = 'CC' and status = '1' order by name`);
+    let edcList = SQL(`select id, code, name, description from ref_payment_method where category = 'CC' and status = '1' order by name`);
+    let bankList = SQL(`select id, code, name, description from mst_credit_card where status = '1' order by name`);
+    selectEDC.html('<option value="">- Choose -</option>');
     selectBankType.html('<option value="">- Choose -</option>');
+    edcList.data.forEach(function (edc) {
+        selectEDC.append(`<option value="${edc.id}">${edc.code} - ${edc.name}</option>`);
+    });
     bankList.data.forEach(function (bank) {
         selectBankType.append(`<option value="${bank.id}">${bank.code} - ${bank.name}</option>`);
     });
@@ -1367,6 +1436,7 @@ let cardPayment = function () {
         service = getSummary('servicecharge').value;
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
+        inputTip.data('value', 0);
     });
     inputCardSwiper.keydown(function (e) {
         if (e.keyCode == 13) {
@@ -1390,24 +1460,28 @@ let cardPayment = function () {
         }, 1000);
     });
     selectCcType.on('change', validation);
-    inputCardNo.on('change', validation);
-    inputCustomerName.on('change', validation);
+    inputTip.on('change paste keyup input blur', validation);
+    inputCardNo.on('change paste keyup input blur', validation);
+    inputCustomerName.on('change paste keyup input blur', validation);
+    selectEDC.on('change', validation);
     selectBankType.on('change', validation);
     btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
-            payment_type_id: selectBankType.val(),
+            payment_type_id: selectEDC.val(),
+            card_type_id: selectBankType.val(),
             grandtotal: grandtotal,
             payment_amount: grandtotal,
-            change_amount: 0,
+            tip_amount: inputTip.data('value'),
+            change_amount: 0
         });
         goHome(pay);
     });
 };
 let chargeToRoomPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayChargeToRoom.hide();
             return;
         }
@@ -1416,6 +1490,7 @@ let chargeToRoomPayment = function () {
         return
     }
     let modal = El.modalCharge2Room;
+    let inputTip = modal.find('#add-tip');
     let selectCustomer = modal.find('#customer');
     let lblCheckInDate = modal.find('#check-in-date');
     let lblDepartureDate = modal.find('#departure-date');
@@ -1428,6 +1503,30 @@ let chargeToRoomPayment = function () {
     let lblVipType = modal.find('#vip-type');
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
+    let validation = function () {
+        let val1 = selectCustomer.val();
+        let val2 = inputTip.data('value') >= 0;
+        data = 0;
+        btnSubmit.prop('disabled', true);
+        if (val1 && val2) {
+            data = houseGuest.data.filter(function (e) {
+                return e.folio_id == val1 ? 1 : 0;
+            })[0];
+            folio_id = (data.folio_id);
+            lblCheckInDate.html(data.check_in_date);
+            lblDepartureDate.html(data.departure_date);
+            lblIsCashBases.html(data.is_cash_bases);
+            lblIsRoomOnly.html(data.is_room_only);
+            lblReservationType.html(data.reservation_type);
+            lblRoomNo.html(data.room_no);
+            lblRoomRateCode.html(data.room_rate_code + '/' + data.room_rate_name);
+            lblRoomType.html(data.room_type + '/' + data.room_type_name);
+            lblVipType.html(data.vip_type);
+            if (data.is_cash_bases.toLowerCase() === 'n') {
+                btnSubmit.prop('disabled', false);
+            }
+        }
+    }
     //
     El.btnPayChargeToRoom.show()
     //
@@ -1446,28 +1545,8 @@ let chargeToRoomPayment = function () {
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
     });
-    selectCustomer.on('change', function () {
-        let val1 = selectCustomer.val();
-        data = 0;
-        if (val1) {
-            data = houseGuest.data.filter(function (e) {
-                return e.folio_id == val1 ? 1 : 0;
-            })[0];
-            folio_id = (data.folio_id);
-            lblCheckInDate.html(data.check_in_date);
-            lblDepartureDate.html(data.departure_date);
-            lblIsCashBases.html(data.is_cash_bases);
-            lblIsRoomOnly.html(data.is_room_only);
-            lblReservationType.html(data.reservation_type);
-            lblRoomNo.html(data.room_no);
-            lblRoomRateCode.html(data.room_rate_code + '/' + data.room_rate_name);
-            lblRoomType.html(data.room_type + '/' + data.room_type_name);
-            lblVipType.html(data.vip_type);
-            if (data.is_cash_bases.toLowerCase() === 'n') {
-                btnSubmit.prop('disabled', false);
-            }
-        }
-    });
+    selectCustomer.on('change', validation);
+    inputTip.on('change paste keyup input blur', validation);
     btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
@@ -1477,6 +1556,7 @@ let chargeToRoomPayment = function () {
             payment_type_id: 16,
             grandtotal: grandtotal,
             payment_amount: grandtotal,
+            tip_amount: inputTip.data('value'),
             change_amount: 0
         });
         goHome(pay);
@@ -1484,7 +1564,7 @@ let chargeToRoomPayment = function () {
 };
 let houseUsePayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayHouseUse.hide();
             return;
         }
@@ -1494,14 +1574,43 @@ let houseUsePayment = function () {
     }
 
     let modal = El.modalHouseUse;
+    let inputTip = modal.find('#add-tip');
     let selectHouseUse = modal.find('#house-use');
     let lblPeriod = modal.find('#period');
     let lblHouseUseInfo = modal.find('#house-use-info');
     let lblCostCenter = modal.find('#cost-center');
     let lblMaxSpent = modal.find('#max-spent');
+    let lblCurrentUsed = modal.find('#current-used');
     let lblCurrentBalance = modal.find('#current-balance');
     let txAreaNote = modal.find('#note');
     let btnSubmit = modal.find('#submit');
+    let validation = function () {
+        let val1 = selectHouseUse.val();
+        let val2 = inputTip.data('value') >= 0;
+        data = houseUseList.data.filter(function (e) {
+            return e.house_use_id == val1 ? 1 : 0;
+        })[0] || {};
+        data.current_transc_amount = data.current_transc_amount || 0;
+        data.max_spent_monthly = data.max_spent_monthly || 0;
+        data.spent = data.max_spent_monthly - data.current_transc_amount;
+        house_use_id = (data.folio_id);
+        lblPeriod.html(data.period || `/* NO PERIOD! */`);
+        lblCostCenter.html(data.cost_center);
+        lblHouseUseInfo.html(data.house_use);
+        lblMaxSpent.html(rupiahJS(data.max_spent_monthly));
+        lblCurrentUsed.html(rupiahJS(data.current_transc_amount));
+        lblCurrentBalance.html(rupiahJS(data.spent));
+
+        btnSubmit.prop('disabled', true);
+        if (val1 && 1) {
+            lblPeriod.css('color', 'black');
+            if ((data.spent > 0) && (data.spent - parseFloat(grandtotal) >= 0) && val2) {
+                btnSubmit.prop('disabled', false);
+            }
+        } else {
+            lblPeriod.css('color', 'red');
+        }
+    }
     //
     El.btnPayHouseUse.show();
     //
@@ -1528,28 +1637,10 @@ let houseUsePayment = function () {
         service = getSummary('servicecharge').value;
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
+        inputTip.data('value', 0);
     });
-    selectHouseUse.on('change', function () {
-        let val1 = selectHouseUse.val();
-        data = 0;
-        if (val1) {
-            data = houseUseList.data.filter(function (e) {
-                return e.house_use_id == val1 ? 1 : 0;
-            })[0];
-            house_use_id = (data.folio_id);
-            lblCostCenter.html(data.cost_center);
-            lblHouseUseInfo.html(data.house_use);
-            lblCurrentBalance.html(rupiahJS(data.current_transc_amount));
-            lblMaxSpent.html(rupiahJS(data.max_spent_monthly));
-            lblPeriod.html(data.period);
-            let balance = parseFloat(data.max_spent_monthly || 0) - parseFloat(data.current_transc_amount || 0);
-            if (balance > 0) {
-                if (data.period && (balance - parseFloat(grandtotal) >= 0)) {
-                    btnSubmit.prop('disabled', false);
-                }
-            }
-        }
-    });
+    selectHouseUse.on('change', validation);
+    inputTip.on('change paste keyup input blur', validation);
     btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
@@ -1559,6 +1650,7 @@ let houseUsePayment = function () {
             payment_type_id: 17,
             grandtotal: grandtotal,
             payment_amount: grandtotal,
+            tip_amount: inputTip.data('value'),
             change_amount: 0
         });
         goHome(pay);
@@ -1566,7 +1658,7 @@ let houseUsePayment = function () {
 };
 let voucherPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayVoucher.hide();
             return;
         }
@@ -1575,6 +1667,7 @@ let voucherPayment = function () {
         return;
     }
     let modal = El.modalVoucher;
+    let inputTip = modal.find('#add-tip');
     let btnSubmit = modal.find('#submit');
     let lblChange = modal.find('#change');
     let inputCode = modal.find('#code');
@@ -1583,8 +1676,9 @@ let voucherPayment = function () {
     let validation = function () {
         let code = inputCode.val();
         let value = inputAmount.data('value');
-        change = parseFloat(value) - parseFloat(grandtotal);
-        if (code && change >= 0) {
+        let val3 = inputTip.data('value') >= 0;
+        change = parseFloat(value) - parseFloat(grandtotal) - inputTip.data('value');
+        if (code && (change >= 0) && val3) {
             btnSubmit.prop('disabled', false)
             lblChange.html(rupiahJS(change));
         } else {
@@ -1602,11 +1696,11 @@ let voucherPayment = function () {
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
         change = 0;
+        inputTip.data('value', 0);
     });
-    inputCode.on('blur', validation);
-    inputCode.on('change', validation);
-    inputAmount.on('blur', validation);
-    inputAmount.on('change', validation);
+    inputTip.on('change paste keyup input blur', validation);
+    inputCode.on('change paste keyup input blur', validation);
+    inputAmount.on('change paste keyup input blur', validation);
     btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
@@ -1614,6 +1708,7 @@ let voucherPayment = function () {
             payment_type_id: 4,
             grandtotal: grandtotal,
             payment_amount: inputAmount.data('value'),
+            tip_amount: inputTip.data('value'),
             change_amount: change,
             card_no: inputCode.val()
         });
@@ -1622,7 +1717,7 @@ let voucherPayment = function () {
 };
 let cityLedgerPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayCityLedger.hide();
             return;
         }
@@ -1631,6 +1726,7 @@ let cityLedgerPayment = function () {
         return
     }
     let modal = El.modalCityLedger;
+    let inputTip = modal.find('#add-tip');
     let selectCityLedger = modal.find('#city-ledger');
     let lblType = modal.find('#type');
     let lblName = modal.find('#name');
@@ -1645,6 +1741,43 @@ let cityLedgerPayment = function () {
     let lblSaldo = modal.find('#deposit-saldo');
     let lblBalance = modal.find('#deposit-change');
     let btnSubmit = modal.find('#submit');
+    let validation = function () {
+        let val1 = selectCityLedger.val();
+        let val2 = inputTip.data('value') >= 0;
+        if (val1) {
+            let data = CityLedger[val1];
+            let addr = [data.address, data.city_name].join(', ');
+            let n = [data.name, data.short_name].join(' / ');
+            change = data.deposit_balance - grandtotal - inputTip.data('value');
+            lblType.html(data.company_type || '-');
+            lblName.html(n || '-');
+            lblCode.html(data.code || '-');
+            lblCPName.html(data.contact_person_name || '-');
+            lblCPNumb.html(data.contact_person_phone || '-');
+            lblAddr.html(addr || '-');
+            lblBList.html(data.is_black_listed || '-');
+            lblCredit.html(data.is_credit || '-');
+            lblAlert.html(data.alert || '-');
+            lblNotes.html(data.notes || '-');
+            lblSaldo.html(rupiahJS(data.deposit_balance || '0'));
+            lblBalance.html(rupiahJS(change));
+            //if (change >= 0) btnSubmit.prop('disabled', false); //avoid this, let user make decision self
+            if (val2) btnSubmit.prop('disabled', false);
+        } else {
+            lblType.html('');
+            lblName.html('');
+            lblCode.html('');
+            lblCPName.html('');
+            lblCPNumb.html('');
+            lblAddr.html('');
+            lblBList.html('');
+            lblCredit.html('');
+            lblAlert.html('');
+            lblNotes.html('');
+            lblSaldo.html('');
+            lblBalance.html('');
+        }
+    };
     //
     El.btnPayCityLedger.show();
     //
@@ -1678,6 +1811,7 @@ let cityLedgerPayment = function () {
         grandtotal = getSummary('grandtotal').value;
         change = 0;
         btnSubmit.prop('disabled', true);
+        inputTip.data('value', 0);
         lblType.html('');
         lblName.html('');
         lblCode.html('');
@@ -1691,47 +1825,15 @@ let cityLedgerPayment = function () {
         lblSaldo.html('');
         lblBalance.html('');
     });
-    selectCityLedger.on('change', function () {
-        let val1 = selectCityLedger.val();
-        if (val1) {
-            let data = CityLedger[val1];
-            let addr = [data.address, data.city_name].join(', ');
-            let n = [data.name, data.short_name].join(' / ');
-            change = data.deposit_balance - grandtotal
-            lblType.html(data.company_type || '-');
-            lblName.html(n || '-');
-            lblCode.html(data.code || '-');
-            lblCPName.html(data.contact_person_name || '-');
-            lblCPNumb.html(data.contact_person_phone || '-');
-            lblAddr.html(addr || '-');
-            lblBList.html(data.is_black_listed || '-');
-            lblCredit.html(data.is_credit || '-');
-            lblAlert.html(data.alert || '-');
-            lblNotes.html(data.notes || '-');
-            lblSaldo.html(rupiahJS(data.deposit_balance || '0'));
-            lblBalance.html(rupiahJS(change));
-            btnSubmit.prop('disabled', false);
-        } else {
-            lblType.html('');
-            lblName.html('');
-            lblCode.html('');
-            lblCPName.html('');
-            lblCPNumb.html('');
-            lblAddr.html('');
-            lblBList.html('');
-            lblCredit.html('');
-            lblAlert.html('');
-            lblNotes.html('');
-            lblSaldo.html('');
-            lblBalance.html('');
-        }
-    });
+    selectCityLedger.on('change', validation);
+    inputTip.on('change paste keyup input blur', validation);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         let pay = Payment({
             payment_type_id: 2,
             grandtotal: grandtotal,
             payment_amount: grandtotal,
+            tip_amount: inputTip.data('value'),
             change_amount: 0
         });
         //
@@ -1774,7 +1876,7 @@ let cityLedgerPayment = function () {
 };
 let noPostPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPayNoPost.hide();
             return;
         }
@@ -1796,7 +1898,7 @@ let noPostPayment = function () {
         tax = getSummary('tax').value;
         grandtotal = getSummary('grandtotal').value;
     });
-    txAreaNote.on('change', function () {
+    txAreaNote.on('change paste keyup input blur', function () {
         if (txAreaNote.val()) {
             btnSubmit.prop('disabled', false);
         }
@@ -1813,7 +1915,7 @@ let noPostPayment = function () {
 };
 let multiPayment = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnMultiPayment.hide();
             return;
         }
@@ -1902,12 +2004,28 @@ let multiPayment = function () {
                     <input id="${id}-paywith" type="currency" class="form-control">
                 </div>
             </div>
+            <div class="row" style="margin-bottom: 10px">
+                <div class="col-sm-6"></div>
+                <div class="col-sm-6 text-right">
+                    <span for="usr" style="font-style: italic">
+                        <input type="checkbox" id="${id}-set-paid"> Make this cash amount as paid amount
+                    </span>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-sm-6">
                     <span for="usr">Paid amount</span>
                 </div>
                 <div class="col-sm-6 text-right">
                     <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
                 </div>
             </div>
             <div class="row">
@@ -1923,71 +2041,74 @@ let multiPayment = function () {
                 </div>
             </div>
         `);
+        let inputTip = pay.find(`#${id}-add-tip`);
         let change = pay.find(`#${id}-change`);
         let paywith = pay.find(`#${id}-paywith`);
+        let setPaid = pay.find(`#${id}-set-paid`);
         let amount = pay.find(`#${id}-amount`);
-        paywith.keyboard(getOpts({layout: 'numpad'}, paywith));
+        let validation = function () {
+            let id = $(this).attr('id');
+            let paywithVal = parseFloat(paywith.data('value'));
+            let amountVal = parseFloat(amount.data('value'));
+            let tipVal = parseFloat(inputTip.data('value'));
+            let changeAmount = paywithVal - amountVal - tipVal;
+            if (id.match(/split\-[0-9]\-cash\-set\-paid/g) && setPaid.is(":checked")) {
+                amount.data('value', paywithVal);
+                amount.data('display', rupiahJS(paywithVal));
+                amount.val(rupiahJS(paywithVal));
+                amountVal = paywithVal;
+            }
+            if (id.match(/split\-[0-9]\-cash\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+            }
+            if (id.match(/split\-[0-9]\-cash\-amount/g)) {
+                amount.data('value', amountVal);
+                amount.data('display', rupiahJS(amountVal));
+                amount.val(rupiahJS(amountVal));
+            }
+            if (id.match(/split\-[0-9]\-cash\-paywith/g)) {
+                paywith.data('value', paywithVal);
+                paywith.data('display', rupiahJS(paywithVal));
+                paywith.val(rupiahJS(paywithVal));
+            }
+            //
+            paywithVal = parseFloat(paywith.data('value'));
+            amountVal = parseFloat(amount.data('value'));
+            tipVal = parseFloat(inputTip.data('value')) || 0;
+            changeAmount = paywithVal - amountVal - tipVal;
+            next.disable();
+            setPaid.prop('checked', amountVal != paywithVal ? 0 : 1)
+            if ((amountVal > 0) && (paywithVal >= amountVal) && (changeAmount >= 0) && (tipVal >= 0)) {
+                if (limit == count) {
+                    if (amountVal >= balance.val()) {
+                        change.attr('val', changeAmount);
+                        change.html(rupiahJS(changeAmount))
+                        next.enable();
+                    }
+                } else {
+                    change.attr('val', changeAmount);
+                    change.html(rupiahJS(changeAmount))
+                    next.enable();
+                }
+            } else {
+                change.attr('val', 0);
+                change.html(rupiahJS(0))
+            }
+        };
+        if (limit == count) setPaid.parent().hide();
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        paywith.keyboard(getOpts({layout: 'numpad'}, 1));
+        inputTip.css('text-align', 'end');
         paywith.css('text-align', 'end');
-        paywith.on('change', function () {
-            let el = $(this);
-            let val = el.val();
-            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
-            el.data('display',
-                parseFloat(val.replace(/\,/g, ""))
-                .toFixed(2).toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            );
-            el.attr('value', el.data('display'));
-            el.val(el.data('display'));
-            next.disable();
-
-            let a = parseFloat(el.data('value'));
-            let b = parseFloat(amount.data('value'));
-            if ((a > 0) && (a >= b)) {
-                if (limit == count) {
-                    if (a >= balance.val()) {
-                        change.attr('val', a - b);
-                        change.html(rupiahJS(a - b))
-                        next.enable();
-                    }
-                } else {
-                    change.attr('val', a - b);
-                    change.html(rupiahJS(a - b))
-                    next.enable();
-                }
-            }
-        });
-        amount.keyboard(getOpts({layout: 'numpad'}, amount));
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
         amount.css('text-align', 'end');
-        amount.on('change', function () {
-            let el = $(this);
-            let val = el.val();
-            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
-            el.data('display',
-                parseFloat(val.replace(/\,/g, ""))
-                .toFixed(2).toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            );
-            el.attr('value', el.data('display'));
-            el.val(el.data('display'));
-            next.disable();
-
-            let a = parseFloat(el.data('value'));
-            let b = parseFloat(paywith.data('value'));
-            if ((a > 0) && (b >= a)) {
-                if (limit == count) {
-                    if (a >= balance.val()) {
-                        change.attr('val', b - a);
-                        change.html(rupiahJS(b - a))
-                        next.enable();
-                    }
-                } else {
-                    change.attr('val', b - a);
-                    change.html(rupiahJS(b - a))
-                    next.enable();
-                }
-            }
-        });
+        setPaid.on('change', validation)
+        inputTip.on('change paste keyup input blur', validation);
+        amount.on('change paste keyup input blur', validation);
+        paywith.on('change paste keyup input blur', validation);
+        inputTip.data('value', 0);
         //
         if (limit == count) {
             amount.attr('disabled', 1);
@@ -1999,10 +2120,11 @@ let multiPayment = function () {
     }
     let payWithCard = function (id) {
         let limit = parseInt(inputCounter.val());
-        let options = El.modalCard.find('#bank-type').html();
+        let options1 = El.modalCard.find('#bank-type').html();
+        let options2 = El.modalCard.find('#bank-account').html();
         let pay = $(`
             <div class="row">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                     <div class="form-group">
                         <span>Type</span>
                         <select class="form-control" id="${id}-select">
@@ -2011,12 +2133,16 @@ let multiPayment = function () {
                         </select>
                     </div>
                 </div>
-                <div class="col-sm-9">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <span>EDC</span>
+                        <select class="form-control" id="${id}-card_type"></select>
+                    </div>
+                </div>
+                <div class="col-lg-4">
                     <div class="form-group">
                         <span>Bank</span>
-                        <select class="form-control" id="${id}-card_type">
-                            ${options}
-                        </select>
+                        <select class="form-control" id="${id}-cc_type"></select>
                     </div>
                 </div>
             </div>
@@ -2049,10 +2175,20 @@ let multiPayment = function () {
                     <input id="${id}-amount" type="currency" class="form-control">
                 </div>
             </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
         `);
+        let inputTip = pay.find(`#${id}-add-tip`);
         let amount = pay.find(`#${id}-amount`);
         let select = pay.find(`#${id}-select`);
-        let cardType = pay.find(`#${id}-card_type`);
+        let selectEDC = pay.find(`#${id}-card_type`);
+        let selectCCType = pay.find(`#${id}-cc_type`);
         let cardNo = pay.find(`#${id}-cardno`);
         let customer = pay.find(`#${id}-customer`);
         let swiper = pay.find(`#${id}-swiper`);
@@ -2060,11 +2196,19 @@ let multiPayment = function () {
             let typeVal = select.val();
             let customerVal = customer.val();
             let cardNoVal = cardNo.val();
-            let cardTypeVal = parseInt(cardType.val());
+            let selectEDCVal = parseInt(selectEDC.val());
+            let selectCCTypeVal = parseInt(selectCCType.val());
             let amountVal = parseFloat(amount.data('value'));
+            let tipVal = parseFloat(inputTip.data('value')) || 0;
             next.disable();
+            if ($(this).attr('id').match(/split\-[0-9]\-card\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+                tipVal = parseFloat(inputTip.data('value')) || 0
+            }
             if (typeVal == 'credit') {
-                if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+                if (customerVal && cardNoVal && selectEDCVal && selectCCTypeVal && (amountVal > 0) && (tipVal >= 0)) {
                     if (limit == count) {
                         if (amountVal >= balance.val()) {
                             next.enable();
@@ -2075,7 +2219,7 @@ let multiPayment = function () {
                 }
             } else {
                 customer.val('');
-                if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+                if (cardNoVal && selectEDCVal && selectCCTypeVal && (amountVal > 0) && (tipVal >= 0)) {
                     if (limit == count) {
                         if (amountVal >= balance.val()) {
                             next.enable();
@@ -2086,10 +2230,14 @@ let multiPayment = function () {
                 }
             }
         }
+        selectEDC.html(options1);
+        selectCCType.html(options2);
         //
-        amount.keyboard(getOpts({layout: 'numpad'}, amount));
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        inputTip.css('text-align', 'end');
         amount.css('text-align', 'end');
-        amount.on('change', function () {
+        amount.on('change paste keyup input blur', function () {
             let el = $(this);
             let val = el.val();
             el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
@@ -2104,12 +2252,12 @@ let multiPayment = function () {
             let typeVal = select.val();
             let customerVal = customer.val();
             let cardNoVal = cardNo.val();
-            let cardTypeVal = parseInt(cardType.val());
+            let selectEDCVal = parseInt(selectEDC.val());
             let amountVal = parseInt(el.data('value'));
             next.disable();
             if (typeVal == 'credit') {
                 customer.parent().show();
-                if (customerVal && cardNoVal && cardTypeVal && (amountVal > 0)) {
+                if (customerVal && cardNoVal && selectEDCVal && (amountVal > 0)) {
                     if (limit == count) {
                         if (amountVal >= balance.val()) {
                             next.enable();
@@ -2121,7 +2269,7 @@ let multiPayment = function () {
             } else {
                 customer.val('');
                 customer.parent().hide();
-                if (cardNoVal && cardTypeVal && (amountVal > 0)) {
+                if (cardNoVal && selectEDCVal && (amountVal > 0)) {
                     if (limit == count) {
                         if (amountVal >= balance.val()) {
                             next.enable();
@@ -2132,8 +2280,8 @@ let multiPayment = function () {
                 }
             }
         });
-        cardNo.keyboard(getOpts({layout: 'numpad'}, cardNo));
-        customer.keyboard(getOpts({layout: 'qwerty'}, customer));
+        cardNo.keyboard(getOpts({layout: 'numpad'}));
+        customer.keyboard(getOpts({layout: 'qwerty'}));
         swiper.keydown(function (e) {
             if (e.keyCode == 13) {
                 e.preventDefault();
@@ -2156,9 +2304,12 @@ let multiPayment = function () {
             }, 1000);
         });
         select.on('change', validate);
-        cardType.on('change', validate)
-        cardNo.on('change', validate);
-        customer.on('change', validate);
+        selectEDC.on('change', validate)
+        selectCCType.on('change', validate)
+        cardNo.on('change paste keyup input blur', validate);
+        customer.on('change paste keyup input blur', validate);
+        inputTip.on('change paste keyup input blur', validate);
+        inputTip.data('value', 0);
         //
         if (limit == count) {
             amount.attr('disabled', 1);
@@ -2237,62 +2388,69 @@ let multiPayment = function () {
                     <input id="${id}-amount" type="currency" class="form-control">
                 </div>
             </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
         `);
+        let inputTip = pay.find(`#${id}-add-tip`);
         let amount = pay.find(`#${id}-amount`);
         let select = pay.find(`#${id}-select`);
-        //
-        amount.keyboard(getOpts({layout: 'numpad'}, amount));
-        amount.css('text-align', 'end');
-        amount.on('change', function () {
-            let el = $(this);
-            let val = el.val();
-            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
-            el.data('display',
-                parseFloat(val.replace(/\,/g, ""))
-                .toFixed(2).toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            );
-            el.attr('value', el.data('display'));
-            el.val(el.data('display'));
+        let validate = function () {
+            let tipVal = parseFloat(inputTip.data('value'));
+            let amountVal = parseFloat(amount.data('value'));
+            let selectVal = select.val();
+            let data = Charge2Room.current = Charge2Room[selectVal];
+            //
+            data = data || {};
+            pay.find(`#${id}-check_in_date`).html(data.check_in_date);
+            pay.find(`#${id}-departure_date`).html(data.departure_date);
+            pay.find(`#${id}-is_cash_bases`).html(data.is_cash_bases);
+            pay.find(`#${id}-is_room_only`).html(data.is_room_only);
+            pay.find(`#${id}-reservation_type`).html(data.reservation_type);
+            pay.find(`#${id}-room_no`).html(data.room_no);
+            pay.find(`#${id}-room_rate_code`).html(data.room_rate_code + '/' + data.room_rate_name);
+            pay.find(`#${id}-room_type`).html(data.room_type + '/' + data.room_type_name);
+            pay.find(`#${id}-vip_type`).html(data.vip_type);
+            //
+            if ($(this).attr('id').match(/split\-[0-9]\-charge\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+                tipVal = parseFloat(inputTip.data('value')) || 0
+            }
+            if ($(this).attr('id').match(/split\-[0-9]\-charge\-amount/g)) {
+                amount.data('value', amountVal);
+                amount.data('display', rupiahJS(amountVal));
+                amount.val(rupiahJS(amountVal));
+                amountVal = parseFloat(amount.data('value')) || 0
+            }
             next.disable();
-            if (parseFloat(el.data('value')) > 0) {
-                if (limit == count) {
-                    if (parseFloat(el.data('value')) >= balance.val()) {
-                        if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
+            if (selectVal && (data.is_cash_bases.toLowerCase() === 'n')) {
+                if ((amountVal > 0) && (amountVal <= balance.val()) && (tipVal >= 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
                             next.enable();
                         }
-                    }
-                } else if (pay.find(`#${id}-is_cash_bases`).html().toLowerCase() === 'n') {
-                    next.enable();
-                }
-            }
-        });
-        select.on('change', function () {
-            let i = $(this).val();
-            let d = Charge2Room.current = Charge2Room[i];
-            if (d) {
-                pay.find(`#${id}-check_in_date`).html(d.check_in_date);
-                pay.find(`#${id}-departure_date`).html(d.departure_date);
-                pay.find(`#${id}-is_cash_bases`).html(d.is_cash_bases);
-                pay.find(`#${id}-is_room_only`).html(d.is_room_only);
-                pay.find(`#${id}-reservation_type`).html(d.reservation_type);
-                pay.find(`#${id}-room_no`).html(d.room_no);
-                pay.find(`#${id}-room_rate_code`).html(d.room_rate_code + '/' + d.room_rate_name);
-                pay.find(`#${id}-room_type`).html(d.room_type + '/' + d.room_type_name);
-                pay.find(`#${id}-vip_type`).html(d.vip_type);
-                if (d.is_cash_bases.toLowerCase() === 'n') {
-                    if (parseFloat(amount.data('value')) > 0) {
-                        if (limit == count) {
-                            if (parseFloat(amount.data('value')) >= balance.val()) {
-                                next.enable();
-                            }
-                        } else {
-                            next.enable();
-                        }
+                    } else {
+                        next.enable();
                     }
                 }
             }
-        });
+        }
+        //
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        inputTip.css('text-align', 'end');
+        amount.css('text-align', 'end');
+        amount.on('change paste keyup input blur', validate);
+        inputTip.on('change paste keyup input blur', validate);
+        select.on('change', validate);
+        inputTip.data('value', 0);
         //
         if (limit == count) {
             amount.attr('disabled', 1);
@@ -2338,7 +2496,7 @@ let multiPayment = function () {
                             <span>Monthly Spent</span>
                         </div>
                         <div class="col-sm-6 pull-right">
-                            <span id="${id}-max_spent_monthly" class="pull-right"></span>
+                            <span id="${id}-max_spent_monthly" class="pull-right" style="margin-right: 10px;"></span>
                         </div>
                     </div>
                 </div>
@@ -2348,7 +2506,17 @@ let multiPayment = function () {
                             <span>Current Transaction Amount</span>
                         </div>
                         <div class="col-sm-6 pull-right">
-                            <span id="${id}-current_transc_amount" class="pull-right"></span>
+                            <span id="${id}-current_transc_amount" class="pull-right" style="margin-right: 10px;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <span>Balance</span>
+                        </div>
+                        <div class="col-sm-6 pull-right">
+                            <span id="${id}-balance" class="pull-right" style="margin-right: 10px;"></span>
                         </div>
                     </div>
                 </div>
@@ -2361,67 +2529,77 @@ let multiPayment = function () {
                     <input id="${id}-amount" type="currency" class="form-control">
                 </div>
             </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
         `);
         //
+        let inputTip = pay.find(`#${id}-add-tip`);
         let amount = pay.find(`#${id}-amount`);
         let select = pay.find(`#${id}-select`);
+        let validate = function () {
+            let selectVal = select.val();
+            let amountVal = parseFloat(amount.data('value')) || 0;
+            let tipVal = parseFloat(inputTip.data('value')) || 0;
+            let data = HouseUse.current = HouseUse[selectVal];
+            data = data || {};
+            //
+            data.current_transc_amount = data.current_transc_amount || 0;
+            data.max_spent_monthly = data.max_spent_monthly || 0;
+            data.spent = data.max_spent_monthly - data.current_transc_amount;
+            pay.find(`#${id}-cost_center`).html(data.cost_center);
+            pay.find(`#${id}-house_use`).html(data.house_use);
+            pay.find(`#${id}-current_transc_amount`).html(rupiahJS(data.current_transc_amount));
+            pay.find(`#${id}-max_spent_monthly`).html(rupiahJS(data.max_spent_monthly));
+            pay.find(`#${id}-balance`).html(rupiahJS(data.spent));
+            pay.find(`#${id}-period`).html(data.period || `/* NO PERIOD! */`);
+            //
+            if ($(this).attr('id').match(/split\-[0-9]\-house\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+                tipVal = parseFloat(inputTip.data('value')) || 0
+            }
+            if ($(this).attr('id').match(/split\-[0-9]\-house\-amount/g)) {
+                amount.data('value', amountVal);
+                amount.data('display', rupiahJS(amountVal));
+                amount.val(rupiahJS(amountVal));
+                amountVal = parseFloat(amount.data('value')) || 0
+            }
+            //
+            let spent = parseFloat(data.max_spent_monthly) - parseFloat(data.current_transc_amount);
+            let total = amountVal - tipVal;
 
-        select.on('change', function () {
-            let i = $(this).val();
             next.disable();
-            if (parseInt(i)) {
-                let d = HouseUse.current = HouseUse[i];
-                d.current_transc_amount = d.current_transc_amount || 0;
-                d.max_spent_monthly = d.max_spent_monthly || 0;
-                if (d) {
-                    pay.find(`#${id}-cost_center`).html(d.cost_center);
-                    pay.find(`#${id}-house_use`).html(d.house_use);
-                    pay.find(`#${id}-current_transc_amount`).html(rupiahJS(d.current_transc_amount));
-                    pay.find(`#${id}-max_spent_monthly`).html(rupiahJS(d.max_spent_monthly));
-                    pay.find(`#${id}-period`).html(d.period || `/* NO PERIOD! */`);
-                    //
-                    let spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
-                    let paywith = parseFloat(amount.data('value'));
-                    if (d.period && paywith && (spent >= paywith)) {
-                        if (limit == count) {
-                            if (paywith >= parseFloat(balance.val())) {
-                                next.enable();
-                            }
-                        } else {
+            if (selectVal && data.period) {
+                pay.find(`#${id}-period`).css('color', 'black');
+                if ((data.spent >= total) && (amountVal > 0) && (amountVal <= balance.val()) && (tipVal >= 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
                             next.enable();
                         }
-                    }
-                }
-            }
-        });
-        amount.keyboard(getOpts({layout: 'numpad'}, amount));
-        amount.css('text-align', 'end');
-        amount.on('change', function () {
-            let el = $(this);
-            let val = el.val();
-            el.data('value', parseFloat(val.replace(/\,/g, "")).toFixed(2));
-            el.data('display',
-                parseFloat(val.replace(/\,/g, ""))
-                .toFixed(2).toString()
-                .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-            );
-            el.attr('value', el.data('display'));
-            el.val(el.data('display'));
-            next.disable();
-            //
-            let d = HouseUse.current || {};
-            let spent = parseFloat(d.max_spent_monthly) - parseFloat(d.current_transc_amount);
-            let paywith = parseFloat(el.data('value'));
-            if (d.period && paywith && (spent >= paywith)) {
-                if (limit == count) {
-                    if (paywith >= parseFloat(balance.val())) {
+                    } else {
                         next.enable();
                     }
-                } else {
-                    next.enable();
                 }
+            } else {
+                pay.find(`#${id}-period`).css('color', 'red');
             }
-        });
+        }
+
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        inputTip.css('text-align', 'end');
+        amount.css('text-align', 'end');
+        amount.on('change paste keyup input blur', validate);
+        inputTip.on('change paste keyup input blur', validate);
+        select.on('change', validate);
+        inputTip.data('value', 0);
         //
         if (limit == count) {
             amount.attr('disabled', 1);
@@ -2460,34 +2638,38 @@ let multiPayment = function () {
         state.show();
         next.disable();
         close.disable();
-        console.info('Any active multi payment state?', paymentState.is(':visible'))
         if (paymentState.is(':visible')) {
             let limit = parseInt(inputCounter.val());
             let bayar = parseFloat(paymentState.find('[id*="-amount"]').data('value'));
             let nextBalance = balance.val() - parseFloat(bayar);
             let an = paymentState.find('[id*="-mode"]').find('select').val();
-            let d = { multipayment: 0 };
+            let d = {IS_MULTIPAY: true, MULTIPAY: count};
             if (an == 'cash') {
                 d.payment_type_id = 11;
                 d.payment_amount = paymentState.find('[id*="-cash-paywith"]').data('value');
                 d.grandtotal = paymentState.find('[id*="-cash-amount"]').data('value');
+                d.tip_amount = paymentState.find('[id*="-cash-add-tip"]').data('value')
                 d.change_amount = paymentState.find('[id*="-cash-change"]').attr('val');
             } else if (an == 'card') {
                 d.payment_type_id = paymentState.find('[id*="-card-card_type"]').val();
+                d.card_type_id = paymentState.find('[id*="-card-cc_type"]').val();
                 d.payment_amount = paymentState.find('[id*="-card-amount"]').data('value');
                 d.grandtotal = d.payment_amount;
+                d.tip_amount = paymentState.find('[id*="-card-add-tip"]').data('value');
                 d.change_amount = 0;
                 d.card_no = paymentState.find('[id*="-cardno"]').val();
             } else if (an == 'charge2room') {
                 d.payment_type_id = 16;
                 d.payment_amount = paymentState.find('[id*="-charge-amount"]').data('value');
                 d.grandtotal = d.payment_amount;
+                d.tip_amount = paymentState.find('[id*="-charge-add-tip"]').data('value');
                 d.change_amount = 0;
                 d.folio_id = paymentState.find('[id*="-charge-select"]').val();
             } else if (an == 'houseuse') {
                 d.payment_type_id = 17;
                 d.payment_amount = paymentState.find('[id*="-amount"]').data('value');
                 d.grandtotal = d.payment_amount;
+                d.tip_amount = paymentState.find('[id*="-house-add-tip"]').data('value');
                 d.change_amount = 0;
                 d.house_use_id = paymentState.find('[id*="-house-select"]').val();
             }
@@ -2501,10 +2683,10 @@ let multiPayment = function () {
                 console.info('Multi payment > saving start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
+                    console.info('Multi payment > saving done #' + count);
                     paymentState.hide();
                     next.enable();
                     next.click();
-                    console.info('Multi payment > saving done #' + count);
                 } else {
                     console.error('Multi payment > saving error #' + count);
                     alert(`Error occurrence, result : ${JSON.stringify(pay.response)}`);
@@ -2514,16 +2696,16 @@ let multiPayment = function () {
                 balance.val(nextBalance);
                 balance.html(rupiahJS(nextBalance));
                 recordList.append(recordPayment(count, bayar));
-                d.multipayment = 1;
+                d.MULTIPAY = 'done';
                 console.info('Multi payment > saving & printing start #' + count);
                 let pay = Payment(d);
                 if (pay.success) {
+                    console.info('Multi payment > saving & printing done #' + count);
+                    console.info('Multi payment > finished!');
                     paymentState.hide();
                     close.enable();
                     state.hide();
                     noState.hide();
-                    console.info('Multi payment > saving & printing done #' + count);
-                    console.info('Multi payment > finished!');
                     goHome(pay);
                 } else {
                     console.error('Multi payment > saving & printing error #' + count);
@@ -2533,19 +2715,14 @@ let multiPayment = function () {
         } else {
             count += 1;
             paymentState.hide();
-            modeLabel0.html('Split by amount');
+            modeLabel0.html('Split Payment');
             modeLabel1.html(`${count} of ${inputCounter.val()}`);
             paymentState.show();
             paymentState.html('');
             paymentState.append(payment(count));
         }
     });
-    inputCounter.on('blur', function () {
-        let by = inputCounter.val();
-        next.disable();
-        if (parseInt(by) > 0) next.enable();
-    });
-    inputCounter.on('change', function () {
+    inputCounter.on('change paste keyup input blur', function () {
         let by = inputCounter.val();
         next.disable();
         if (parseInt(by) > 0) next.enable();
@@ -2562,14 +2739,14 @@ let multiPayment = function () {
         state.hide();
         count = 0;
     });
-    inputCounter.keyboard(getOpts({layout: 'numpad'}, inputCounter));
+    inputCounter.keyboard(getOpts({layout: 'numpad'}));
     recordList.insertBefore(balance.closest('.row'));
     m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
 };
 let splitBill = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnSplitBilling.hide();
             return;
         }
@@ -2690,27 +2867,7 @@ let splitBill = function () {
         });
         window.location.reload();
     });
-    inputCounter.on('blur', function () {
-        let by = inputCounter.val();
-
-        next.disable();
-        if (parseFloat(by) > 1) {
-            allSheets = [];
-            for (let i = 0; i < by; i++) {
-                allSheets.push({
-                    index: i,
-                    name: i + 1,
-                    total: 0,
-                    total_: rupiahJS(0),
-                    items: []
-                });
-            }
-            El.tableSheets.bootstrapTable('removeAll');
-            El.tableSheets.bootstrapTable('resetView');
-            El.tableSheets.bootstrapTable('load', allSheets);
-        }
-    });
-    inputCounter.on('change', function () {
+    inputCounter.on('change paste keyup input blur', function () {
         let by = inputCounter.val();
 
         next.disable();
@@ -2788,7 +2945,7 @@ let splitBill = function () {
         El.tableSheets.bootstrapTable('load', allSheets);
         El.tableItems.bootstrapTable('load', allItems);
     });
-    inputCounter.keyboard(getOpts({layout: 'numpad'}, inputCounter));
+    inputCounter.keyboard(getOpts({layout: 'numpad'}));
     m.modal({backdrop: 'static', keyboard: false});
     m.modal('hide');
     window.miscFn2 = function (value, row, index) {
@@ -2806,7 +2963,7 @@ let splitBill = function () {
                 <i class="glyphicon glyphicon-repeat text-info"></i>
             </a>`
         );
-    }
+    };
     window.miscFn3Cfg = {
         'click .reset': function (e, value, row, index) {
             if (row.items.length) {
@@ -2826,7 +2983,7 @@ let splitBill = function () {
 };
 let saveOrderNote = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnOrderNote.hide();
             return;
         }
@@ -2843,7 +3000,7 @@ let saveOrderNote = function () {
         let orderNote = SQL('select order_notes from pos_orders where id=?', orderIds.split(',')[0]);
         txAreaNote.val(orderNote.data[0].order_notes);
     });
-    txAreaNote.on('change', function () {
+    txAreaNote.on('change paste keyup input blur', function () {
         if (txAreaNote.val()) {
             btnSubmit.prop('disabled', false);
         }
@@ -2861,7 +3018,7 @@ let saveOrderNote = function () {
 };
 let manualPrint = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPrintOrder.hide();
             return;
         }
@@ -2992,7 +3149,7 @@ let manualPrint = function () {
 };
 let openMenu = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnOpenMenu.hide();
             return;
         }
@@ -3077,12 +3234,9 @@ let openMenu = function () {
     slctMenuCls.on('change', validation);
     slctMenuSubCls.on('change', validation);
     slctPrintToKitchen.on('change', validation);
-    inputMenuName.on('blur', validation);
-    inputMenuName.on('change', validation);
-    inputMenuPrice.on('blur', validation);
-    inputMenuPrice.on('change', validation);
-    inputMenuQty.on('blur', validation);
-    inputMenuQty.on('change', validation);
+    inputMenuName.on('change paste keyup input blur', validation);
+    inputMenuPrice.on('change paste keyup input blur', validation);
+    inputMenuQty.on('change paste keyup input blur', validation);
     btnSubmit.on('click', function () {
         let e = slctPrintToKitchen.val().split(',');
         let newMenu = {
@@ -3123,7 +3277,7 @@ let openMenu = function () {
 };
 let printBilling = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnPrintBilling.hide();
             return;
         }
@@ -3159,6 +3313,7 @@ let reprintBilling = function () {
             row.append(`
                 <td>${e.name}</td>
                 <td style="text-align: right;">${rupiahJS(e.payment_amount)}</td>
+                <td style="text-align: right;">${rupiahJS(e.tip_amount)}</td>
                 <td style="text-align: right;">${rupiahJS(e.change_amount)}</td>
             `, td.append(btn))
             btn.data(e);
@@ -3173,11 +3328,11 @@ let reprintBilling = function () {
 };
 let voidBilling = function () {
     if (isOlder) {
-        if (!App.role.voidbill) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnVoidBilling.hide();
             return;
         }
-    } else {
+    } else if (!App.role.voidbill) {
         El.btnVoidBilling.hide();
         return;
     }
@@ -3225,7 +3380,7 @@ let voidBilling = function () {
 };
 let discountBilling = function () {
     if (isOlder) {
-        if (App.user.role_id == 30) {
+        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnDiscountBilling.hide();
             return;
         }
@@ -3287,10 +3442,8 @@ let discountBilling = function () {
     discPercent.append(`<option value="manual">Manual</option>`);
     discType.on('change', validation);
     discPercent.on('change', validation);
-    discPercent2.on('change', validation);
-    discPercent2.on('blur', validation);
-    discAmount.on('change', validation);
-    discAmount.on('blur', validation);
+    discPercent2.on('change paste keyup input blur', validation);
+    discAmount.on('change paste keyup input blur', validation);
     modal.on('show.bs.modal', function () {
         discType.val('percent');
         discPercent.parent().show();
@@ -3403,6 +3556,7 @@ $(document).ready(function () {
         reprintBilling();
         voidBilling();
         discountBilling();
+        addBillTip()
         //
         initCheckListBoxes();
         El.paymentBtn.attr('disabled', 1);
