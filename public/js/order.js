@@ -58,7 +58,7 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
     };
-var getOpts = function (obj, isFloat) {
+let getOpts = function (obj, isFloat) {
     var opts = {
         autoAccept: true,
         autoAcceptOnEsc:true,
@@ -86,7 +86,29 @@ var getOpts = function (obj, isFloat) {
         }
     }
     return Object.assign(opts, obj);
-}
+};
+let loadPredifinedPromoId = function (data) {
+    return {
+        1: {
+            id: 1,
+            name: 'beverage',
+            label: 'Beverage',
+            value: data.beverage || 0
+        },
+        2: {
+            id: 2,
+            name: 'food',
+            label: 'Food',
+            value: data.food || 0
+        },
+        4: {
+            id: 4,
+            name: 'others',
+            label: 'Others',
+            value: data.others || 0
+        }
+    }
+};
 let delay = (function () {
     let timer = 0;
     return function (callback, ms) {
@@ -207,10 +229,14 @@ let Payment = function (param, orderId) {
             for (let i in posPaymentDetail) {
                 if (posPaymentDetail[i] === undefined) delete posPaymentDetail[i];
             }
-            if (isOlder && IS_MULTIPAY) {
-                if (MULTIPAY == 1) SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
-            } else {
-                SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
+            if (isOlder) {
+                if (IS_MULTIPAY) {
+                    if (MULTIPAY == 1) {
+                        SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
+                    }
+                } else {
+                    SQL('update pos_payment_detail set status = 2 where order_id = ?', orderId);
+                }
             }
             let insertPosPaymentDetail = SQL('insert into pos_payment_detail set ?', posPaymentDetail);
             if (!insertPosPaymentDetail.error) {
@@ -2124,7 +2150,7 @@ let multiPayment = function () {
         let options2 = El.modalCard.find('#bank-account').html();
         let pay = $(`
             <div class="row">
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <div class="form-group">
                         <span>Type</span>
                         <select class="form-control" id="${id}-select">
@@ -2133,15 +2159,15 @@ let multiPayment = function () {
                         </select>
                     </div>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-sm-4">
                     <div class="form-group">
                         <span>EDC</span>
                         <select class="form-control" id="${id}-card_type"></select>
                     </div>
                 </div>
-                <div class="col-lg-4">
+                <div class="col-lg-5">
                     <div class="form-group">
-                        <span>Bank</span>
+                        <span>Card Type</span>
                         <select class="form-control" id="${id}-cc_type"></select>
                     </div>
                 </div>
@@ -3304,21 +3330,34 @@ let reprintBilling = function () {
     }
     El.btnReprintBilling.show();
     m.on('show.bs.modal', function () {
+        let orderId, ids = [];
         let tbody = m.find('tbody');
-        tbody.html('')
-        Payments.forEach(function (e) {
+        let addRow = function (e) {
             let row = $('<tr>');
             let td = $('<td>')
             let btn = $('<button class="btn btn-xs btn-danger">Print</button>');
             row.append(`
                 <td>${e.name}</td>
-                <td style="text-align: right;">${rupiahJS(e.payment_amount)}</td>
-                <td style="text-align: right;">${rupiahJS(e.tip_amount)}</td>
-                <td style="text-align: right;">${rupiahJS(e.change_amount)}</td>
+                <td style="text-align: right;">${e.parent ? '' : rupiahJS(e.payment_amount)}</td>
+                <td style="text-align: right;">${e.parent ? '' : rupiahJS(e.tip_amount)}</td>
+                <td style="text-align: right;">${e.parent ? '' : rupiahJS(e.change_amount)}</td>
             `, td.append(btn))
             btn.data(e);
-            tbody.append(row)
+            return row;
+        };
+        tbody.html('')
+        Payments.forEach(function (e) {
+            orderId = e.order_id;
+            ids.push(e.id);
+            e.parent = false;
+            tbody.append(addRow(e))
         });
+        tbody.prepend(addRow({
+            id: ids,
+            order_id: orderId,
+            name: '/* OVERALL */',
+            parent: true
+        }))
         tbody.find('button').off('click');
         tbody.find('button').on('click', function () {
             let data = $(this).data();
@@ -3389,71 +3428,121 @@ let discountBilling = function () {
         return;
     }
     let modal = El.modalDiscountBill;
-    let discType = modal.find('#discount-type');
-    let discPercent = modal.find('#discount-percent select');
-    let discPercent2 = modal.find('#discount-percent-manual input');
-    let discAmount = modal.find('#percent-amount');
+    let type = modal.find('#type');
+    let auto = modal.find('#automate-promo');
+    let manual = modal.find('#manual-promo');
+    let manualClass = modal.find('#manual-promo-class select');
+    let manualValue = modal.find('#manual-promo-value input');
+    let amount = modal.find('#amount');
     let labelNewDiscount = modal.find('#new-discount');
     let labelNett = modal.find('#nett');
     let btnSubmit = modal.find('#submit');
-    let opt = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
-    //
+    let raw = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
     let validation = function () {
-        let type = discType.val();
-        let percent = discPercent.val();
+        let typeVal = type.val();
+        let manualClassVal = manualClass.val();
+        let manualValueVal = parseFloat(manualValue.data('value'));
+        manualClass.find('option').attr('has', 0);
+        manualClass.find('option[value=""]').attr('has', 1);
+        let menus = El.orderMenu.bootstrapTable('getData').filter(function(m, i){
+            if (m.is == 'order') {
+                manualClass.find(`option[value="${m.menu_class_id}"]`).attr('has', 1)
+                return 1
+            }
+            return 0
+        });
         let {total, discount, tax, servicecharge} = getSummary(0);
+        let patchedMenu = menus.slice(0);
 
-        discPercent2.parent().hide();
-        if (percent == 'manual') {
-            discPercent2.parent().show();
-            percent = discPercent2.data('value');
+        manual.hide();
+        auto.hide();
+        manualClass.find('option[has="1"]').show();
+        manualClass.find('option[has="0"]').hide();
+
+        if ($(this).attr('id') == 'type') {
+            manualValue.data('value', 0);
+            manualValue.data('display', '');
+            manualValue.val('');
         }
-        if (type == 'percent') {
-            let a = total.value * percent / 100;
-            discPercent.parent().show();
-            discAmount.prop('disabled', true);
-            discAmount.data('value', a);
-            discAmount.data('display', rupiahJS(a));
-            discAmount.val(rupiahJS(a));
-        } else if (type == 'amount') {
-            discPercent.parent().hide();
-            discAmount.prop('disabled', false);
-        }
-        //
-        btnSubmit.prop('disabled', true);
-        labelNett.html(rupiahJS(0));
-        if ((discAmount.data('value') > -1) &&
-            ((discAmount.data('value') + discount.value) <= total.value)
-        ) {
-            let newDiscount = discAmount.data('value') + discount.value;
-            labelNewDiscount.html(rupiahJS(newDiscount))
-            labelNett.html(rupiahJS(total.value - newDiscount));
+        if (typeVal == 'manual-amount' || typeVal == 'manual-percentage') {
+            if (manualClassVal) {
+                patchedMenu = patchedMenu.filter(function (e) {
+                    return e.menu_class_id == manualClassVal ? 1 : 0
+                });
+            }
+            manual.show();
+        } else if (typeVal) {
+            let tempMenu = [];
+            let data = raw.data.filter(function (e) {
+                return e.id == typeVal ? 1 : 0
+            })[0];
+            let promos = loadPredifinedPromoId(data);
+            //
+            auto.show();
+            auto.find('div[this]').html('');
+            type.data(promos || {});
+            for (let p in promos) {
+                let prom = promos[p];
+                tempMenu = tempMenu.concat(patchedMenu.filter(function(e){
+                    return e.menu_class_id == p ? 1 : 0;
+                }))
+                auto.find('div[this]').append(`
+                    <label class="badge btn-primary" style="font-weight: lighter; margin-right: 5px">${prom.label}: ${prom.value} %</label>
+                `);
+            }
+            patchedMenu = tempMenu;
+        };
+        let shouldPay = new Number(total.value);
+        let shouldDiscount = new Number(discount.value);
+        patchedMenu.forEach(function (menu) {
+            let newDiscount = false;
+            let qty = menu.order_qty - menu.order_void;
+            let price = menu.price_amount * qty;
+            if (typeVal == 'manual-amount') {
+                if (manualValueVal >= 0) newDiscount = manualValueVal * qty;
+            } else if (typeVal == 'manual-percentage') {
+                if (manualValueVal >= 0 && manualValueVal <= 100) newDiscount = price * manualValueVal / 100
+            } else if (typeVal) {
+                let d = type.data();
+                if (d[menu.menu_class_id]) {
+                    newDiscount = price * d[menu.menu_class_id].value / 100
+                }
+            }
+            if (newDiscount) shouldDiscount += newDiscount;
+        });
+        if (shouldPay >= shouldDiscount) {
             btnSubmit.prop('disabled', false);
+            labelNewDiscount.html(rupiahJS(shouldDiscount))
+            labelNett.html(rupiahJS(shouldPay - shouldDiscount));
+            amount.data('value', shouldDiscount - discount.value);
+            amount.data('display', rupiahJS(shouldDiscount - discount.value));
+            amount.val(rupiahJS(shouldDiscount - discount.value));
+        } else {
+            btnSubmit.prop('disabled', true);
+            labelNewDiscount.html('0.00');
+            labelNett.html(rupiahJS(shouldPay));
+            amount.data('value', 0);
+            amount.data('display', '0.00');
+            amount.val('0.00');
         }
     };
     //
-    let others = El.modalQty.find('#discount-percent select');
-    others.data('db', opt.data);
-    opt.data.forEach(function (d, i) {
-        let el = $(`<option value="${d.others}">${d.others} %</option>`);
-        if (!i) discPercent.append(`<option value="0">0 %</option>`);
-        discPercent.append(el);
+    El.modalQty.find('#discount-percent select').data('db', raw.data);
+    manualClass.html(El.menuClass.html());
+    if (!raw.data.length) type.find('optgroup[this]').hide();
+    raw.data.forEach(function (d, i) {
+        type.find('optgroup[this]').append(`<option value="${d.id}">${d.name}</option>`);
     });
-    discPercent.append(`<option value="manual">Manual</option>`);
-    discType.on('change', validation);
-    discPercent.on('change', validation);
-    discPercent2.on('change paste keyup input blur', validation);
-    discAmount.on('change paste keyup input blur', validation);
+    type.on('change', validation);
+    manualClass.on('change', validation);
+    manualValue.on('change paste keyup input blur', validation);
     modal.on('show.bs.modal', function () {
-        discType.val('percent');
-        discPercent.parent().show();
-        discPercent.val('0');
-        discPercent2.data('value', 0);
-        discPercent2.data('display', rupiahJS(0));
-        discPercent2.val(rupiahJS(''));
-        discAmount.data('value', 0);
-        discAmount.data('display', rupiahJS(0));
-        discAmount.val(rupiahJS(0));
+        type.val('');
+        auto.hide();
+        manual.hide();
+        amount.data('value', 0);
+        amount.data('display', rupiahJS(0));
+        amount.val(rupiahJS(0));
         labelNewDiscount.html(rupiahJS(0));
         labelNett.html(rupiahJS(0));
         btnSubmit.prop('disabled', true);
@@ -3461,25 +3550,20 @@ let discountBilling = function () {
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
         //
+        let {total, discount, tax, servicecharge} = getSummary(0);
+        let newDiscount = amount.data('value');
+        let allDiscount = newDiscount + discount.value;
+        let newTotal = total.value - allDiscount;
         let orderId = orderIds.split(',')[0];
-        let percent = discPercent.val();
-        let amount = discAmount.data('value');
-
-        if (percent == 'manual') {
-            percent = discPercent2.data('value');
-        }
-
         let getDate = SQL('select NOW() now');
         let selectOrder = SQL('select * from pos_orders where id = ?', orderId);
         let {sub_total_amount, tax_total_amount, due_amount, discount_total_amount} = selectOrder.data[0];
         let posOrder = selectOrder.data[0];
-        discount_total_amount += amount;
-
         let addDiscountPatched = function () {
             let newPatchDiscount = {
                 order_id: orderId,
-                discount_percent: parseFloat(percent) || 0,
-                discount_amount: amount,
+                discount_percent: 0,
+                discount_amount: newDiscount,
                 created_by: App.user.id
             }
             let patchDiscount = SQL('insert into pos_patched_discount set ?', newPatchDiscount);
@@ -3514,19 +3598,20 @@ let discountBilling = function () {
             }
             let obj = Object.keys(posOrderUpdate)
             SQL(`update pos_orders set ${
-                    obj.map(function (key) { return key + '=?' }).join()
+                obj.map(function (key) { return key + '=?' }).join()
                 } where id=${orderId}`, obj.map(function (key) { return posOrderUpdate[key] })
             );
         };
 
+        discount_total_amount += newDiscount;
         addDiscountPatched();
         updateOrderTaxes();
         updateItem();
         loadOrderMenu();
         loadOrderSummary(orderIds);
-        modal.modal('hide')
+        modal.modal('hide');
     });
-}
+};
 $(document).ready(function () {
     let checkSplitted = anySplitted();
     if (!checkSplitted.length) {
