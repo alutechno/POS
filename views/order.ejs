@@ -380,7 +380,7 @@
 			<div class="modal-body">
 				<div id="info"></div>
 				<div class="row">
-					<div class="col-lg-4">
+					<div class="col-lg-3">
 						<div class="form-group">
 							<span>Type</span>
 							<select class="form-control" id="cc-type">
@@ -395,9 +395,9 @@
 							<select class="form-control" id="bank-type"></select>
 						</div>
 					</div>
-					<div class="col-lg-4">
+					<div class="col-lg-5">
 						<div class="form-group">
-							<span>Bank</span>
+							<span>Card Type</span>
 							<select class="form-control" id="bank-account"></select>
 						</div>
 					</div>
@@ -1006,37 +1006,46 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
-				<h4 class="modal-title" id="modal-label">Additional Discount For Bill</h4>
+				<h4 class="modal-title" id="modal-label">Additional Discount</h4>
 			</div>
 			<div class="modal-body">
 				<div id="info"></div>
 				<div class="row" style="margin-top:15px; margin-bottom: 10px;">
 					<div class="col-lg-3">
-						<span>Discount Type</span>
+						<span>Choose Promo</span>
 					</div>
-					<div class="col-lg-9">
-						<div class="row">
-							<div class="col-lg-5">
-								<select class="form-control" id="discount-type">
-									<option value="percent">Percentage</option>
-									<option value="amount">Amount</option>
-								</select>
-							</div>
-							<div class="col-lg-3" id="discount-percent">
-								<select class="form-control"></select>
-							</div>
-							<div class="col-lg-3" id="discount-percent-manual" style="display: none;">
-								<input type="currency" max="100" min="0" class="form-control"/>
-							</div>
-						</div>
+					<div class="col-sm-6">
+						<select class="form-control" id="type">
+							<option value="">- Choose -</option>
+							<optgroup label="Available Promo" this></optgroup>
+							<optgroup label="Manual">
+								<option value="manual-amount">Amount ($)</option>
+								<option value="manual-percentage">Percentage (%)</option>
+							</optgroup>
+						</select>
+					</div>
+				</div>
+				<div class="row" style="margin-top:15px; margin-bottom: 10px;" id="automate-promo">
+					<div class="col-lg-3"></div>
+					<div class="col-lg-9" this></div>
+				</div>
+				<div class="row" style="margin-top:15px; margin-bottom: 10px;" id="manual-promo">
+					<div class="col-lg-3">
+						<span>Patch Promo For</span>
+					</div>
+					<div class="col-lg-4" id="manual-promo-class">
+						<select class="form-control"></select>
+					</div>
+					<div class="col-lg-5" id="manual-promo-value">
+						<input type="currency" min="0" class="form-control"/>
 					</div>
 				</div>
 				<div class="row" style="margin-bottom: 10px;">
 					<div class="col-lg-3">
-						<span>Amount</span>
+						<span>New Discount</span>
 					</div>
 					<div class="col-lg-9 text-right">
-						<input type="currency" class="form-control" id="percent-amount" disabled>
+						<input type="currency" class="form-control" id="amount" disabled>
 					</div>
 				</div>
 				<hr>
