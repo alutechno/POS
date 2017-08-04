@@ -58,6 +58,12 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
     };
+let swipeCard = function (str) {
+    return trim(str)
+    .replace(/\/\s\^|\s\^/g, '/^')
+    .split(/\;|\%B|\^|\/\^|\?\;|\=|\?/g)
+    .slice(1, -1)
+};
 let getOpts = function (obj, isFloat) {
     var opts = {
         autoAccept: true,
