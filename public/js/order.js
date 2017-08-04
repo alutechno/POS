@@ -208,7 +208,7 @@ let Payment = function (param, orderId) {
     if (!updatePosOrder.error) {
         if (status === 4) {
             if (!param.hasOwnProperty('IS_MULTIPAY') || MULTIPAY == 'done') {
-                Printing({orderId: orderId});
+                Printing({orderId: orderId, splitted: true});
             }
             return {success: true, response: updatePosOrder.data};
         } else {
@@ -254,7 +254,8 @@ let Payment = function (param, orderId) {
                         orderId: orderId,
                         paymentId: ids.data.map(function(e){
                             return e.id
-                        })
+                        }),
+                        splitted: true
                     });
                 }
                 if (payment_type_id == 11) El.openCashDraw.click();
@@ -3361,7 +3362,11 @@ let reprintBilling = function () {
         tbody.find('button').off('click');
         tbody.find('button').on('click', function () {
             let data = $(this).data();
-            Printing({orderId: data.order_id, paymentId: data.id});
+            if (data.parent) {
+                Printing({orderId: data.order_id, paymentId: data.id, splitted: true});
+            } else {
+                Printing({orderId: data.order_id, paymentId: data.id});
+            }
         });
     });
 };
