@@ -55,14 +55,14 @@
 	App.getRole = function () {
 	    var q = `
 			select
-				a.id, a.menu_id, a.object, a.label, b.name menu_name,
+				a.id, a.menu_id, a.object, a.label, a.label menu_name,
 				c.role_id, c.role_name
-			from menu_detail_pos a
-			left join menu_pos b on b.id = a.menu_id
+			from menu_detail a
+			left join menu b on b.id = a.menu_id
 			left join (
 				select
 					a.*, b.name role_name
-				from role_menu_pos a
+				from role_menu a
 				left join role b on b.id = a.role_id
 			) c on c.menu_detail_id = a.id
 			where b.group_id = 15 and role_id=?
@@ -85,4 +85,3 @@
 		}, 1000)
 	}
 </script>
-
