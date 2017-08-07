@@ -14,7 +14,6 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         tableSummary: $('table#order-summary'),
         tableSheets: $('table#sheets'),
         tableItems: $('table#items'),
-        openCashDraw: $('button#open-cash-draw'),
         paymentBtn: $('a.payment-btn'),
         modalBillTip: $('div#modal-tip-billing'),
         modalQty: $('div#modal-qty'),
@@ -147,7 +146,7 @@ let openCashDraw = function () {
         return;
     }
     El.btnOpenCashDraw.show();
-    El.openCashDraw.on('click', function () {
+    El.btnOpenCashDraw.on('click', function () {
         $.ajax({
             method: 'GET',
             url: '/openCashDraw',
@@ -264,7 +263,7 @@ let Payment = function (param, orderId) {
                         splitted: true
                     });
                 }
-                if (payment_type_id == 11) El.openCashDraw.click();
+                if (payment_type_id == 11) El.btnOpenCashDraw.click();
                 return {success: true, response: insertPosPaymentDetail.data};
             } else {
                 return {success: false, response: insertPosPaymentDetail.error}
