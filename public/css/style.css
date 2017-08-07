@@ -1,3 +1,10 @@
+/* Your local CSS File */
+@font-face {
+    font-family: 'Sofia';
+    font-style: normal;
+    font-weight: 700;
+    src: local('Sofia Regular'), local('Sofia-Regular'), url(/font/Sofia-Regular.ttf) format('truetype');
+}
 .dining-table {
     margin-bottom: 15px;
 }
