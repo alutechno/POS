@@ -142,7 +142,7 @@ footer {
     padding-bottom: 0;
     /*min-height: 150px;*/
 }
-.btn-app {
+.btn-pos {
     border-radius: 3px;
     position: relative;
     padding: 5px;
@@ -150,10 +150,14 @@ footer {
     min-width: 60px;
     height: 50px;
     text-align: center;
-    color: #666;
-    border: 1px solid #ddd;
-    background-color: #f4f4f4;
+    color: rgb(102, 102, 102);
+    border: 1px solid rgb(221, 221, 221);
+    background-color: rgb(244, 244, 244);
     font-size: 12px;
+}
+.btn-pos>.fa, .btn-pos>.glyphicon, .btn-pos>.ion {
+    font-size: 20px;
+    display: block;
 }
 .order-footer a, button {
     padding:7px;
@@ -161,4 +165,64 @@ footer {
 }
 .order-footer button {
     margin-top: -5px;
+}
+.btn-pos-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+.btn-pos-default:hover {
+    color: #333;
+    background-color: #efefef;
+    border-color: #b6b6b6;
+}
+.btn-pos-primary {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+.btn-pos-primary:hover {
+    color: #fff;
+    background-color: #2d689f;
+    border-color: #234772;
+}
+.btn-pos-success {
+    color: #fff;
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+.btn-pos-success:hover {
+    color: #fff;
+    background-color: #4d9a4d;
+    border-color: #408540;
+}
+.btn-pos-info {
+    color: #333;
+    background-color: #5bc0de;
+    border-color: #46b8da;
+}
+.btn-pos-info:hover {
+    color: #333;
+    background-color: #53a1bd;
+    border-color: #419ebd;
+}
+.btn-pos-warning {
+    color: #333;
+    background-color: #fcb94e;
+    border-color: #fbaf36;
+}
+.btn-pos-warning:hover {
+    color: #333;
+    background-color: #eaa74e;
+    border-color: #e79b36;
+}
+.btn-pos-danger {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+.btn-pos-danger:hover {
+    color: #fdfdfd;
+    background-color: #c3534f;
+    border-color: #b83934;
 }

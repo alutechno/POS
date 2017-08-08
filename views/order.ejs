@@ -18,11 +18,15 @@
 						<div class="box box-info">
 							<div class="box-header">
 								<div class="row">
-									<div id="order" class="col-md-7" style="border-right:1px solid rgba(128, 128, 128, 0.26);"></div>
-									<div id="meal-time" class="col-md-5"></div>
+									<div id="order" class="col-md-9"></div>
+									<div id="num-cover" class="col-md-3 text-right"></div>
 								</div>
 								<hr style="margin-top: 10px;margin-bottom: 10px;">
 								<div class="form-group row" style="margin-bottom: 0">
+									<div class="col-sm-3">
+										<label for="#menu-class">Meal Time</label>
+										<select class="form-control" name="menu-class" id="menu-meal-time"></select>
+									</div>
 									<div class="col-sm-3">
 										<label for="#menu-class">Menu Class</label>
 										<select class="form-control" name="menu-class" id="menu-class"></select>
@@ -31,18 +35,9 @@
 										<label for="#select-sub-class">Sub Class</label>
 										<select class="form-control" name="menu-sub-class" id="menu-sub-class"></select>
 									</div>
-									<div class="col-sm-6">
+									<div class="col-sm-3">
 										<label for="#search-menu">Find</label>
-										<div class="row">
-											<div class="col-sm-8">
-												<input class="form-control" type="text-special" name="menu-finder" placeholder="Search" id="menu-finder"/>
-											</div>
-											<div class="col-sm-4" style="padding-left: 0;">
-												<a class="btn btn-default btn-md bg-grey" data-toggle="modal" href="#modal-open-menu" id="open-menu">
-													<i class="fa fa-plus" data-toggle="modal"></i> Open Menu
-												</a>
-											</div>
-										</div>
+										<input class="form-control" type="text-special" name="menu-finder" placeholder="Search" id="menu-finder"/>
 									</div>
 								</div>
 							</div>
@@ -58,17 +53,17 @@
 					<div class="col-md-4">
 						<div class="box box-success">
 							<div class="box-header order-footer text-center">
-								<a class="btn btn-default btn-md bg-grey" data-toggle="modal" id="show-detail" next="collapse">
+								<a class="btn btn-default btn-md btn-pos-default" data-toggle="modal" id="show-detail" next="collapse">
 									<i class="fa fa-list"></i> Expand
 								</a>
-								<a class="btn btn-default btn-md" data-toggle="modal" href="#modal-add-note" id="order-note">
+								<a class="btn btn-default btn-md btn-pos-info" data-toggle="modal" href="#modal-add-note" id="order-note">
 									<i class="fa fa-edit"></i> Note
 								</a>
-								<a class="btn btn-default btn-md payment-btn" data-toggle="modal" href="#modal-discount-bill" id="discount-bill">
-									<i class="fa fa-percent" aria-hidden="true"></i> Discount
+								<a class="btn btn-default btn-md btn-pos-warning" data-toggle="modal" href="#modal-open-menu" id="open-menu">
+									<i class="fa fa-plus" data-toggle="modal"></i>  Menu
 								</a>
-								<a class="btn btn-default btn-md bg-grey" data-toggle="modal" href="#modal-print" id="print-order" style="margin-right: 0px;">
-									<i class="fa fa-print"></i> Print
+								<a class="btn btn-default btn-md btn-pos-success" data-toggle="modal" href="#modal-print" id="print-order" style="margin-right: 0px;">
+									<i class="fa fa-print"></i> Send
 								</a>
 							</div>
 							<div class="box-body" style="padding-top: 0;">
@@ -104,49 +99,52 @@
 		<div class="box-body text-center">
 			<div class="row">
 				<div class="col-sm-12">
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-cash" id="pay-cash">
-						<i class="fa fa-money"></i> Cash
+					<a class="btn btn-pos payment-btn btn-pos-success" data-toggle="modal" href="#modal-discount-bill" id="discount-bill">
+						<i class="fa fa-percent" aria-hidden="true"></i> Discount
 					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-card" id="pay-card">
-						<i class="fa fa-credit-card"></i> Card
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-charge-to-room" id="pay-charge-to-room">
-						<i class="fa fa-edit"></i> Charge Room
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-house-use" id="pay-house-use">
-						<i class="fa fa-tags"></i> House Use
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-city-ledger" id="pay-city-ledger">
-						<i class="fa fa-plane"></i> City Ledger
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-voucher" id="pay-voucher">
-						<i class="fa fa-ticket"></i> Voucher
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-no-post" id="pay-no-post">
-						<i class="fa fa-exclamation"></i> No Post
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-multi-payment" id="pay-multi-payment">
-						<i class="fa fa-files-o"></i> Split Payment
-					</a>
-					<a class="btn btn-app" data-toggle="modal" href="#modal-merge" id="merge-bill">
-						<i class="fa fa-arrow-down" aria-hidden="true"></i> Merge
-					</a>
-					<a class="btn btn-app payment-btn" data-toggle="modal" href="#modal-split-billing" id="pay-split-bill">
-						<i class="fa fa-arrows-alt"></i> Split Bill
-					</a>
-					<button class="btn btn-app btn-md" id="print-billing">
-						<i class="fa fa-print"></i> Print Bill
-					</button>
-					<a class="btn btn-app btn-md payment-btn" id="tip-billing" data-toggle="modal" href="#modal-tip-billing">
+					<a class="btn btn-pos btn-md payment-btn btn-pos-success" id="tip-billing" data-toggle="modal" href="#modal-tip-billing">
 						<i class="fa fa-money"></i> Add tip
 					</a>
-					<a class="btn btn-app btn-md payment-btn" id="void-billing" data-toggle="modal" href="#modal-void-billing">
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-cash" id="pay-cash">
+						<i class="fa fa-money"></i> Cash
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-card" id="pay-card">
+						<i class="fa fa-credit-card"></i> Card
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-charge-to-room" id="pay-charge-to-room">
+						<i class="fa fa-edit"></i> Charge Room
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-house-use" id="pay-house-use">
+						<i class="fa fa-tags"></i> House Use
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-city-ledger" id="pay-city-ledger">
+						<i class="fa fa-plane"></i> City Ledger
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-default" data-toggle="modal" href="#modal-voucher" id="pay-voucher">
+						<i class="fa fa-ticket"></i> Voucher
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-danger" data-toggle="modal" href="#modal-no-post" id="pay-no-post">
+						<i class="fa fa-exclamation"></i> No Post
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-info" data-toggle="modal" href="#modal-multi-payment" id="pay-multi-payment">
+						<i class="fa fa-files-o"></i> Split Payment
+					</a>
+					<a class="btn btn-pos btn-pos-warning" data-toggle="modal" href="#modal-merge" id="merge-bill">
+						<i class="fa fa-arrow-down" aria-hidden="true"></i> Merge
+					</a>
+					<a class="btn btn-pos payment-btn btn-pos-warning" data-toggle="modal" href="#modal-split-billing" id="pay-split-bill">
+						<i class="fa fa-arrows-alt"></i> Split Bill
+					</a>
+					<button class="btn btn-pos btn-md btn-pos-primary" id="print-billing">
+						<i class="fa fa-print"></i> Print Bill
+					</button>
+					<a class="btn btn-pos btn-md payment-btn" id="void-billing" data-toggle="modal" href="#modal-void-billing">
 						<i class="fa fa-ban"></i> Void Bill
 					</a>
-					<a class="btn btn-app btn-md payment-btn" id="reprint-billing" data-toggle="modal" href="#modal-reprint-billing">
+					<a class="btn btn-pos btn-md payment-btn btn-pos-primary" id="reprint-billing" data-toggle="modal" href="#modal-reprint-billing">
 						<i class="fa fa-file-text-o"></i> Reprint Bill
 					</a>
-					<button class="btn btn-app btn-md" id="open-cash-draw">
+					<button class="btn btn-pos btn-md btn-pos-default" id="open-cash-draw">
 						<i class="fa fa-th-large"></i> Cash Draw
 					</button>
 				</div>
