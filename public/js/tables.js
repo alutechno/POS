@@ -83,7 +83,7 @@ $(document).ready(function () {
     });
     button.on('click', function(){
         //todo: make this transaction like!
-        let count = SQL('select count(id)+1 as no_bill from pos_orders where outlet_id=?', outletId);
+        let count = SQL(`select count(id)+1 as no_bill from pos_orders where (created_date between DATE_FORMAT(NOW() ,'%Y-01-01 00:00:00') and NOW()) and outlet_id=?`, outletId);
         let code = "CHK-" + count.data[0].no_bill;
         numOfCover = guestModal.find('input').data('value');
         let init = SQL('INSERT pos_orders SET ?', {
