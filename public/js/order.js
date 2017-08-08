@@ -1,4 +1,4 @@
-let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
+let isOlder, Menu, MealTime, MenuClass, MenuSubClass, Covers,
     Order, OrderMenu, Taxes, Summary, Discount, Payments = [],
     orderIds = window.location.pathname.split('/')[2].replace(/\-/g, ','),
     HouseUse = {}, Charge2Room = {}, CityLedger = {},
@@ -6,7 +6,8 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass,
         menu: $('div#menu-container'),
         order: $('div#order'),
         isPaid: $('div#is-paid'),
-        mealTime: $('div#meal-time'),
+        numCover: $('div#num-cover'),
+        mealTime: $('select#menu-meal-time'),
         menuClass: $('select#menu-class'),
         menuSubClass: $('select#menu-sub-class'),
         menuFinder: $('input#menu-finder'),
@@ -394,20 +395,36 @@ let loadBills = function () {
         }
     }
 };
+let loadCurrentMealTime = function () {
+    let mealTime = SQL(`
+        select id 
+        from ref_meal_time 
+        where 
+            status = 1 and 
+            DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time LIMIT 1
+    `);
+    if (!mealTime.error) {
+        let mealIn = mealTime.data[0] || {};
+        if (mealIn.id) {
+            El.mealTime.val(mealIn.id);
+            El.mealTime.trigger('change');
+        }
+    }
+};
 let loadMealTime = function () {
-    let mealTime = SQL(`select * from ref_meal_time where DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time`);
+    let mealTime = SQL(`select * from ref_meal_time where status = 1`);
     MealTime = {};
-    El.mealTime.html('<code style="margin-right: 5px">Meal Time</code>');
     if (!mealTime.error) {
         mealTime.data.forEach(function (e) {
-            MealTime[e.id] = e
-            El.mealTime.append(`
-                <label class="badge btn-info" style="font-weight: lighter">
-                    ${e.name}
-                </label>
-            `)
-        })
+            let el = $(`<option value="${e.id}">${e.code} - ${e.name}</option>`);
+            el.data(e);
+            MealTime[e.id] = e;
+            El.mealTime.append(el);
+        });
     }
+    El.mealTime.on('change', function () {
+        loadMenu({mealtime: El.mealTime.val(), class: El.menuClass.val(), name: El.menuFinder.val()});
+    });
 };
 let loadClass = function () {
     let menuClass = SQL(`select a.*
@@ -430,7 +447,7 @@ let loadClass = function () {
             El.menuSubClass.val('');
         }
         loadSubClass(val);
-        loadMenu({class: val, name: El.menuFinder.val()});
+        loadMenu({mealtime: El.mealTime.val(), class: val, name: El.menuFinder.val()});
     })
 };
 let loadSubClass = function (filter) {
@@ -452,7 +469,12 @@ let loadSubClass = function (filter) {
             })
         }
         El.menuSubClass.on('change', function () {
-            loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
+            loadMenu({
+                mealtime: El.mealTime.val(),
+                class: El.menuClass.val(),
+                subClass: El.menuSubClass.val(),
+                name: El.menuFinder.val()
+            })
         })
     } else {
         let filtered = MenuSubClass;
@@ -498,7 +520,7 @@ let loadMenu = function (filter) {
                 obj[prom.outlet_menu_id].push(prom)
             });
             return obj;
-        })()
+        })();
         Menu = [];
         if (!menu.error) {
             let modal = El.modalQty;
@@ -536,7 +558,9 @@ let loadMenu = function (filter) {
                 });
                 let el = $(`
                     <div class="col-lg-2 col-sm-3 col-xs-3 menu-item"
-                        menu-id="${e.id}" menu-name="${e.name.toLowerCase()}"
+                        menu-name="${e.name.toLowerCase()}"
+                        menu-meal-time="${e.meal_time_id}"
+                        menu-id="${e.id}"
                         menu-class="${e.menu_class_id}"
                         menu-sub-class="${e.menu_group_id}">
                         <div class="small-box">
@@ -684,6 +708,8 @@ let loadMenu = function (filter) {
         }
     } else {
         let selector = '';
+        if (filter.mealtime) selector += `[menu-meal-time=${filter.mealtime}]`;
+        else selector += `[menu-meal-time]`;
 
         if (filter.class) selector += `[menu-class=${filter.class}]`;
         else selector += `[menu-class]`;
@@ -698,23 +724,33 @@ let loadMenu = function (filter) {
     }
 };
 let loadOrder = function () {
+    let cover = $(`<div style="border-left:1px solid rgba(128, 128, 128, 0.26);">`)
     let order = SQL(`
-        select a.id, a.code, a.table_id, b.table_no, a.status 
-        from pos_orders a,mst_pos_tables b
+        select a.id, a.code, a.table_id, b.table_no, a.status, a.num_of_cover
+        from pos_orders a, mst_pos_tables b
         where a.table_id=b.id
         and a.outlet_id=b.outlet_id and a.id in(${orderIds})
     `);
     if (!order.error) {
+        Covers = 0;
         Order = {};
         El.order.html('<code style="margin-right: 5px">Order Number / Table</code>');
         order.data.forEach(function (e) {
             Order[e.id] = e;
+            Covers += e.num_of_cover;
             El.order.append(`
                 <label class="badge btn-primary" style="font-weight: lighter; margin-right: 5px">
                     ${e.code} / ${e.table_no}
                 </label>
             `)
         });
+        cover.append(`
+            <code style="margin-right: 5px">Num Covers</code>
+            <label class="badge btn-info" style="font-weight: lighter">
+                ${Covers}
+            </label>
+        `);
+        El.numCover.html(cover);
     }
 
 };
@@ -772,6 +808,12 @@ let loadOrderMenu = function () {
         order by parent_id, type;
     `);
     OrderMenu = [];
+    let getPayment = SQL(`
+        select a.*, b.name
+        from pos_payment_detail a
+        join ref_payment_method b on a.payment_type_id = b.id
+        where a.order_id = ? and a.status = 1
+    `, orderIds.split(',')[0]);
     if (!orderMenu.error) {
         let no = 0;
         let getVoid = function (parent_id) {
@@ -843,6 +885,19 @@ let loadOrderMenu = function () {
     window.miscFn1 = function (value, row, index) {
         let isOrder = row.is == 'order';
         let voidable = row.order_qty > row.order_void;
+        /** todo: disabled **/
+        if (!getPayment.data.length) {
+            return !(isOrder && voidable) ? '' : (
+                `<div class="pull-right">
+                    <a class="remove" href="#modal-void" title="Void">
+                        <i class="glyphicon glyphicon-remove text-danger"></i>
+                    </a>
+                </div>`
+            );
+        }
+        return '';
+        /** stop the code **/
+
         return !(isOrder && voidable) ? '' : (
             `<div class="pull-right">
                 <a class="remove" href="#modal-void" title="Void">
@@ -1313,7 +1368,7 @@ let addBillTip = function () {
             El.btnAddTip.hide();
             return;
         }
-    } else if (!App.role.cash) {
+    } else if (!App.role.addtip) {
         El.btnAddTip.hide();
         return;
     }
@@ -2149,7 +2204,7 @@ let multiPayment = function () {
             amount.val(rupiahJS(parseFloat(balance.val())));
         }
         return pay;
-    }
+    };
     let payWithCard = function (id) {
         let limit = parseInt(inputCounter.val());
         let options1 = El.modalCard.find('#bank-type').html();
@@ -2261,7 +2316,7 @@ let multiPayment = function () {
                     }
                 }
             }
-        }
+        };
         selectEDC.html(options1);
         selectCCType.html(options2);
         //
@@ -2350,7 +2405,7 @@ let multiPayment = function () {
             amount.val(rupiahJS(parseFloat(balance.val())));
         }
         return pay;
-    }
+    };
     let payWithCharge2Room = function (id) {
         let limit = parseInt(inputCounter.val());
         let options = El.modalCharge2Room.find('#customer').html();
@@ -2491,7 +2546,7 @@ let multiPayment = function () {
             amount.val(rupiahJS(parseFloat(balance.val())));
         }
         return pay;
-    }
+    };
     let payWithHouseUse = function (id) {
         let limit = parseInt(inputCounter.val());
         let options = El.modalHouseUse.find('#house-use').html();
@@ -2640,7 +2695,7 @@ let multiPayment = function () {
             amount.val(rupiahJS(parseFloat(balance.val())));
         }
         return pay;
-    }
+    };
     let grandtotal;
     //
     El.btnMultiPayment.show();
@@ -3210,7 +3265,7 @@ let openMenu = function () {
         if (val1 && val2 && val3 && val4 && val5 && parseFloat(val6) > 0 && parseFloat(val7) > 0) {
             btnSubmit.prop('disabled', false);
         }
-    }
+    };
     //
     El.btnOpenMenu.show();
     let mealTime = SQL(`select * from ref_meal_time`);
@@ -3376,6 +3431,10 @@ let reprintBilling = function () {
     });
 };
 let voidBilling = function () {
+    /** todo: disabled **/
+    El.btnVoidBilling.hide(); return;
+    /** stop the code **/
+
     if (isOlder) {
         if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
             El.btnVoidBilling.hide();
@@ -3633,6 +3692,7 @@ $(document).ready(function () {
         loadOrderMenu();
         loadOrderSummary(orderIds);
         loadBills();
+        loadCurrentMealTime();
         cashPayment();
         cardPayment();
         chargeToRoomPayment();
@@ -3651,7 +3711,7 @@ $(document).ready(function () {
         reprintBilling();
         voidBilling();
         discountBilling();
-        addBillTip()
+        addBillTip();
         //
         initCheckListBoxes();
         El.paymentBtn.attr('disabled', 1);
