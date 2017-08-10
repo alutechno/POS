@@ -89,7 +89,7 @@ const http = function (pool, compile) {
                 let {id, time, outlet, posCashier} = JSON.parse(myCookie);
 
                 /* get user info */
-                let getUserQuery = `SELECT * FROM user WHERE id = ${id}`;
+                let getUserQuery = `SELECT a.id,name,password,token,token2,b.role_id,full_name,image,department_id,is_pos FROM user a,role_user b WHERE a.id=b.user_id and a.id = ${id} limit 1`;
                 let getUser = await compile(getUserQuery);
                 if (getUser.constructor === Error) throw getUser;
                 if (getUser.length !== 1) throw new Error(`Session: Invalid username "${username}"!`);
