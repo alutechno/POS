@@ -220,7 +220,7 @@ const http = function (pool, compile) {
             if (getUser.constructor === Error) throw getUser;
             if (getUser.length !== 1) throw new Error(`Invalid username "${username}"!`);
             if (getUser[0].status !== '1') throw new Error(`Inactive account "${username}"!`);
-            if (getUser[0].password !== password) throw new Error(`Invalid password "${password}" for ${username} account!`);
+            if (getUser[0].password !== password) throw new Error(`Invalid password for ${username} account!`);
 
             /* get user outlet */
             let getOutletQuery = 'SELECT * FROM mst_outlet WHERE status = 1 AND id = ? ORDER BY name';
