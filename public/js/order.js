@@ -3396,7 +3396,9 @@ let voidBilling = function () {
     })
 };
 let discountBilling = function () {
+    let raw = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
     if (!roleDetector('discountbill', 'discountbillafterpayment')) {
+        El.modalQty.find('#discount-percent select').data('db', raw.data);
         El.btnDiscountBilling.hide();
         return;
     }
@@ -3410,7 +3412,6 @@ let discountBilling = function () {
     let labelNewDiscount = modal.find('#new-discount');
     let labelNett = modal.find('#nett');
     let btnSubmit = modal.find('#submit');
-    let raw = SQL(`select * from mst_pos_discount where code != '$$' and status = 1`);
     let validation = function () {
         let typeVal = type.val();
         let manualClassVal = manualClass.val();
