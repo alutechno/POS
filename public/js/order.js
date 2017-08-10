@@ -2017,6 +2017,10 @@ let multiPayment = function () {
                 payDialog.append(payWithHouseUse(`split-${i}-house`));
             }
         });
+        if (!roleDetector('cash', 'cashafterpayment')) pay.find('select option[value="cash"]').remove();
+        if (!roleDetector('card', 'cardafterpayment')) pay.find('select option[value="card"]').remove();
+        if (!roleDetector('chargeroom', 'chargeroomafterpayment')) pay.find('select option[value="charge2room"]').remove();
+        if (!roleDetector('houseuse', 'houseuseafterpayment')) pay.find('select option[value="houseuse"]').remove();
         return pay;
     };
     let payWithCash = function (id) {
