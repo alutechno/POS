@@ -58,6 +58,13 @@ let isOlder, Menu, MealTime, MenuClass, MenuSubClass, Covers,
         btnPrintOrder: $('a#print-order'),
         btnOpenMenu: $('a#open-menu')
     };
+let roleDetector = function (role1, role2, special) {
+    let allow = role1 && App.role[role1] ? true : false;
+    if (special || isOlder) {
+        allow = role2 == 'FORCE' || (App.role[role2] && Payments.parent.isSameDay) ? true : false;
+    }
+    return allow;
+};
 let swipeCard = function (str) {
     return trim(str)
     .replace(/\/\s\^|\s\^/g, '/^')
@@ -594,7 +601,7 @@ let loadMenu = function (filter) {
                 loadMenu({class: El.menuClass.val(), subClass: El.menuSubClass.val(), name: El.menuFinder.val()})
             });
             //
-            if (App.role.ordermenu) {
+            if (roleDetector('ordermenu', 'ordermenuafterpayment')) {
                 let validation = function () {
                     let type = discType.val();
                     let percent = discPercent.val();
@@ -674,6 +681,9 @@ let loadMenu = function (filter) {
                     addOrderMenu(data, parseInt(inputQty.data('value')))
                 });
                 modal.on('show.bs.modal', function () {
+                    if (!roleDetector('ordermenu', 'ordermenuafterpayment')) {
+                        return
+                    }
                     let data = modal.data();
                     discPercent.html('');
                     discPercent.data('db').forEach(function (d, i) {
@@ -808,12 +818,7 @@ let loadOrderMenu = function () {
         order by parent_id, type;
     `);
     OrderMenu = [];
-    let getPayment = SQL(`
-        select a.*, b.name
-        from pos_payment_detail a
-        join ref_payment_method b on a.payment_type_id = b.id
-        where a.order_id = ? and a.status = 1
-    `, orderIds.split(',')[0]);
+    loadBills();
     if (!orderMenu.error) {
         let no = 0;
         let getVoid = function (parent_id) {
@@ -885,26 +890,14 @@ let loadOrderMenu = function () {
     window.miscFn1 = function (value, row, index) {
         let isOrder = row.is == 'order';
         let voidable = row.order_qty > row.order_void;
-        /** todo: disabled **/
-        if (!getPayment.data.length) {
-            return !(isOrder && voidable) ? '' : (
-                `<div class="pull-right">
-                    <a class="remove" href="#modal-void" title="Void">
-                        <i class="glyphicon glyphicon-remove text-danger"></i>
-                    </a>
-                </div>`
-            );
-        }
-        return '';
-        /** stop the code **/
-
-        return !(isOrder && voidable) ? '' : (
-            `<div class="pull-right">
+        if (isOrder && voidable) {
+            return !roleDetector('voidmenu', 'voidmenuafterpayment') ? '' : `<div class="pull-right">
                 <a class="remove" href="#modal-void" title="Void">
                     <i class="glyphicon glyphicon-remove text-danger"></i>
                 </a>
             </div>`
-        );
+        }
+        return '';
     };
     window.miscFn1Cfg = {
         'click .remove': function (e, value, row) {
@@ -991,9 +984,6 @@ let loadOrderMenu = function () {
         El.btnPrintBilling.removeAttr('disabled');
         El.btnOrderNote.removeAttr('disabled');
         El.btnPrintOrder.removeAttr('disabled');
-    }
-    if (!App.role.voidmenu) {
-        El.orderMenu.bootstrapTable('hideColumn', 'void');
     }
 };
 let loadTotal = function (id) {
@@ -1275,12 +1265,7 @@ let addOrderMenu = function (data, qty = 1, orderId) {
     El.modalQty.modal('hide');
 };
 let mergeBill = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnMergeBill.hide();
-            return;
-        }
-    } else if (!App.role.mergebill) {
+    if (!roleDetector('mergebill', 'mergebillafterpayment')) {
         El.btnMergeBill.hide();
         return;
     }
@@ -1363,12 +1348,7 @@ let mergeBill = function () {
     })
 };
 let addBillTip = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnAddTip.hide();
-            return;
-        }
-    } else if (!App.role.addtip) {
+    if (!roleDetector('addtip', 'addtipafterpayment')) {
         El.btnAddTip.hide();
         return;
     }
@@ -1419,12 +1399,7 @@ let addBillTip = function () {
     });
 };
 let cashPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayCash.hide();
-            return;
-        }
-    } else if (!App.role.cash) {
+    if (!roleDetector('cash', 'cashafterpayment')) {
         El.btnPayCash.hide();
         return;
     }
@@ -1472,12 +1447,7 @@ let cashPayment = function () {
     });
 };
 let cardPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayCard.hide();
-            return;
-        }
-    } else if (!App.role.card) {
+    if (!roleDetector('card', 'cardafterpayment')) {
         El.btnPayCard.hide();
         return;
     }
@@ -1567,14 +1537,9 @@ let cardPayment = function () {
     });
 };
 let chargeToRoomPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayChargeToRoom.hide();
-            return;
-        }
-    } else if (!App.role.chargeroom) {
+    if (!roleDetector('chargeroom', 'chargeroomafterpayment')) {
         El.btnPayChargeToRoom.hide();
-        return
+        return;
     }
     let modal = El.modalCharge2Room;
     let inputTip = modal.find('#add-tip');
@@ -1650,16 +1615,10 @@ let chargeToRoomPayment = function () {
     });
 };
 let houseUsePayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayHouseUse.hide();
-            return;
-        }
-    } else if (!App.role.houseuse) {
+    if (!roleDetector('houseuse', 'houseuseafterpayment')) {
         El.btnPayHouseUse.hide();
-        return
+        return;
     }
-
     let modal = El.modalHouseUse;
     let inputTip = modal.find('#add-tip');
     let selectHouseUse = modal.find('#house-use');
@@ -1744,12 +1703,7 @@ let houseUsePayment = function () {
     });
 };
 let voucherPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayVoucher.hide();
-            return;
-        }
-    } else if (!App.role.voucher) {
+    if (!roleDetector('voucher', 'voucherafterpayment')) {
         El.btnPayVoucher.hide();
         return;
     }
@@ -1803,14 +1757,9 @@ let voucherPayment = function () {
     });
 };
 let cityLedgerPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayCityLedger.hide();
-            return;
-        }
-    } else if (!App.role.cityledger) {
+    if (!roleDetector('cityledger', 'cityledgerafterpayment')) {
         El.btnPayCityLedger.hide();
-        return
+        return;
     }
     let modal = El.modalCityLedger;
     let inputTip = modal.find('#add-tip');
@@ -1962,14 +1911,9 @@ let cityLedgerPayment = function () {
     });
 };
 let noPostPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPayNoPost.hide();
-            return;
-        }
-    } else if (!App.role.nopost) {
+    if (!roleDetector('nopost', 'nopostafterpayment')) {
         El.btnPayNoPost.hide();
-        return
+        return;
     }
     let modal = El.modalNoPost;
     let txAreaNote = modal.find('#note');
@@ -2001,12 +1945,7 @@ let noPostPayment = function () {
     });
 };
 let multiPayment = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnMultiPayment.hide();
-            return;
-        }
-    } else if (!App.role.multipayment) {
+    if (!roleDetector('multipayment', 'multipaymentafterpayment')) {
         El.btnMultiPayment.hide();
         return;
     }
@@ -2832,12 +2771,7 @@ let multiPayment = function () {
     m.modal('hide');
 };
 let splitBill = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnSplitBilling.hide();
-            return;
-        }
-    } else if (!App.role.splitbill) {
+    if (!roleDetector('splitbill', 'splitbillafterpayment')) {
         El.btnSplitBilling.hide();
         return;
     }
@@ -2848,7 +2782,7 @@ let splitBill = function () {
     let state = m.find('#state');
     let allItems = [], allSheets = [], count = 0;
     //
-    El.btnMultiPayment.show();
+    El.btnSplitBilling.show();
     //
     next.enable = function () {
         next.removeAttr('disabled');
@@ -3069,12 +3003,7 @@ let splitBill = function () {
     };
 };
 let saveOrderNote = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnOrderNote.hide();
-            return;
-        }
-    } else if (!App.role.ordernote) {
+    if (!roleDetector('ordernote', 'ordernoteafterpayment')) {
         El.btnOrderNote.hide();
         return;
     }
@@ -3104,12 +3033,7 @@ let saveOrderNote = function () {
     });
 };
 let manualPrint = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPrintOrder.hide();
-            return;
-        }
-    } else if (!App.role.printorder) {
+    if (!roleDetector('printorder', 'printorderafterpayment')) {
         El.btnPrintOrder.hide();
         return;
     }
@@ -3235,12 +3159,7 @@ let manualPrint = function () {
     });
 };
 let openMenu = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnOpenMenu.hide();
-            return;
-        }
-    } else if (!App.role.openmenu) {
+    if (!roleDetector('openmenu', 'FORCE')) {
         El.btnOpenMenu.hide();
         return;
     }
@@ -3363,12 +3282,7 @@ let openMenu = function () {
     });
 };
 let printBilling = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnPrintBilling.hide();
-            return;
-        }
-    } else if (!App.role.printbill) {
+    if (!roleDetector('printbill')) {
         El.btnPrintBilling.hide();
         return;
     }
@@ -3431,16 +3345,7 @@ let reprintBilling = function () {
     });
 };
 let voidBilling = function () {
-    /** todo: disabled **/
-    El.btnVoidBilling.hide(); return;
-    /** stop the code **/
-
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnVoidBilling.hide();
-            return;
-        }
-    } else if (!App.role.voidbill) {
+    if (!roleDetector(null, 'voidbill')) {
         El.btnVoidBilling.hide();
         return;
     }
@@ -3487,12 +3392,7 @@ let voidBilling = function () {
     })
 };
 let discountBilling = function () {
-    if (isOlder) {
-        if (App.user.role_id == 30 || !Payments.parent.isSameDay) {
-            El.btnDiscountBilling.hide();
-            return;
-        }
-    } else if (!App.role.discountbill) {
+    if (!roleDetector('discountbill', 'discountbillafterpayment')) {
         El.btnDiscountBilling.hide();
         return;
     }
