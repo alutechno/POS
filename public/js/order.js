@@ -507,7 +507,7 @@ let loadMenu = function (filter) {
                 b.name menu_class_name, b.code menu_class_code, a.*
             from inv_outlet_menus a
             left join ref_outlet_menu_class b on a.menu_class_id = b.id and b.status=1
-            where a.status = 1 and a.outlet_id=${App.outlet.id} ${query} order by a.name
+            where a.status in ('O', 1) and a.outlet_id=${App.outlet.id} ${query} order by a.name
         `);
         let promos = (function () {
             let obj = {};
@@ -3255,7 +3255,7 @@ let openMenu = function () {
             //short_name: '',
             //description: '',
             outlet_id: App.outlet.id,
-            status: '1',
+            status: 'O',
             menu_class_id: slctMenuCls.val(),
             menu_group_id: slctMenuSubCls.val(),
             meal_time_id: slctMealTime.val(),
