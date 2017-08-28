@@ -16,10 +16,10 @@ $(document).ready(function () {
 				) x group by table_id
             ) b on a.id=b.table_id and b.status in (0,1,6)
             left join (
-				select id, parent_id, count(id) splitted, sum(IF(status = '2', 1, 0)) done_splitted 
-				from pos_orders a 
+				select id, parent_id, count(id) splitted, sum(IF(status = '2', 1, 0)) done_splitted
+				from pos_orders a
 				where a.parent_id is not null group by parent_id
-            ) c on b.id = c.parent_id 
+            ) c on b.id = c.parent_id
             where a.outlet_id=${App.outlet.id}
             group by a.id order by b.id DESC
         ) x order by table_no, id

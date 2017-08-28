@@ -404,10 +404,10 @@ let loadBills = function () {
 };
 let loadCurrentMealTime = function () {
     let mealTime = SQL(`
-        select id 
-        from ref_meal_time 
-        where 
-            status = 1 and 
+        select id
+        from ref_meal_time
+        where
+            status = 1 and
             DATE_FORMAT(now(), '%H:%i:%s') BETWEEN start_time and end_time LIMIT 1
     `);
     if (!mealTime.error) {
@@ -503,7 +503,7 @@ let loadMenu = function (filter) {
     if (!filter) {
         let query = App.mealTimeMenu ? ` and a.meal_time_id in (${Object.keys(MealTime).join()})` : ''
         let menu = SQL(`
-            select 
+            select
                 b.name menu_class_name, b.code menu_class_code, a.*
             from inv_outlet_menus a
             left join ref_outlet_menu_class b on a.menu_class_id = b.id and b.status=1
@@ -516,10 +516,10 @@ let loadMenu = function (filter) {
             })
             let day = SQL('select LOWER(DAYNAME(NOW())) a');
             let promo = SQL(`
-                select * from pos_menu_promos 
-                where outlet_menu_id in(${menuIds.join()}) and 
+                select * from pos_menu_promos
+                where outlet_menu_id in(${menuIds.join()}) and
                 is_avail_${day.data[0].a}='Y' and
-                (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and 
+                (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and
                 (DATE_FORMAT(now(), '%H:%i') between cast(begin_time as time) and cast(end_time as time))
             `);
             promo.data.forEach(function(prom){
@@ -771,14 +771,14 @@ let loadOrderMenu = function () {
     let orderMenu = SQL(`
         select * from (
             select
-                1 type, true is_parent, a.id line_item_id, a.id parent_id, a.order_id, 
-                a.menu_class_id, a.outlet_menu_id, aa.name, a.serving_status, a.order_qty, 
-                a.price_amount, null promo_id, null discount_percent, 
+                1 type, true is_parent, a.id line_item_id, a.id parent_id, a.order_id,
+                a.menu_class_id, a.outlet_menu_id, aa.name, a.serving_status, a.order_qty,
+                a.price_amount, null promo_id, null discount_percent,
                 null discount_amount, a.total_amount, a.created_date
-            from pos_orders_line_item a 
+            from pos_orders_line_item a
             left join inv_outlet_menus aa on aa.id = a.outlet_menu_id
             where a.parent_id is null and order_id in (${orderIds})
-            union 
+            union
             select * from (
                 select
                     3 type, false is_parent, x.order_line_item_id line_item_id,
@@ -793,7 +793,7 @@ let loadOrderMenu = function () {
                 left join inv_outlet_menus z on z.id = y.outlet_menu_id
                 where y.order_id in (${orderIds})
                 group by ifnull(y.parent_id, x.order_line_item_id), promo_id
-                order by ifnull(y.parent_id, x.order_line_item_id), order_line_item_id, 
+                order by ifnull(y.parent_id, x.order_line_item_id), order_line_item_id,
                 created_date desc
             ) b
             union
@@ -801,7 +801,7 @@ let loadOrderMenu = function () {
                 select
                     2 type, is_parent, id line_item_id, parent_id, order_id, menu_class_id,
                     outlet_menu_id, name, serving_status, sum(order_qty) order_qty, price_amount,
-                    null promo_id, null discount_percent, null discount_amount, 
+                    null promo_id, null discount_percent, null discount_amount,
                     sum(total_amount) total_amount, created_date
                 from (
                     select
@@ -994,7 +994,7 @@ let loadTotal = function (id) {
         from pos_order_taxes a, mst_pos_taxes b
         where a.tax_id=b.id and a.order_id in (${ids.join()})
         group by tax_id;
-        
+
         select
             b.name, sum(a.total_amount) price, (
                 select sum(a.discount_amount) discount
@@ -1006,7 +1006,7 @@ let loadTotal = function (id) {
         join ref_outlet_menu_class b on b.id = a.menu_class_id
         where a.order_id in (${ids.join()})
         group by b.name;
-        
+
         select 'Discount bill' name, sum(a.discount_amount) discount
         from pos_patched_discount a
         where a.order_id in (${ids.join()});
@@ -1150,9 +1150,9 @@ let addOrderMenu = function (data, qty = 1, orderId) {
         let day = SQL('select LOWER(DAYNAME(NOW())) a');
         let promos = SQL(`
             select * from pos_menu_promos
-            where outlet_menu_id=? and 
-            is_avail_${day.data[0].a}='Y' and 
-            (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and 
+            where outlet_menu_id=? and
+            is_avail_${day.data[0].a}='Y' and
+            (DATE_FORMAT(now(), '%Y-%m-%d') between begin_date and end_date) and
             (DATE_FORMAT(now(), '%H:%i') between cast(begin_time as time) and cast(end_time as time))
         `, id);
         promos.data.forEach(function (promo) {
@@ -1281,7 +1281,7 @@ let mergeBill = function () {
     El.btnMergeBill.show();
     //
     let tableList = SQL(`
-        select 
+        select
             b.id, b.table_no, b.cover, a.id order_id, a.num_of_cover guest,
             a.sub_total_amount, a.discount_total_amount, a.tax_total_amount,
             a.due_amount, a.code order_code
@@ -1554,14 +1554,22 @@ let chargeToRoomPayment = function () {
     let lblRoomType = modal.find('#room-type');
     let lblVipType = modal.find('#vip-type');
     let txAreaNote = modal.find('#note');
+    let firstName = modal.find('#ctr-first-name');
+    let lastName = modal.find('#ctr-last-name');
+    let roomNo = modal.find('#ctr-room-number');
     let btnSubmit = modal.find('#submit');
     let validation = function () {
         let val1 = selectCustomer.val();
         let val2 = inputTip.data('value') >= 0;
+        let val3 = firstName.val();
+        let val4 = roomNo.val();
+
         data = 0;
         btnSubmit.prop('disabled', true);
-        if (val1 && val2) {
-            data = houseGuest.data.filter(function (e) {
+        //if (val1 && val2) { //REMARK until integrate to FO
+        if (val3 && val4 && val2) {
+            //REMARK until integrate to FO
+            /*data = houseGuest.data.filter(function (e) {
                 return e.folio_id == val1 ? 1 : 0;
             })[0];
             folio_id = (data.folio_id);
@@ -1573,10 +1581,17 @@ let chargeToRoomPayment = function () {
             lblRoomNo.html(data.room_no);
             lblRoomRateCode.html(data.room_rate_code + '/' + data.room_rate_name);
             lblRoomType.html(data.room_type + '/' + data.room_type_name);
-            lblVipType.html(data.vip_type);
-            if (data.is_cash_bases.toLowerCase() === 'n') {
+            lblVipType.html(data.vip_type);*/
+            /*if (data.is_cash_bases.toLowerCase() === 'n') {
+                btnSubmit.prop('disabled', false);
+            }*/
+            console.log('asd',val3,val4)
+            if (val3.length>0 && val4.length>0){
+                console.log('masuk')
                 btnSubmit.prop('disabled', false);
             }
+
+
         }
     }
     //
@@ -1598,18 +1613,29 @@ let chargeToRoomPayment = function () {
         grandtotal = getSummary('grandtotal').value;
     });
     selectCustomer.on('change', validation);
+    firstName.on('change paste keyup input blur', validation);
+    roomNo.on('change paste keyup input blur', validation);
     inputTip.on('change paste keyup input blur', validation);
     btnSubmit.prop('disabled', true);
     btnSubmit.on('click', function () {
         btnSubmit.prop('disabled', true);
+
         let pay = Payment({
             order_notes: txAreaNote.val(),
-            folio_id: data.folio_id,
+            //folio_id: data.folio_id, //REMARK until integrate to FO
+            folio_id: 0,
             payment_type_id: 16,
             grandtotal: grandtotal,
             payment_amount: grandtotal,
             tip_amount: inputTip.data('value'),
             change_amount: 0
+        });
+        SQL('insert into pos_room_charge_detail set ?', {
+            payment_id: pay.response.insertId,
+            room_no: roomNo.val(),
+            guest_first_name: firstName.val(),
+            guest_last_name: lastName.val(),
+            created_by: App.user.id
         });
         goHome(pay);
     });
@@ -1719,6 +1745,7 @@ let voucherPayment = function () {
         let value = inputAmount.data('value');
         let val3 = inputTip.data('value') >= 0;
         change = parseFloat(value) - parseFloat(grandtotal) - inputTip.data('value');
+        if (change>0) change=0;
         if (code && (change >= 0) && val3) {
             btnSubmit.prop('disabled', false)
             lblChange.html(rupiahJS(change));
@@ -1763,6 +1790,7 @@ let cityLedgerPayment = function () {
     }
     let modal = El.modalCityLedger;
     let inputTip = modal.find('#add-tip');
+    let clName = modal.find('#cl-name');
     let selectCityLedger = modal.find('#city-ledger');
     let lblType = modal.find('#type');
     let lblName = modal.find('#name');
@@ -1780,7 +1808,11 @@ let cityLedgerPayment = function () {
     let validation = function () {
         let val1 = selectCityLedger.val();
         let val2 = inputTip.data('value') >= 0;
-        if (val1) {
+        let val3 = clName.val();
+        if (val3.length>0) {
+            btnSubmit.prop('disabled', false);
+        }
+        /*if (val1) {
             let data = CityLedger[val1];
             let addr = [data.address, data.city_name].join(', ');
             let n = [data.name, data.short_name].join(' / ');
@@ -1812,17 +1844,17 @@ let cityLedgerPayment = function () {
             lblNotes.html('');
             lblSaldo.html('');
             lblBalance.html('');
-        }
+        }*/
     };
     //
     El.btnPayCityLedger.show();
     //
     let total, discount, service, tax, grandtotal, change;
     let cityLedgerList = SQL(`
-        select a.id, a.code, a.short_name, a.name, a.description, 
-            a.address, a.city_id, c.name city_name, 
+        select a.id, a.code, a.short_name, a.name, a.description,
+            a.address, a.city_id, c.name city_name,
             a.contact_person_name, a.contact_person_phone,
-            a.is_credit, a.is_black_listed, a.notes, a.alert, 
+            a.is_credit, a.is_black_listed, a.notes, a.alert,
             a.status, a.company_type_id, b.name company_type,
             d.deposit_amount, d.applied_amount,
             d.used_currency_id, (d.deposit_amount-d.applied_amount) deposit_balance,
@@ -1872,6 +1904,12 @@ let cityLedgerPayment = function () {
             tip_amount: inputTip.data('value'),
             change_amount: 0
         });
+        SQL('insert into pos_city_ledger_detail set ?', {
+            payment_id: pay.response.insertId,
+            //room_no: roomNo.val(),
+            company_name: clName.val(),
+            created_by: App.user.id
+        });
         //
         let val = selectCityLedger.val();
         let data = CityLedger[val];
@@ -1883,22 +1921,31 @@ let cityLedgerPayment = function () {
             date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
         ];
         let getCode = SQL(`select next_document_no('AR', '${yyyymmdd.slice(0,2).join('/')}') as code`);
+        //REMARK FO Integration
+        /*
         let base_deposit = data.deposit_amount;
         let deposit_amount = change >= 0 ? grandtotal : data.deposit_balance;
         let total_amount = grandtotal;
         let total_due_amount = total_amount - deposit_amount;
         let current_due_amount = total_due_amount;
+        */
+        let base_deposit = 0;
+        let deposit_amount = 0;
+        let total_amount = grandtotal;
+        let total_due_amount = 0;
+        let current_due_amount = total_due_amount;
         let created_by = App.user.id;
-        let {id, deposit_id, applied_amount} = data;
+        //let {id, deposit_id, applied_amount} = data;
         let arInvoice = SQL(`INSERT INTO acc_ar_invoice SET ?`, {
             code : getCode.data[0].code,
             status : '0',
             open_date : yyyymmdd.join('-'),
-            customer_id : id,
+            //customer_id : id,
+            customer_id : 0,
             total_amount, deposit_amount, total_due_amount, current_due_amount,
             created_by
         })
-        let arDepLineItem = SQL(`INSERT INTO acc_ar_deposit_line_item SET ?`, {
+        /*let arDepLineItem = SQL(`INSERT INTO acc_ar_deposit_line_item SET ?`, {
             deposit_id, invoice_id: arInvoice.data.insertId, created_by
         });
         let updateArDep = SQL(`UPDATE acc_ar_deposit SET applied_amount = ?, modified_date = ?, modified_by = ? WHERE id = ?`, [
@@ -1906,7 +1953,7 @@ let cityLedgerPayment = function () {
             yyyymmdd.join('-'),
             created_by,
             deposit_id
-        ])
+        ])*/
         goHome(pay);
     });
 };
@@ -1991,6 +2038,8 @@ let multiPayment = function () {
 									<option value="card">Card</option>
 									<option value="charge2room">Charge to room</option>
 									<option value="houseuse">House use</option>
+                                    <option value="voucher">Voucher</option>
+                                    <option value="cityledger">City Ledger</option>
 								</select>
 							</div>
 						</div>
@@ -2015,6 +2064,10 @@ let multiPayment = function () {
                 payDialog.append(payWithCharge2Room(`split-${i}-charge`));
             } else if (el.val() == 'houseuse') {
                 payDialog.append(payWithHouseUse(`split-${i}-house`));
+            } else if (el.val() == 'voucher') {
+                payDialog.append(payWithVoucher(`split-${i}-voucher`));
+            } else if (el.val() == 'cityledger') {
+                payDialog.append(payWithCityLedger(`split-${i}-cityledger`));
             }
         });
         if (!roleDetector('cash', 'cashafterpayment')) pay.find('select option[value="cash"]').remove();
@@ -2352,7 +2405,8 @@ let multiPayment = function () {
     let payWithCharge2Room = function (id) {
         let limit = parseInt(inputCounter.val());
         let options = El.modalCharge2Room.find('#customer').html();
-        let pay = $(`
+        //REMARK until integrate to FO
+        /*let pay = $(`
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
@@ -2426,16 +2480,63 @@ let multiPayment = function () {
                     <input type="currency" class="form-control" id="${id}-add-tip">
                 </div>
             </div>
+        `);*/
+        let pay = $(`
+            <div class="row"><div class="col-lg-12 "><b>Customer Info:</b></div></div>
+            <div class="row">
+
+                <div class="col-lg-3">
+                    <span>First Name *</span>
+                </div>
+                <div class="col-lg-3 ">
+                    <input type="text" class="form-control" id="${id}-ctr-first-name">
+                </div>
+                <div class="col-lg-3">
+                    <span>Last Name</span>
+                </div>
+                <div class="col-lg-3 ">
+                    <input type="text" class="form-control" id="${id}-ctr-last-name">
+                </div>
+
+            </div>
+            <div class="row" style="margin-top:5px">
+                <div class="col-lg-3">
+                    <span>Room Number *</span>
+                </div>
+                <div class="col-lg-3 ">
+                    <input type="number" class="form-control" id="${id}-ctr-room-number">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
         `);
         let inputTip = pay.find(`#${id}-add-tip`);
         let amount = pay.find(`#${id}-amount`);
         let select = pay.find(`#${id}-select`);
+        let firstName = pay.find(`#${id}-ctr-first-name`);
+        let lastName = pay.find(`#${id}-ctr-last-name`);
+        let roomNo = pay.find(`#${id}-ctr-room-number`);
         let validate = function () {
             let tipVal = parseFloat(inputTip.data('value'));
             let amountVal = parseFloat(amount.data('value'));
             let selectVal = select.val();
+            //REMARK until integrate to FO
+            /*
             let data = Charge2Room.current = Charge2Room[selectVal];
-            //
             data = data || {};
             pay.find(`#${id}-check_in_date`).html(data.check_in_date);
             pay.find(`#${id}-departure_date`).html(data.departure_date);
@@ -2446,6 +2547,7 @@ let multiPayment = function () {
             pay.find(`#${id}-room_rate_code`).html(data.room_rate_code + '/' + data.room_rate_name);
             pay.find(`#${id}-room_type`).html(data.room_type + '/' + data.room_type_name);
             pay.find(`#${id}-vip_type`).html(data.vip_type);
+            */
             //
             if ($(this).attr('id').match(/split\-[0-9]\-charge\-add\-tip/g)) {
                 inputTip.data('value', tipVal);
@@ -2460,7 +2562,8 @@ let multiPayment = function () {
                 amountVal = parseFloat(amount.data('value')) || 0
             }
             next.disable();
-            if (selectVal && (data.is_cash_bases.toLowerCase() === 'n')) {
+            //if (selectVal && (data.is_cash_bases.toLowerCase() === 'n')) {
+            if (firstName && roomNo) {
                 if ((amountVal > 0) && (amountVal <= balance.val()) && (tipVal >= 0)) {
                     if (limit == count) {
                         if (amountVal >= balance.val()) {
@@ -2475,6 +2578,9 @@ let multiPayment = function () {
         //
         inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
         amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        firstName.keyboard(getOpts({layout: 'qwerty'}));
+        lastName.keyboard(getOpts({layout: 'qwerty'}));
+        roomNo.keyboard(getOpts({layout: 'numpad'}, 1));
         inputTip.css('text-align', 'end');
         amount.css('text-align', 'end');
         amount.on('change paste keyup input blur', validate);
@@ -2639,6 +2745,191 @@ let multiPayment = function () {
         }
         return pay;
     };
+    let payWithVoucher = function (id) {
+        let limit = parseInt(inputCounter.val());
+        let pay = $(`
+            <div class="row">
+                <div class="col-lg-6">
+                    <span>Voucher Code</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="text" class="form-control" id="${id}-code">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Voucher Amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-amount">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    <span>Change</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <span id="${id}-change" style="margin-right: 13px;"></span>
+                </div>
+            </div>
+
+
+        `);
+        let inputTip = pay.find(`#${id}-add-tip`);
+        let change = pay.find(`#${id}-change`);
+        let code = pay.find(`#${id}-code`);
+        let amount = pay.find(`#${id}-amount`);
+        let validation = function () {
+            let id = $(this).attr('id');
+            let vcrCode = code.val();
+            let amountVal = parseFloat(amount.data('value'));
+            let tipVal = parseFloat(inputTip.data('value'));
+            let changeAmount = amountVal - tipVal;
+            if (id.match(/split\-[0-9]\-cash\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+            }
+            if (id.match(/split\-[0-9]\-cash\-amount/g)) {
+                amount.data('value', amountVal);
+                amount.data('display', rupiahJS(amountVal));
+                amount.val(rupiahJS(amountVal));
+            }
+            if (id.match(/split\-[0-9]\-cash\-paywith/g)) {
+                paywith.data('value', paywithVal);
+                paywith.data('display', rupiahJS(paywithVal));
+                paywith.val(rupiahJS(paywithVal));
+            }
+            //
+
+            next.disable();
+            //if (selectVal && (data.is_cash_bases.toLowerCase() === 'n')) {
+            if (vcrCode.length>0) {
+                if ((amountVal > 0) && (amountVal <= balance.val()) && (tipVal >= 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            }
+
+        };
+        //if (limit == count) setPaid.parent().hide();
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        inputTip.css('text-align', 'end');
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        amount.css('text-align', 'end');
+        code.keyboard(getOpts({layout: 'qwerty'}, 1));
+        inputTip.on('change paste keyup input blur', validation);
+        amount.on('change paste keyup input blur', validation);
+        code.on('change paste keyup input blur', validation);
+        inputTip.data('value', 0);
+        //
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+        return pay;
+    };
+    let payWithCityLedger = function (id) {
+        let limit = parseInt(inputCounter.val());
+
+
+        let pay = $(`
+            <div class="row"><div class="col-lg-12 "><b>Company Info:</b></div></div>
+            <div class="row">
+
+                <div class="col-lg-3">
+                    <span>Company Name *</span>
+                </div>
+                <div class="col-lg-3 ">
+                    <input type="text" class="form-control" id="${id}-ctr-company-name">
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <span for="usr">Pay Amount</span>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <input id="${id}-amount" type="currency" class="form-control">
+                </div>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-lg-6">
+                    <span>Tip amount</span>
+                </div>
+                <div class="col-lg-6 text-right">
+                    <input type="currency" class="form-control" id="${id}-add-tip">
+                </div>
+            </div>
+        `);
+        let inputTip = pay.find(`#${id}-add-tip`);
+        let amount = pay.find(`#${id}-amount`);
+        let select = pay.find(`#${id}-select`);
+        let companyName = pay.find(`#${id}-ctr-company-name`);
+        let validate = function () {
+            let tipVal = parseFloat(inputTip.data('value'));
+            let amountVal = parseFloat(amount.data('value'));
+            let selectVal = select.val();
+            if ($(this).attr('id').match(/split\-[0-9]\-charge\-add\-tip/g)) {
+                inputTip.data('value', tipVal);
+                inputTip.data('display', rupiahJS(tipVal));
+                inputTip.val(rupiahJS(tipVal));
+                tipVal = parseFloat(inputTip.data('value')) || 0
+            }
+            if ($(this).attr('id').match(/split\-[0-9]\-charge\-amount/g)) {
+                amount.data('value', amountVal);
+                amount.data('display', rupiahJS(amountVal));
+                amount.val(rupiahJS(amountVal));
+                amountVal = parseFloat(amount.data('value')) || 0
+            }
+            next.disable();
+            //if (selectVal && (data.is_cash_bases.toLowerCase() === 'n')) {
+            if (companyName) {
+                if ((amountVal > 0) && (amountVal <= balance.val()) && (tipVal >= 0)) {
+                    if (limit == count) {
+                        if (amountVal >= balance.val()) {
+                            next.enable();
+                        }
+                    } else {
+                        next.enable();
+                    }
+                }
+            }
+        }
+        //
+        inputTip.keyboard(getOpts({layout: 'numpad'}, 1));
+        amount.keyboard(getOpts({layout: 'numpad'}, 1));
+        companyName.keyboard(getOpts({layout: 'qwerty'}));
+        inputTip.css('text-align', 'end');
+        amount.css('text-align', 'end');
+        amount.on('change paste keyup input blur', validate);
+        inputTip.on('change paste keyup input blur', validate);
+        select.on('change', validate);
+        inputTip.data('value', 0);
+        //
+        if (limit == count) {
+            amount.attr('disabled', 1);
+            amount.data('value', parseFloat(balance.val()));
+            amount.data('display', rupiahJS(parseFloat(balance.val())));
+            amount.val(rupiahJS(parseFloat(balance.val())));
+        }
+        return pay;
+    };
     let grandtotal;
     //
     El.btnMultiPayment.show();
@@ -2694,7 +2985,8 @@ let multiPayment = function () {
                 d.grandtotal = d.payment_amount;
                 d.tip_amount = paymentState.find('[id*="-charge-add-tip"]').data('value');
                 d.change_amount = 0;
-                d.folio_id = paymentState.find('[id*="-charge-select"]').val();
+                //d.folio_id = paymentState.find('[id*="-charge-select"]').val(); //REMARK integrate FO
+                d.folio_id = 0;
             } else if (an == 'houseuse') {
                 d.payment_type_id = 17;
                 d.payment_amount = paymentState.find('[id*="-amount"]').data('value');
@@ -2714,6 +3006,16 @@ let multiPayment = function () {
                 let pay = Payment(d);
                 if (pay.success) {
                     console.info('Multi payment > saving done #' + count);
+                    //REMARK avail non FO
+                    if (an == 'charge2room'){
+                        SQL('insert into pos_room_charge_detail set ?', {
+                            payment_id: pay.response.insertId,
+                            room_no: paymentState.find('[id*="-ctr-room-number"]').data('value'),
+                            guest_first_name: paymentState.find('[id*="-ctr-first-name"]').data('value'),
+                            guest_last_name: paymentState.find('[id*="-ctr-last-name"]').data('value'),
+                            created_by: App.user.id
+                        });
+                    }
                     paymentState.hide();
                     next.enable();
                     next.click();
@@ -2732,6 +3034,23 @@ let multiPayment = function () {
                 if (pay.success) {
                     console.info('Multi payment > saving & printing done #' + count);
                     console.info('Multi payment > finished!');
+                    //REMARK avail non FO
+                    if (an == 'charge2room'){
+                        SQL('insert into pos_room_charge_detail set ?', {
+                            payment_id: pay.response.insertId,
+                            room_no: paymentState.find('[id*="-ctr-room-number"]').data('value'),
+                            guest_first_name: paymentState.find('[id*="-ctr-first-name"]').data('value'),
+                            guest_last_name: paymentState.find('[id*="-ctr-last-name"]').data('value'),
+                            created_by: App.user.id
+                        });
+                    }
+                    else if (an == 'cityledger'){
+                        SQL('insert into pos_city_ledger_detail set ?', {
+                            payment_id: pay.response.insertId,
+                            company_name: paymentState.find('[id*="-ctr-company-name"]').data('value'),
+                            created_by: App.user.id
+                        });
+                    }
                     paymentState.hide();
                     close.enable();
                     state.hide();
