@@ -430,6 +430,14 @@ const http = function (pool, compile) {
     });
     app.get('/printKitchen', async function (req, res, next) {
         let {orderId, reprint, printer} = req.query;
+        let command = `echo "test printer kitchen" > ESDPRT002`;
+        console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
+        try {
+            let cmd = execSync(command);
+        }
+        catch (e){
+            console.log(e)
+        }
         if (printer) {
             //todo: manual print for menu items command here..
         } else if (reprint) {
