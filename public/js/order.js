@@ -195,6 +195,7 @@ let Payment = function (param, orderId) {
         tip_amount, change_amount, folio_id, card_no, house_use_id,
         total_amount, status, IS_MULTIPAY, MULTIPAY
     } = param;
+    console.log('printing',param)
     let userId = App.user.id;
     let tranBatchId = App.posCashier.id;
     let getDate = SQL('select NOW() now');
@@ -221,6 +222,7 @@ let Payment = function (param, orderId) {
     if (!updatePosOrder.error) {
         if (status === 4) {
             if (!param.hasOwnProperty('IS_MULTIPAY') || MULTIPAY == 'done') {
+                console.log('printing1',JSON.stringify(param,null,2))
                 Printing({orderId: orderId, splitted: true});
             }
             return {success: true, response: updatePosOrder.data};
@@ -259,7 +261,8 @@ let Payment = function (param, orderId) {
                 if (!param.hasOwnProperty('IS_MULTIPAY')) {
                     Printing({
                         orderId: orderId,
-                        paymentId: insertPosPaymentDetail.data.insertId
+                        paymentId: insertPosPaymentDetail.data.insertId,
+                        splitted: true
                     });
                 } else if (MULTIPAY == 'done') {
                     let ids = SQL('select id from pos_payment_detail where order_id = ? and status = 1', orderId)
