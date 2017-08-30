@@ -430,14 +430,59 @@ const http = function (pool, compile) {
     });
     app.get('/printKitchen', async function (req, res, next) {
         let {orderId, reprint, printer} = req.query;
-        let command = `echo "test printer kitchen" > ESDPRT002`;
+        console.log('asdasda',req.query)
+        orderId = req.query.orderId[0]
+        let getPrinterQuery = `select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
+				where a.id=b.order_id
+				and b.outlet_menu_id=c.id
+				and a.waiter_user_id=d.id
+				and a.outlet_id=e.id
+				and b.serving_status=0
+				and c.print_kitchen_section_id=f.id
+				and a.id=${orderId} group by e.name ,f.name`;
+
+        let getPrinter = await compile(getPrinterQuery);
+        if (getPrinter.constructor === Error) throw getPrinter;
+        console.log('asdasdasdasdasd', getPrinter)
+        console.log('asdasdasdasdasd', Object.keys(getPrinter))
+        if (getPrinter.length !== 1) throw new Error(`Printer not set for selected menus`);
+        var cmd2 = []
+        cmd2.push(`echo Date : ` + getPrinter[0].date + ` > ` + getPrinter[0].printer)
+        cmd2.push(`echo Outlet : ` + getPrinter[0].outlet + ` > ` + getPrinter[0].printer)
+        cmd2.push(`echo Waiter : ` + getPrinter[0].name + ` > ` + getPrinter[0].printer)
+
+        let getOrderQuery = `select now() date,e.name outlet,d.name,c.name menu,b.order_qty,f.name printer
+				from pos_orders a,pos_orders_line_item b,inv_outlet_menus c,user d,mst_outlet e,mst_kitchen_section f
+				where a.id=b.order_id
+				and b.outlet_menu_id=c.id
+				and a.waiter_user_id=d.id
+				and a.outlet_id=e.id
+				and b.serving_status=0
+				and c.print_kitchen_section_id=f.id
+				and a.id=${orderId}`;
+        let getData = await compile(getOrderQuery);
+        if (getData.constructor === Error) throw getData;
+        console.log('asdasdasdasdasd', getData)
+        console.log('asdasdasdasdasd', Object.keys(getData))
+        if (getData.length !== 1) throw new Error(`Invalid list Menus`);
+        for (var i=0;i<getData.length;i++){
+            cmd2.push(`echo ` + getData[i].menu + '   ' + getData[i].order_qty +  ` > ` + getPrinter[0].printer)
+        }
+        for (var i=0;i<cmd2.length;i++){
+            console.log(i+'.cmd',cmd2[i])
+            execSync(cmd2[i])
+        }
+
+
+        /*let command = `echo "test printer kitchen" > ESDPRT002`;
         console.log(process.pid.toString(), '> WINDOWS COMMAND :', command);
         try {
             let cmd = execSync(command);
         }
         catch (e){
             console.log(e)
-        }
+        }*/
         if (printer) {
             //todo: manual print for menu items command here..
         } else if (reprint) {
