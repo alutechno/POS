@@ -689,13 +689,16 @@ let loadMenu = function (filter) {
                     }
                     let data = modal.data();
                     discPercent.html('');
-                    discPercent.data('db').forEach(function (d, i) {
-                        let code = data.menu_class_code;
-                        let val = code = 'F' ? d.food : code = 'B' ? d.beverage : d.others;
-                        let el = $(`<option value="${val}">${val} %</option>`);
-                        if (!i) discPercent.append(`<option value="0">0 %</option>`);
-                        discPercent.append(el);
-                    });
+                    if (discPercent.data('db')){
+                        discPercent.data('db').forEach(function (d, i) {
+                            let code = data.menu_class_code;
+                            let val = code = 'F' ? d.food : code = 'B' ? d.beverage : d.others;
+                            let el = $(`<option value="${val}">${val} %</option>`);
+                            if (!i) discPercent.append(`<option value="0">0 %</option>`);
+                            discPercent.append(el);
+                        });    
+                    }
+
                     discPercent.append(`<option value="manual">Manual</option>`);
                     labelPrice.html(data.menu_price_);
                     labelGross.html(rupiahJS(0));
